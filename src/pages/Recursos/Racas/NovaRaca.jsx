@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+﻿import React, { useState } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import Button from '@mui/material/Button';
@@ -11,8 +11,8 @@ import FormControl from '@mui/material/FormControl';
 import InputLabel from '@mui/material/InputLabel';
 import Divider from '@mui/material/Divider';
 import Paper from '@mui/material/Paper';
-import { Formik, Form, Field, FieldArray } from 'formik';
-import { addRaca } from 'service/storage';
+import { Formik, Form, FastField, FieldArray } from 'formik';
+import { addRaca, updateRaca } from 'service/storage';
 import { ROUTE_PATHS } from 'common/constants/routes';
 import {
   RACA_SCHEMA,
@@ -41,10 +41,34 @@ const SectionTitle = ({ children }) => (
 
 const NovaRaca = () => {
   const navigate = useNavigate();
+  const location = useLocation();
+  const racaParaEditar = location.state?.raca ?? null;
+  const isEditing = Boolean(racaParaEditar);
   const [imgError, setImgError] = useState(false);
 
-  const handleSubmit = (values, { setSubmitting }) => {
-    addRaca(values);
+  const editInitialValues = racaParaEditar
+    ? {
+        ...RACA_INITIAL_VALUES,
+        ...racaParaEditar,
+        atributosBasicos: {
+          ...RACA_INITIAL_VALUES.atributosBasicos,
+          ...(racaParaEditar.atributosBasicos || {}),
+        },
+        habilidadesRaciais: {
+          habilidadesBasicas:
+            racaParaEditar.habilidadesRaciais?.habilidadesBasicas || [],
+          habilidadesAvancadas:
+            racaParaEditar.habilidadesRaciais?.habilidadesAvancadas || [],
+        },
+      }
+    : RACA_INITIAL_VALUES;
+
+  const handleSubmit = async (values, { setSubmitting }) => {
+    if (isEditing) {
+      await updateRaca(racaParaEditar.id, values);
+    } else {
+      await addRaca(values);
+    }
     setSubmitting(false);
     navigate(ROUTE_PATHS.RACAS);
   };
@@ -76,16 +100,18 @@ const NovaRaca = () => {
             variant="h5"
             sx={{ color: 'var(--text-primary)', fontWeight: 700, mb: 0.5 }}
           >
-            Nova Raça
+            {isEditing ? 'Editar Raça' : 'Nova Raça'}
           </Typography>
           <Typography variant="body2" sx={{ color: 'var(--text-secondary)' }}>
-            Preencha os dados da nova raça
+            {isEditing
+              ? `Editando os dados de ${racaParaEditar.nome}`
+              : 'Preencha os dados da nova raça'}
           </Typography>
         </Box>
       </Box>
 
       <Formik
-        initialValues={RACA_INITIAL_VALUES}
+        initialValues={editInitialValues}
         validationSchema={RACA_SCHEMA}
         onSubmit={handleSubmit}
       >
@@ -122,7 +148,7 @@ const NovaRaca = () => {
                         gap: 2,
                       }}
                     >
-                      <Field
+                      <FastField
                         as={TextField}
                         name="nome"
                         label="Nome da Raça"
@@ -130,14 +156,14 @@ const NovaRaca = () => {
                         error={touched.nome && Boolean(errors.nome)}
                         helperText={touched.nome && errors.nome}
                       />
-                      <Field
+                      <FastField
                         as={TextField}
                         name="raridade"
                         label="Raridade"
                         fullWidth
                       />
                     </Box>
-                    <Field name="linkImagem">
+                    <FastField name="linkImagem">
                       {({ field }) => (
                         <TextField
                           {...field}
@@ -150,8 +176,8 @@ const NovaRaca = () => {
                           }}
                         />
                       )}
-                    </Field>
-                    <Field
+                    </FastField>
+                    <FastField
                       as={TextField}
                       name="descricao"
                       label="Descrição"
@@ -242,49 +268,49 @@ const NovaRaca = () => {
                     mt: 1.5,
                   }}
                 >
-                  <Field
+                  <FastField
                     as={TextField}
                     name="atributosBasicos.forca"
                     label="Força"
                     fullWidth
                     size="small"
                   />
-                  <Field
+                  <FastField
                     as={TextField}
                     name="atributosBasicos.agilidade"
                     label="Agilidade"
                     fullWidth
                     size="small"
                   />
-                  <Field
+                  <FastField
                     as={TextField}
                     name="atributosBasicos.percepcao"
                     label="Percepção"
                     fullWidth
                     size="small"
                   />
-                  <Field
+                  <FastField
                     as={TextField}
                     name="atributosBasicos.vitalidade"
                     label="Vitalidade"
                     fullWidth
                     size="small"
                   />
-                  <Field
+                  <FastField
                     as={TextField}
                     name="atributosBasicos.inteligencia"
                     label="Inteligência"
                     fullWidth
                     size="small"
                   />
-                  <Field
+                  <FastField
                     as={TextField}
                     name="atributosBasicos.sorte"
                     label="Sorte"
                     fullWidth
                     size="small"
                   />
-                  <Field
+                  <FastField
                     as={TextField}
                     name="atributosBasicos.limiteMaximoAtributo"
                     label="Limite Máximo de Atributo"
@@ -362,14 +388,14 @@ const NovaRaca = () => {
                                 gap: 2,
                               }}
                             >
-                              <Field
+                              <FastField
                                 as={TextField}
                                 name={`habilidadesRaciais.habilidadesBasicas[${idx}].nome`}
                                 label="Nome da Habilidade"
                                 fullWidth
                                 size="small"
                               />
-                              <Field
+                              <FastField
                                 as={TextField}
                                 name={`habilidadesRaciais.habilidadesBasicas[${idx}].descricao`}
                                 label="Descrição da Habilidade"
@@ -420,7 +446,7 @@ const NovaRaca = () => {
                                           alignItems: 'center',
                                         }}
                                       >
-                                        <Field
+                                        <FastField
                                           as={TextField}
                                           name={`habilidadesRaciais.habilidadesBasicas[${idx}].bonus[${bIdx}]`}
                                           label={`Bônus ${bIdx + 1}`}
@@ -542,14 +568,14 @@ const NovaRaca = () => {
                                   gap: 2,
                                 }}
                               >
-                                <Field
+                                <FastField
                                   as={TextField}
                                   name={`habilidadesRaciais.habilidadesAvancadas[${idx}].nome`}
                                   label="Nome da Habilidade"
                                   fullWidth
                                   size="small"
                                 />
-                                <Field
+                                <FastField
                                   name={`habilidadesRaciais.habilidadesAvancadas[${idx}].tipo`}
                                 >
                                   {({ field }) => (
@@ -569,9 +595,9 @@ const NovaRaca = () => {
                                       </Select>
                                     </FormControl>
                                   )}
-                                </Field>
+                                </FastField>
                               </Box>
-                              <Field
+                              <FastField
                                 as={TextField}
                                 name={`habilidadesRaciais.habilidadesAvancadas[${idx}].descricao`}
                                 label="Descrição da Habilidade"
@@ -591,42 +617,42 @@ const NovaRaca = () => {
                                   gap: 2,
                                 }}
                               >
-                                <Field
+                                <FastField
                                   as={TextField}
                                   name={`habilidadesRaciais.habilidadesAvancadas[${idx}].alvo`}
                                   label="Alvo"
                                   fullWidth
                                   size="small"
                                 />
-                                <Field
+                                <FastField
                                   as={TextField}
                                   name={`habilidadesRaciais.habilidadesAvancadas[${idx}].alcance`}
                                   label="Alcance"
                                   fullWidth
                                   size="small"
                                 />
-                                <Field
+                                <FastField
                                   as={TextField}
                                   name={`habilidadesRaciais.habilidadesAvancadas[${idx}].recarga`}
                                   label="Recarga"
                                   fullWidth
                                   size="small"
                                 />
-                                <Field
+                                <FastField
                                   as={TextField}
                                   name={`habilidadesRaciais.habilidadesAvancadas[${idx}].custo`}
                                   label="Custo"
                                   fullWidth
                                   size="small"
                                 />
-                                <Field
+                                <FastField
                                   as={TextField}
                                   name={`habilidadesRaciais.habilidadesAvancadas[${idx}].duracao`}
                                   label="Duração"
                                   fullWidth
                                   size="small"
                                 />
-                                <Field
+                                <FastField
                                   as={TextField}
                                   name={`habilidadesRaciais.habilidadesAvancadas[${idx}].dados`}
                                   label="Dados"
@@ -676,7 +702,7 @@ const NovaRaca = () => {
                                           alignItems: 'center',
                                         }}
                                       >
-                                        <Field
+                                        <FastField
                                           as={TextField}
                                           name={`habilidadesRaciais.habilidadesAvancadas[${idx}].bonus[${bIdx}]`}
                                           label={`Bônus ${bIdx + 1}`}
@@ -747,7 +773,7 @@ const NovaRaca = () => {
                     '&:hover': { background: '#5a2090' },
                   }}
                 >
-                  Salvar Raça
+                  {isEditing ? 'Salvar Alterações' : 'Salvar Raça'}
                 </Button>
               </Box>
             </Box>

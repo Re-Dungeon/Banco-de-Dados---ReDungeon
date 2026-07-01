@@ -1,19 +1,29 @@
-﻿import React, { useState } from 'react';
+﻿import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import Button from '@mui/material/Button';
 import IconButton from '@mui/material/IconButton';
+import CircularProgress from '@mui/material/CircularProgress';
+import DeleteOutlineIcon from '@mui/icons-material/DeleteOutlined';
+import EditOutlinedIcon from '@mui/icons-material/EditOutlined';
 import { getRacas, removeRaca } from 'service/storage';
 import { ROUTE_PATHS } from 'common/constants/routes';
 import { RacaCard } from './styles';
 
 const Racas = () => {
   const navigate = useNavigate();
-  const [racas, setRacas] = useState(() => getRacas());
+  const [racas, setRacas] = useState([]);
+  const [loading, setLoading] = useState(true);
 
-  const handleRemove = id => {
-    removeRaca(id);
+  useEffect(() => {
+    getRacas()
+      .then(setRacas)
+      .finally(() => setLoading(false));
+  }, []);
+
+  const handleRemove = async id => {
+    await removeRaca(id);
     setRacas(prev => prev.filter(r => r.id !== id));
   };
 
@@ -50,7 +60,11 @@ const Racas = () => {
         </Button>
       </Box>
 
-      {racas.length === 0 ? (
+      {loading ? (
+        <Box sx={{ display: 'flex', justifyContent: 'center', py: 8 }}>
+          <CircularProgress sx={{ color: 'var(--color-accent)' }} />
+        </Box>
+      ) : racas.length === 0 ? (
         <Box sx={{ textAlign: 'center', py: 8, color: 'var(--text-muted)' }}>
           <Typography variant="h2" sx={{ mb: 1 }}>
             🧝‍♂️
@@ -126,18 +140,32 @@ const Racas = () => {
                     )}
                   </Box>
                 </Box>
-                <IconButton
-                  size="small"
-                  onClick={() => handleRemove(raca.id)}
-                  sx={{
-                    color: '#ef4444',
-                    flexShrink: 0,
-                    '&:hover': { color: '#ef4444' },
-                  }}
-                  aria-label={`Remover raça ${raca.nome}`}
-                >
-                  Apagar
-                </IconButton>
+                <Box sx={{ display: 'flex', gap: 0.5, flexShrink: 0 }}>
+                  <IconButton
+                    size="small"
+                    onClick={() =>
+                      navigate(ROUTE_PATHS.NOVA_RACA, { state: { raca } })
+                    }
+                    sx={{
+                      color: 'var(--color-accent)',
+                      '&:hover': { color: 'var(--color-accent)', opacity: 0.8 },
+                    }}
+                    aria-label={`Editar raça ${raca.nome}`}
+                  >
+                    <EditOutlinedIcon fontSize="small" />
+                  </IconButton>
+                  <IconButton
+                    size="small"
+                    onClick={() => handleRemove(raca.id)}
+                    sx={{
+                      color: '#ef4444',
+                      '&:hover': { color: '#ef4444' },
+                    }}
+                    aria-label={`Remover raça ${raca.nome}`}
+                  >
+                    <DeleteOutlineIcon fontSize="small" />
+                  </IconButton>
+                </Box>
               </Box>
               {raca.descricao && (
                 <Typography

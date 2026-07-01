@@ -1,9 +1,19 @@
+import {
+  collection,
+  getDocs,
+  addDoc,
+  deleteDoc,
+  doc,
+  updateDoc,
+  serverTimestamp,
+} from 'firebase/firestore';
+import { db } from './firebase';
+
 const KEYS = {
   npcs: 'redungeon_npcs',
   mesas: 'redungeon_mesas',
   mundo: 'redungeon_mundo',
   recursos: 'redungeon_recursos',
-  racas: 'redungeon_racas',
   classes: 'redungeon_classes',
   regras: 'redungeon_regras',
   macros: 'redungeon_macros',
@@ -69,12 +79,6 @@ export const getRecursos = () => getItems(KEYS.recursos);
 export const addRecurso = recurso => addItem(KEYS.recursos, recurso);
 export const removeRecurso = id => removeItem(KEYS.recursos, id);
 
-// Raças
-export const getRacas = () => getItems(KEYS.racas);
-export const addRaca = raca => addItem(KEYS.racas, raca);
-export const removeRaca = id => removeItem(KEYS.racas, id);
-export const updateRaca = (id, updates) => updateItem(KEYS.racas, id, updates);
-
 // Classes
 export const getClasses = () => getItems(KEYS.classes);
 export const addClass = classe => addItem(KEYS.classes, classe);
@@ -91,3 +95,30 @@ export const removeRegra = id => removeItem(KEYS.regras, id);
 export const getMacros = () => getItems(KEYS.macros);
 export const addMacro = macro => addItem(KEYS.macros, macro);
 export const removeMacro = id => removeItem(KEYS.macros, id);
+
+// ── Raças (Firestore) ────────────────────────────────────────────────────────
+const RACAS_COLLECTION = 'racas';
+
+export const getRacas = async () => {
+  const snapshot = await getDocs(collection(db, RACAS_COLLECTION));
+  return snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
+};
+
+export const addRaca = async raca => {
+  const docRef = await addDoc(collection(db, RACAS_COLLECTION), {
+    ...raca,
+    createdAt: serverTimestamp(),
+  });
+  return { id: docRef.id, ...raca };
+};
+
+export const removeRaca = async id => {
+  await deleteDoc(doc(db, RACAS_COLLECTION, id));
+};
+
+export const updateRaca = async (id, updates) => {
+  await updateDoc(doc(db, RACAS_COLLECTION, id), {
+    ...updates,
+    updatedAt: serverTimestamp(),
+  });
+};
