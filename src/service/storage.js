@@ -3,6 +3,8 @@ const KEYS = {
   mesas: 'redungeon_mesas',
   mundo: 'redungeon_mundo',
   recursos: 'redungeon_recursos',
+  racas: 'redungeon_racas',
+  classes: 'redungeon_classes',
   regras: 'redungeon_regras',
   macros: 'redungeon_macros',
 };
@@ -66,6 +68,19 @@ export const removeMundo = id => removeItem(KEYS.mundo, id);
 export const getRecursos = () => getItems(KEYS.recursos);
 export const addRecurso = recurso => addItem(KEYS.recursos, recurso);
 export const removeRecurso = id => removeItem(KEYS.recursos, id);
+
+// Raças
+export const getRacas = () => getItems(KEYS.racas);
+export const addRaca = raca => addItem(KEYS.racas, raca);
+export const removeRaca = id => removeItem(KEYS.racas, id);
+export const updateRaca = (id, updates) => updateItem(KEYS.racas, id, updates);
+
+// Classes
+export const getClasses = () => getItems(KEYS.classes);
+export const addClass = classe => addItem(KEYS.classes, classe);
+export const removeClass = id => removeItem(KEYS.classes, id);
+export const updateClasse = (id, updates) =>
+  updateItem(KEYS.classes, id, updates);
 
 // Regras
 export const getRegras = () => getItems(KEYS.regras);

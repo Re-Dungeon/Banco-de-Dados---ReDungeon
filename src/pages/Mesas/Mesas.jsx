@@ -61,7 +61,7 @@ const Mesas = () => {
             Administre suas mesas de RPG aqui.
           </Typography>
         </Box>
-        <Button
+        {/* <Button
           variant="contained"
           color="primary"
           onClick={() => setModalOpen(true)}
@@ -69,7 +69,7 @@ const Mesas = () => {
           disabled
         >
           + Nova Mesa
-        </Button>
+        </Button> */}
       </Box>
 
       {mesas.length === 0 ? (
