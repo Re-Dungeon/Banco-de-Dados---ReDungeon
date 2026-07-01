@@ -1,0 +1,38 @@
+{
+  "name": "re-dungeon-banco-de-dados",
+  "version": "3.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "eslint": "eslint src/",
+    "eslint-fix": "eslint src/ --fix",
+    "prettier": "prettier --write src/**/*.{js,jsx}"
+  },
+  "dependencies": {
+    "@emotion/react": "^11.14.0",
+    "@emotion/styled": "^11.14.1",
+    "@mui/material": "^9.1.2",
+    "chart.js": "^4.5.1",
+    "firebase": "^12.15.0",
+    "formik": "^2.4.9",
+    "prop-types": "^15.8.1",
+    "react": "^19.2.7",
+    "react-chartjs-2": "^5.3.1",
+    "react-dom": "^19.2.7",
+    "react-router-dom": "^7.18.0",
+    "styled-components": "^6.4.3",
+    "yup": "^1.7.1"
+  },
+  "devDependencies": {
+    "@types/react": "^19.2.17",
+    "@types/react-dom": "^19.0.0",
+    "@vitejs/plugin-react": "^6.0.3",
+    "eslint-plugin-react": "^7.37.5",
+    "eslint-plugin-react-hooks": "^7.1.1",
+    "prettier": "^3.9.1",
+    "vite": "^8.1.0"
+  }
+}
