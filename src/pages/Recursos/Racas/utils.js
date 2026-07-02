@@ -39,13 +39,6 @@ export const RACA_SCHEMA = Yup.object({
   }),
 });
 
-export const TIPOS_HABILIDADE = [
-  'Imediata',
-  'Duradoura',
-  'Sustentada',
-  'Passiva',
-];
-
 export const HABILIDADE_BASICA_INICIAL = { nome: '', descricao: '', bonus: [] };
 
 export const HABILIDADE_AVANCADA_INICIAL = {

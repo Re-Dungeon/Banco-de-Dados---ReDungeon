@@ -1,4 +1,6 @@
-﻿import React, { useState } from 'react';
+﻿import React, { useState, useEffect } from 'react';
+import { collection, getDocs } from 'firebase/firestore';
+import { db } from 'service/firebase';
 import { useNavigate, useLocation } from 'react-router-dom';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
@@ -11,7 +13,7 @@ import FormControl from '@mui/material/FormControl';
 import InputLabel from '@mui/material/InputLabel';
 import Divider from '@mui/material/Divider';
 import Paper from '@mui/material/Paper';
-import { Formik, Form, FastField, FieldArray } from 'formik';
+import { Formik, Form, FastField, Field, FieldArray } from 'formik';
 import { addRaca, updateRaca } from 'service/storage';
 import { ROUTE_PATHS } from 'common/constants/routes';
 import {
@@ -19,8 +21,14 @@ import {
   RACA_INITIAL_VALUES,
   HABILIDADE_BASICA_INICIAL,
   HABILIDADE_AVANCADA_INICIAL,
-  TIPOS_HABILIDADE,
 } from './utils';
+import {
+  TIPOS_HABILIDADE,
+  ACAO_HABILIDADE,
+  NIVEL_HABILIDADE,
+  RARIDADES,
+} from 'common/constants/constants';
+import { getUniversos } from 'service/storage';
 
 const SectionTitle = ({ children }) => (
   <Typography
@@ -45,6 +53,20 @@ const NovaRaca = () => {
   const racaParaEditar = location.state?.raca ?? null;
   const isEditing = Boolean(racaParaEditar);
   const [imgError, setImgError] = useState(false);
+  const [universos, setUniversos] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    getUniversos()
+      .then(res => {
+        console.log('[Universos] resultado:', res);
+        setUniversos(res);
+      })
+      .catch(err => {
+        console.error('[Universos] erro ao buscar:', err);
+      })
+      .finally(() => setLoading(false));
+  }, []);
 
   const editInitialValues = racaParaEditar
     ? {
@@ -144,7 +166,7 @@ const NovaRaca = () => {
                     <Box
                       sx={{
                         display: 'grid',
-                        gridTemplateColumns: '1fr 1fr',
+                        gridTemplateColumns: '1fr 1fr 1fr',
                         gap: 2,
                       }}
                     >
@@ -156,12 +178,34 @@ const NovaRaca = () => {
                         error={touched.nome && Boolean(errors.nome)}
                         helperText={touched.nome && errors.nome}
                       />
-                      <FastField
-                        as={TextField}
-                        name="raridade"
-                        label="Raridade"
-                        fullWidth
-                      />
+                      <FastField name={`raridade`}>
+                        {({ field }) => (
+                          <FormControl fullWidth>
+                            <InputLabel>Raridade</InputLabel>
+                            <Select {...field} label="Raridade">
+                              {RARIDADES.map(raridade => (
+                                <MenuItem key={raridade} value={raridade}>
+                                  {raridade}
+                                </MenuItem>
+                              ))}
+                            </Select>
+                          </FormControl>
+                        )}
+                      </FastField>
+                      <Field name="universo">
+                        {({ field }) => (
+                          <FormControl fullWidth>
+                            <InputLabel>Universo</InputLabel>
+                            <Select {...field} label="Universo">
+                              {universos.map(universo => (
+                                <MenuItem key={universo.id} value={universo.id}>
+                                  {universo.Nome}
+                                </MenuItem>
+                              ))}
+                            </Select>
+                          </FormControl>
+                        )}
+                      </Field>
                     </Box>
                     <FastField name="linkImagem">
                       {({ field }) => (
@@ -576,20 +620,15 @@ const NovaRaca = () => {
                                   size="small"
                                 />
                                 <FastField
-                                  name={`habilidadesRaciais.habilidadesAvancadas[${idx}].tipo`}
+                                  name={`habilidadesRaciais.habilidadesAvancadas[${idx}].acao`}
                                 >
                                   {({ field }) => (
                                     <FormControl fullWidth size="small">
-                                      <InputLabel>
-                                        Tipo de Habilidade
-                                      </InputLabel>
-                                      <Select
-                                        {...field}
-                                        label="Tipo de Habilidade"
-                                      >
-                                        {TIPOS_HABILIDADE.map(tipo => (
-                                          <MenuItem key={tipo} value={tipo}>
-                                            {tipo}
+                                      <InputLabel>Tipo de Ação</InputLabel>
+                                      <Select {...field} label="Tipo de Ação">
+                                        {ACAO_HABILIDADE.map(acao => (
+                                          <MenuItem key={acao} value={acao}>
+                                            {acao}
                                           </MenuItem>
                                         ))}
                                       </Select>

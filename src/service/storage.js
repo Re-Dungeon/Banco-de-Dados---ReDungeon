@@ -122,3 +122,12 @@ export const updateRaca = async (id, updates) => {
     updatedAt: serverTimestamp(),
   });
 };
+
+// ── Universo (Firestore) ────────────────────────────────────────────────────────
+
+const UNIVERSO_COLLECTION = 'Universo';
+
+export const getUniversos = async () => {
+  const snapshot = await getDocs(collection(db, UNIVERSO_COLLECTION));
+  return snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
+};
