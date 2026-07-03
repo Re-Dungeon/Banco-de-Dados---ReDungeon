@@ -54,7 +54,7 @@ const NPCs = () => {
             Gerencie seus personagens não-jogáveis.
           </Typography>
         </Box>
-        <Button
+        {/* <Button
           variant="contained"
           color="primary"
           onClick={() => setModalOpen(true)}
@@ -62,7 +62,7 @@ const NPCs = () => {
           disabled
         >
           + Novo NPC
-        </Button>
+        </Button> */}
       </Box>
 
       {npcs.length === 0 ? (

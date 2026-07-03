@@ -8,6 +8,7 @@ import {
   signOut,
 } from 'firebase/auth';
 import { auth, googleProvider } from 'service/firebase';
+import usePermissions from 'hooks/usePermissions';
 
 const AuthContext = createContext(null);
 
@@ -16,11 +17,16 @@ export const AuthProvider = ({ children }) => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    const timeout = setTimeout(() => setLoading(false), 5000);
     const unsubscribe = onAuthStateChanged(auth, user => {
+      clearTimeout(timeout);
       setCurrentUser(user);
       setLoading(false);
     });
-    return unsubscribe;
+    return () => {
+      clearTimeout(timeout);
+      unsubscribe();
+    };
   }, []);
 
   const login = (email, password) =>
@@ -33,9 +39,24 @@ export const AuthProvider = ({ children }) => {
 
   const logout = () => signOut(auth);
 
+  const { isAdmin, allowedUniversos, loadingPermissions, canCreate, canWrite } =
+    usePermissions(currentUser);
+
   return (
     <AuthContext.Provider
-      value={{ currentUser, loading, login, signup, loginWithGoogle, logout }}
+      value={{
+        currentUser,
+        loading,
+        login,
+        signup,
+        loginWithGoogle,
+        logout,
+        isAdmin,
+        allowedUniversos,
+        loadingPermissions,
+        canCreate,
+        canWrite,
+      }}
     >
       {children}
     </AuthContext.Provider>

@@ -4,10 +4,12 @@ import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
+import Collapse from '@mui/material/Collapse';
 import Divider from '@mui/material/Divider';
 import Typography from '@mui/material/Typography';
 import Avatar from '@mui/material/Avatar';
 import Tooltip from '@mui/material/Tooltip';
+import { useLocation } from 'react-router-dom';
 import { NAV_ITEMS, NAV_ITEMS_SECONDARY } from 'common/constants/navItems';
 import { useAuth } from 'context/AuthContext';
 import LoginModal from 'components/LoginModal/LoginModal';
@@ -22,7 +24,16 @@ import {
 
 const Sidebar = () => {
   const [loginModalOpen, setLoginModalOpen] = useState(false);
+  const [openMenus, setOpenMenus] = useState({});
   const { currentUser, logout } = useAuth();
+  const location = useLocation();
+
+  const toggleMenu = path => {
+    setOpenMenus(prev => ({ ...prev, [path]: !prev[path] }));
+  };
+
+  const isParentActive = item =>
+    item.children?.some(child => location.pathname.startsWith(child.path));
 
   const handleUserButtonClick = () => {
     if (currentUser) {
@@ -66,19 +77,79 @@ const Sidebar = () => {
 
       <Box sx={{ flex: 1, overflowY: 'auto', py: 1 }}>
         <List disablePadding>
-          {NAV_ITEMS.map(item => (
-            <ListItem key={item.path} disablePadding>
-              <StyledNavLink to={item.path}>
-                <NavItemButton className="nav-item-btn">
-                  <ListItemIcon sx={{ fontSize: 18 }}>{item.icon}</ListItemIcon>
-                  <ListItemText
-                    primary={item.label}
-                    primaryTypographyProps={{ fontSize: 14, fontWeight: 500 }}
-                  />
-                </NavItemButton>
-              </StyledNavLink>
-            </ListItem>
-          ))}
+          {NAV_ITEMS.map(item => {
+            if (item.children) {
+              const parentActive = isParentActive(item);
+              const isOpen = openMenus[item.path] ?? parentActive;
+              return (
+                <Box key={item.path}>
+                  <ListItem disablePadding>
+                    <NavItemButton
+                      className={`nav-item-btn${parentActive ? ' parent-active' : ''}`}
+                      onClick={() => toggleMenu(item.path)}
+                    >
+                      <ListItemIcon sx={{ fontSize: 18 }}>
+                        {item.icon}
+                      </ListItemIcon>
+                      <ListItemText
+                        primary={item.label}
+                        primaryTypographyProps={{
+                          fontSize: 14,
+                          fontWeight: 500,
+                        }}
+                      />
+                      <Typography
+                        variant="caption"
+                        sx={{ color: 'var(--text-muted)', ml: 'auto' }}
+                      >
+                        {isOpen ? '▴' : '▾'}
+                      </Typography>
+                    </NavItemButton>
+                  </ListItem>
+                  <Collapse in={isOpen} timeout="auto" unmountOnExit>
+                    <List disablePadding>
+                      {item.children.map(child => (
+                        <ListItem key={child.path} disablePadding>
+                          <StyledNavLink to={child.path}>
+                            <NavItemButton
+                              className="nav-item-btn"
+                              sx={{ pl: '28px !important' }}
+                            >
+                              <ListItemIcon sx={{ fontSize: 14 }}>
+                                {child.icon}
+                              </ListItemIcon>
+                              <ListItemText
+                                primary={child.label}
+                                primaryTypographyProps={{
+                                  fontSize: 13,
+                                  fontWeight: 400,
+                                }}
+                              />
+                            </NavItemButton>
+                          </StyledNavLink>
+                        </ListItem>
+                      ))}
+                    </List>
+                  </Collapse>
+                </Box>
+              );
+            }
+            return (
+              <ListItem key={item.path} disablePadding>
+                <StyledNavLink to={item.path}>
+                  <NavItemButton className="nav-item-btn">
+                    <ListItemIcon sx={{ fontSize: 18 }}>
+                      {item.icon}
+                    </ListItemIcon>
+                    <ListItemText
+                      primary={item.label}
+                      primaryTypographyProps={{ fontSize: 14, fontWeight: 500 }}
+                    />
+                  </NavItemButton>
+                </StyledNavLink>
+              </ListItem>
+            );
+          })}
         </List>
 
         <Divider sx={{ mx: 2, my: 1, borderColor: 'rgba(255,255,255,0.08)' }} />

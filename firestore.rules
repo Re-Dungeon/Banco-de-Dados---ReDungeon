@@ -1,0 +1,66 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ── Helpers ────────────────────────────────────────────────────────────────
+
+    function isAuth() {
+      return request.auth != null;
+    }
+
+    function perms() {
+      return get(/databases/$(database)/documents/userPermissions/$(request.auth.uid)).data;
+    }
+
+    function isAdmin() {
+      return isAuth() && perms().isAdmin == true;
+    }
+
+    function canWriteUniverso(universoId) {
+      return isAdmin() ||
+             (isAuth() && universoId in perms().universos);
+    }
+
+    // ── userPermissions ────────────────────────────────────────────────────────
+    // Cada usuário só lê o próprio documento; apenas admins podem escrever.
+    match /userPermissions/{userId} {
+      allow read: if isAuth() && request.auth.uid == userId;
+      allow write: if isAdmin();
+    }
+
+    // ── Universo ───────────────────────────────────────────────────────────────
+    // Leitura para qualquer usuário autenticado; escrita apenas para admins.
+    match /Universo/{universoId} {
+      allow read: if isAuth();
+      allow write: if isAdmin();
+    }
+
+    // ── racas ──────────────────────────────────────────────────────────────────
+    // Leitura para qualquer usuário autenticado.
+    // Escrita (create/update/delete) baseada no campo `universo` do documento.
+    // - create: o universo do novo doc deve ser permitido ao usuário
+    // - update: o universo do doc antigo E do novo devem ser permitidos
+    //           (impede mover uma raça para outro universo sem permissão)
+    // - delete: o universo do doc existente deve ser permitido
+    match /racas/{racaId} {
+      allow read: if isAuth();
+      allow create: if canWriteUniverso(request.resource.data.universo);
+      allow update: if canWriteUniverso(resource.data.universo)
+                    && canWriteUniverso(request.resource.data.universo);
+      allow delete: if canWriteUniverso(resource.data.universo);
+    }
+
+    // ── classes ────────────────────────────────────────────────────────────────
+    match /classes/{classeId} {
+      allow read: if isAuth();
+      allow create: if canWriteUniverso(request.resource.data.universo);
+      allow update: if canWriteUniverso(resource.data.universo)
+                    && canWriteUniverso(request.resource.data.universo);
+      allow delete: if canWriteUniverso(resource.data.universo);
+    }
+
+    // ── Fase 3 (futuro) ────────────────────────────────────────────────────────
+    // Quando NPCs e Mesas migrarem para Firestore e ganharem campo
+    // `universo`, adicionar regras equivalentes às de `racas` aqui.
+  }
+}

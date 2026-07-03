@@ -1,8 +1,21 @@
+import {
+  collection,
+  getDocs,
+  getDoc,
+  addDoc,
+  deleteDoc,
+  doc,
+  updateDoc,
+  serverTimestamp,
+} from 'firebase/firestore';
+import { db } from './firebase';
+
 const KEYS = {
   npcs: 'redungeon_npcs',
   mesas: 'redungeon_mesas',
   mundo: 'redungeon_mundo',
   recursos: 'redungeon_recursos',
+  classes: 'redungeon_classes',
   regras: 'redungeon_regras',
   macros: 'redungeon_macros',
 };
@@ -67,6 +80,33 @@ export const getRecursos = () => getItems(KEYS.recursos);
 export const addRecurso = recurso => addItem(KEYS.recursos, recurso);
 export const removeRecurso = id => removeItem(KEYS.recursos, id);
 
+// Classes (Firestore)
+const CLASSES_COLLECTION = 'classes';
+
+export const getClasses = async () => {
+  const snapshot = await getDocs(collection(db, CLASSES_COLLECTION));
+  return snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
+};
+
+export const addClasse = async classe => {
+  const docRef = await addDoc(collection(db, CLASSES_COLLECTION), {
+    ...classe,
+    createdAt: serverTimestamp(),
+  });
+  return { id: docRef.id, ...classe };
+};
+
+export const removeClasse = async id => {
+  await deleteDoc(doc(db, CLASSES_COLLECTION, id));
+};
+
+export const updateClasse = async (id, updates) => {
+  await updateDoc(doc(db, CLASSES_COLLECTION, id), {
+    ...updates,
+    updatedAt: serverTimestamp(),
+  });
+};
+
 // Regras
 export const getRegras = () => getItems(KEYS.regras);
 export const addRegra = regra => addItem(KEYS.regras, regra);
@@ -76,3 +116,53 @@ export const removeRegra = id => removeItem(KEYS.regras, id);
 export const getMacros = () => getItems(KEYS.macros);
 export const addMacro = macro => addItem(KEYS.macros, macro);
 export const removeMacro = id => removeItem(KEYS.macros, id);
+
+// ── Raças (Firestore) ────────────────────────────────────────────────────────
+const RACAS_COLLECTION = 'racas';
+
+export const getRacas = async () => {
+  const snapshot = await getDocs(collection(db, RACAS_COLLECTION));
+  return snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
+};
+
+export const addRaca = async raca => {
+  const docRef = await addDoc(collection(db, RACAS_COLLECTION), {
+    ...raca,
+    createdAt: serverTimestamp(),
+  });
+  return { id: docRef.id, ...raca };
+};
+
+export const removeRaca = async id => {
+  await deleteDoc(doc(db, RACAS_COLLECTION, id));
+};
+
+export const updateRaca = async (id, updates) => {
+  await updateDoc(doc(db, RACAS_COLLECTION, id), {
+    ...updates,
+    updatedAt: serverTimestamp(),
+  });
+};
+
+// ── Universo (Firestore) ────────────────────────────────────────────────────────
+
+const UNIVERSO_COLLECTION = 'Universo';
+
+export const getUniversos = async () => {
+  const snapshot = await getDocs(collection(db, UNIVERSO_COLLECTION));
+  return snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
+};
+
+// ── User Permissions (Firestore) ─────────────────────────────────────────────
+
+const USER_PERMISSIONS_COLLECTION = 'userPermissions';
+
+export const getUserPermissions = async uid => {
+  const snap = await getDoc(doc(db, USER_PERMISSIONS_COLLECTION, uid));
+  if (!snap.exists()) return { isAdmin: false, universos: [] };
+  const data = snap.data();
+  return {
+    isAdmin: data.isAdmin ?? false,
+    universos: Array.isArray(data.universos) ? data.universos : [],
+  };
+};

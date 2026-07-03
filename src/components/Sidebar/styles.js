@@ -78,6 +78,16 @@ export const NavItemButton = styled(ListItemButton)`
     font-size: 18px;
     transition: color 0.2s ease;
   }
+
+  &.parent-active {
+    background: rgba(111, 45, 168, 0.15) !important;
+    border-left: 3px solid #6f2da8 !important;
+    color: #f8fafc !important;
+
+    .MuiListItemIcon-root {
+      color: #00d9ff;
+    }
+  }
 `;
 
 export const UserButton = styled(Box)`
