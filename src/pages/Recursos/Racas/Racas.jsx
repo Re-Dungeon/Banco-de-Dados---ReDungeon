@@ -234,100 +234,97 @@ const Racas = () => {
             >
               {racasFiltradas.map(raca => (
                 <RacaCard key={raca.id} elevation={0}>
-                  <Box
-                    sx={{
-                      display: 'flex',
-                      justifyContent: 'space-between',
-                      alignItems: 'flex-start',
-                      gap: 1,
-                    }}
-                  >
+                  {canWrite(raca.universo) && (
                     <Box
                       sx={{
                         display: 'flex',
-                        alignItems: 'center',
-                        gap: 1.5,
-                        minWidth: 0,
+                        justifyContent: 'flex-end',
+                        gap: 0.5,
+                        mb: 1,
                       }}
                     >
-                      {raca.linkImagem && (
-                        <Box
-                          component="img"
-                          src={raca.linkImagem}
-                          alt={raca.nome}
-                          sx={{
-                            width: 72,
-                            height: 72,
-                            borderRadius: 2,
-                            objectFit: 'cover',
-                            flexShrink: 0,
-                            border: '1px solid var(--border-primary)',
-                          }}
-                          onError={e => {
-                            e.currentTarget.style.display = 'none';
-                          }}
-                        />
-                      )}
-                      <Box sx={{ minWidth: 0 }}>
-                        <Typography
-                          variant="h6"
-                          sx={{
-                            color: 'var(--text-primary)',
-                            fontWeight: 600,
-                            lineHeight: 1.2,
-                          }}
-                        >
-                          {raca.nome}
-                        </Typography>
-                        {raca.raridade && (
-                          <Typography
-                            variant="caption"
-                            sx={{
-                              color: 'var(--color-accent)',
-                              fontWeight: 600,
-                            }}
-                          >
-                            {raca.raridade}
-                          </Typography>
-                        )}
-                      </Box>
-                    </Box>
-                    {canWrite(raca.universo) && (
-                      <Box sx={{ display: 'flex', gap: 0.5, flexShrink: 0 }}>
-                        <IconButton
-                          size="small"
-                          onClick={() =>
-                            navigate(ROUTE_PATHS.NOVA_RACA, { state: { raca } })
-                          }
-                          sx={{
+                      <IconButton
+                        size="small"
+                        onClick={() =>
+                          navigate(ROUTE_PATHS.NOVA_RACA, { state: { raca } })
+                        }
+                        sx={{
+                          color: 'var(--color-accent)',
+                          '&:hover': {
                             color: 'var(--color-accent)',
-                            '&:hover': {
-                              color: 'var(--color-accent)',
-                              opacity: 0.8,
-                            },
-                          }}
-                          aria-label={`Editar raça ${raca.nome}`}
-                        >
-                          <EditOutlinedIcon fontSize="small" />
-                        </IconButton>
-                        <IconButton
-                          size="small"
-                          onClick={() => handleRemove(raca.id)}
-                          sx={{
-                            color: '#ef4444',
-                            '&:hover': { color: '#ef4444' },
-                          }}
-                          aria-label={`Remover raça ${raca.nome}`}
-                        >
-                          <DeleteOutlineIcon fontSize="small" />
-                        </IconButton>
-                      </Box>
-                    )}
-                  </Box>
+                            opacity: 0.8,
+                          },
+                        }}
+                        aria-label={`Editar raça ${raca.nome}`}
+                      >
+                        <EditOutlinedIcon fontSize="small" />
+                      </IconButton>
+                      <IconButton
+                        size="small"
+                        onClick={() => handleRemove(raca.id)}
+                        sx={{
+                          color: '#ef4444',
+                          '&:hover': { color: '#ef4444' },
+                        }}
+                        aria-label={`Remover raça ${raca.nome}`}
+                      >
+                        <DeleteOutlineIcon fontSize="small" />
+                      </IconButton>
+                    </Box>
+                  )}
+                  {raca.linkImagem && (
+                    <Box
+                      component="img"
+                      src={raca.linkImagem}
+                      alt={raca.nome}
+                      sx={{
+                        width: '100%',
+                        height: 180,
+                        borderRadius: 2,
+                        objectFit: 'cover',
+                        display: 'block',
+                        border: '1px solid var(--border-primary)',
+                        mb: 1.5,
+                      }}
+                      onError={e => {
+                        e.currentTarget.style.display = 'none';
+                      }}
+                    />
+                  )}
+                  <Typography
+                    variant="h6"
+                    sx={{
+                      color: 'var(--text-primary)',
+                      fontWeight: 600,
+                      lineHeight: 1.2,
+                    }}
+                  >
+                    {raca.nome}
+                  </Typography>
+                  {raca.raridade && (
+                    <Typography
+                      variant="caption"
+                      sx={{
+                        color: 'var(--color-accent)',
+                        fontWeight: 600,
+                        display: 'block',
+                        mb: 1,
+                      }}
+                    >
+                      {raca.raridade}
+                    </Typography>
+                  )}
                   {raca.descricao && (
                     <Typography
                       variant="body2"
-                      sx={{ color: 'var(--text-secondary)', mt: 1.5 }}
+                      sx={{
+                        color: 'var(--text-secondary)',
+                        mt: 0.5,
+                        display: '-webkit-box',
+                        WebkitLineClamp: 3,
+                        WebkitBoxOrient: 'vertical',
+                        overflow: 'hidden',
+                      }}
                     >
                       {raca.descricao}
                     </Typography>

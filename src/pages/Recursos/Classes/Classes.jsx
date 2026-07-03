@@ -1,35 +1,57 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
+import { useNavigate } from 'react-router-dom';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import Button from '@mui/material/Button';
-import Dialog from '@mui/material/Dialog';
-import DialogTitle from '@mui/material/DialogTitle';
-import DialogContent from '@mui/material/DialogContent';
-import DialogActions from '@mui/material/DialogActions';
-import TextField from '@mui/material/TextField';
-import MenuItem from '@mui/material/MenuItem';
 import IconButton from '@mui/material/IconButton';
-import Chip from '@mui/material/Chip';
-import { Formik, Form, Field } from 'formik';
-import { getClasses, addClass, removeClass } from 'service/storage';
-import { CLASSE_SCHEMA } from './utils';
+import CircularProgress from '@mui/material/CircularProgress';
+import TextField from '@mui/material/TextField';
+import Select from '@mui/material/Select';
+import MenuItem from '@mui/material/MenuItem';
+import FormControl from '@mui/material/FormControl';
+import InputLabel from '@mui/material/InputLabel';
+import DeleteOutlineIcon from '@mui/icons-material/DeleteOutlined';
+import EditOutlinedIcon from '@mui/icons-material/EditOutlined';
+import { getClasses, removeClasse, getUniversos } from 'service/storage';
+import { ROUTE_PATHS } from 'common/constants/routes';
+import { useAuth } from 'context/AuthContext';
+import { RARIDADES } from 'common/constants/constants';
 import { ClasseCard } from './styles';
-import { TIPOS_CLASSE } from './constants';
 
 const Classes = () => {
-  const [classes, setClasses] = useState(() => getClasses());
-  const [modalOpen, setModalOpen] = useState(false);
+  const navigate = useNavigate();
+  const { canCreate, canWrite } = useAuth();
+  const [classes, setClasses] = useState([]);
+  const [universos, setUniversos] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [filtroNome, setFiltroNome] = useState('');
+  const [filtroRaridade, setFiltroRaridade] = useState('');
+  const [filtroUniverso, setFiltroUniverso] = useState('');
 
-  const handleAdd = (values, { setSubmitting, resetForm }) => {
-    const nova = addClass(values);
-    setClasses(prev => [...prev, nova]);
-    resetForm();
-    setSubmitting(false);
-    setModalOpen(false);
-  };
+  useEffect(() => {
+    Promise.all([getClasses(), getUniversos()])
+      .then(([classesData, universosData]) => {
+        setClasses(classesData);
+        setUniversos(universosData);
+      })
+      .finally(() => setLoading(false));
+  }, []);
 
-  const handleRemove = id => {
-    removeClass(id);
+  const classesFiltradas = useMemo(() => {
+    return classes.filter(classe => {
+      const matchNome =
+        !filtroNome ||
+        classe.nome?.toLowerCase().includes(filtroNome.toLowerCase());
+      const matchRaridade =
+        !filtroRaridade || classe.raridade === filtroRaridade;
+      const matchUniverso =
+        !filtroUniverso || classe.universo === filtroUniverso;
+      return matchNome && matchRaridade && matchUniverso;
+    });
+  }, [classes, filtroNome, filtroRaridade, filtroUniverso]);
+
+  const handleRemove = async id => {
+    await removeClasse(id);
     setClasses(prev => prev.filter(c => c.id !== id));
   };
 
@@ -54,192 +76,282 @@ const Classes = () => {
             Gerencie as classes disponíveis na campanha.
           </Typography>
         </Box>
-        <Button
-          variant="contained"
-          onClick={() => setModalOpen(true)}
-          sx={{
-            background: 'var(--color-primary)',
-            '&:hover': { background: '#5a2090' },
-          }}
-        >
-          + Nova Classe
-        </Button>
+        {canCreate() && (
+          <Button
+            variant="contained"
+            onClick={() => navigate(ROUTE_PATHS.NOVA_CLASSE)}
+            sx={{
+              background: 'var(--color-primary)',
+              '&:hover': { background: '#5a2090' },
+            }}
+          >
+            + Nova Classe
+          </Button>
+        )}
       </Box>
 
-      {classes.length === 0 ? (
-        <Box sx={{ textAlign: 'center', py: 8, color: 'var(--text-muted)' }}>
-          <Typography variant="h2" sx={{ mb: 1 }}>
-            ⚔️
-          </Typography>
-          <Typography variant="body1">Nenhuma classe cadastrada</Typography>
+      {loading ? (
+        <Box sx={{ display: 'flex', justifyContent: 'center', py: 8 }}>
+          <CircularProgress sx={{ color: 'var(--color-accent)' }} />
         </Box>
       ) : (
-        <Box
-          sx={{
-            display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))',
-            gap: 2,
-          }}
-        >
-          {classes.map(classe => (
-            <ClasseCard key={classe.id} elevation={0}>
-              <Box
+        <>
+          <Box
+            sx={{
+              display: 'grid',
+              gridTemplateColumns: { xs: '1fr', sm: '2fr 1fr 1fr' },
+              gap: 2,
+              mb: 3,
+            }}
+          >
+            <TextField
+              label="Buscar por nome"
+              size="small"
+              value={filtroNome}
+              onChange={e => setFiltroNome(e.target.value)}
+              slotProps={{ inputLabel: { shrink: true } }}
+              sx={{
+                '& .MuiOutlinedInput-root': {
+                  color: 'var(--text-primary)',
+                  '& fieldset': { borderColor: 'var(--border-primary)' },
+                  '&:hover fieldset': { borderColor: 'var(--border-hover)' },
+                  '&.Mui-focused fieldset': {
+                    borderColor: 'var(--color-accent)',
+                  },
+                },
+                '& .MuiInputLabel-root': { color: 'var(--text-secondary)' },
+                '& .MuiInputLabel-root.Mui-focused': {
+                  color: 'var(--color-accent)',
+                },
+              }}
+            />
+            <FormControl size="small">
+              <InputLabel
                 sx={{
-                  display: 'flex',
-                  justifyContent: 'space-between',
-                  alignItems: 'flex-start',
+                  color: 'var(--text-secondary)',
+                  '&.Mui-focused': { color: 'var(--color-accent)' },
                 }}
               >
-                <Box>
-                  <Typography
-                    variant="h6"
-                    sx={{ color: 'var(--text-primary)', fontWeight: 600 }}
-                  >
-                    {classe.nome}
-                  </Typography>
-                  {classe.tipo && (
-                    <Chip
-                      label={classe.tipo}
-                      size="small"
+                Raridade
+              </InputLabel>
+              <Select
+                label="Raridade"
+                value={filtroRaridade}
+                onChange={e => setFiltroRaridade(e.target.value)}
+                sx={{
+                  color: 'var(--text-primary)',
+                  '& .MuiOutlinedInput-notchedOutline': {
+                    borderColor: 'var(--border-primary)',
+                  },
+                  '&:hover .MuiOutlinedInput-notchedOutline': {
+                    borderColor: 'var(--border-hover)',
+                  },
+                  '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
+                    borderColor: 'var(--color-accent)',
+                  },
+                  '& .MuiSvgIcon-root': { color: 'var(--text-secondary)' },
+                }}
+                MenuProps={{
+                  PaperProps: {
+                    sx: {
+                      background: 'var(--bg-card)',
+                      color: 'var(--text-primary)',
+                    },
+                  },
+                }}
+              >
+                <MenuItem value="">Todas</MenuItem>
+                {RARIDADES.map(r => (
+                  <MenuItem key={r} value={r}>
+                    {r}
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+            <FormControl size="small">
+              <InputLabel
+                sx={{
+                  color: 'var(--text-secondary)',
+                  '&.Mui-focused': { color: 'var(--color-accent)' },
+                }}
+              >
+                Universo
+              </InputLabel>
+              <Select
+                label="Universo"
+                value={filtroUniverso}
+                onChange={e => setFiltroUniverso(e.target.value)}
+                sx={{
+                  color: 'var(--text-primary)',
+                  '& .MuiOutlinedInput-notchedOutline': {
+                    borderColor: 'var(--border-primary)',
+                  },
+                  '&:hover .MuiOutlinedInput-notchedOutline': {
+                    borderColor: 'var(--border-hover)',
+                  },
+                  '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
+                    borderColor: 'var(--color-accent)',
+                  },
+                  '& .MuiSvgIcon-root': { color: 'var(--text-secondary)' },
+                }}
+                MenuProps={{
+                  PaperProps: {
+                    sx: {
+                      background: 'var(--bg-card)',
+                      color: 'var(--text-primary)',
+                    },
+                  },
+                }}
+              >
+                <MenuItem value="">Todos</MenuItem>
+                {universos.map(u => (
+                  <MenuItem key={u.id} value={u.id}>
+                    {u.Nome}
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+          </Box>
+
+          {classesFiltradas.length === 0 ? (
+            <Box
+              sx={{ textAlign: 'center', py: 8, color: 'var(--text-muted)' }}
+            >
+              <Typography variant="h2" sx={{ mb: 1 }}>
+                ⚔️
+              </Typography>
+              <Typography variant="body1">Nenhuma classe encontrada</Typography>
+            </Box>
+          ) : (
+            <Box
+              sx={{
+                display: 'grid',
+                gridTemplateColumns: {
+                  xs: '1fr',
+                  sm: 'repeat(auto-fill, minmax(320px, 1fr))',
+                  md: 'repeat(auto-fill, minmax(360px, 1fr))',
+                },
+                gap: 2,
+              }}
+            >
+              {classesFiltradas.map(classe => (
+                <ClasseCard key={classe.id} elevation={0}>
+                  {canWrite(classe.universo) && (
+                    <Box
                       sx={{
-                        mt: 0.5,
-                        background: 'rgba(111,45,168,0.3)',
-                        color: 'var(--color-accent)',
-                        fontSize: '0.7rem',
+                        display: 'flex',
+                        justifyContent: 'flex-end',
+                        gap: 0.5,
+                        mb: 1,
+                      }}
+                    >
+                      <IconButton
+                        size="small"
+                        onClick={() =>
+                          navigate(ROUTE_PATHS.NOVA_CLASSE, {
+                            state: { classe },
+                          })
+                        }
+                        sx={{
+                          color: 'var(--color-accent)',
+                          '&:hover': {
+                            color: 'var(--color-accent)',
+                            opacity: 0.8,
+                          },
+                        }}
+                        aria-label={`Editar classe ${classe.nome}`}
+                      >
+                        <EditOutlinedIcon fontSize="small" />
+                      </IconButton>
+                      <IconButton
+                        size="small"
+                        onClick={() => handleRemove(classe.id)}
+                        sx={{
+                          color: '#ef4444',
+                          '&:hover': { color: '#ef4444' },
+                        }}
+                        aria-label={`Remover classe ${classe.nome}`}
+                      >
+                        <DeleteOutlineIcon fontSize="small" />
+                      </IconButton>
+                    </Box>
+                  )}
+                  {classe.linkImagem && (
+                    <Box
+                      component="img"
+                      src={classe.linkImagem}
+                      alt={classe.nome}
+                      sx={{
+                        width: '100%',
+                        height: 180,
+                        borderRadius: 2,
+                        objectFit: 'cover',
+                        display: 'block',
+                        border: '1px solid var(--border-primary)',
+                        mb: 1.5,
+                      }}
+                      onError={e => {
+                        e.currentTarget.style.display = 'none';
                       }}
                     />
                   )}
-                </Box>
-                <IconButton
-                  size="small"
-                  onClick={() => handleRemove(classe.id)}
-                  sx={{
-                    color: 'var(--text-muted)',
-                    '&:hover': { color: '#ef4444' },
-                  }}
-                  aria-label={`Remover classe ${classe.nome}`}
-                >
-                  ✕
-                </IconButton>
-              </Box>
-              {classe.descricao && (
-                <Typography
-                  variant="body2"
-                  sx={{ color: 'var(--text-secondary)', mt: 1 }}
-                >
-                  {classe.descricao}
-                </Typography>
-              )}
-              {classe.habilidades && (
-                <Typography
-                  variant="body2"
-                  sx={{
-                    color: 'var(--text-muted)',
-                    mt: 1,
-                    fontStyle: 'italic',
-                  }}
-                >
-                  Habilidades: {classe.habilidades}
-                </Typography>
-              )}
-            </ClasseCard>
-          ))}
-        </Box>
-      )}
-
-      <Dialog
-        open={modalOpen}
-        onClose={() => setModalOpen(false)}
-        maxWidth="sm"
-        fullWidth
-        PaperProps={{
-          sx: {
-            background: 'var(--bg-card)',
-            border: '1px solid var(--border-primary)',
-          },
-        }}
-      >
-        <DialogTitle sx={{ color: 'var(--text-primary)' }}>
-          Nova Classe
-        </DialogTitle>
-        <Formik
-          initialValues={{ nome: '', tipo: '', descricao: '', habilidades: '' }}
-          validationSchema={CLASSE_SCHEMA}
-          onSubmit={handleAdd}
-        >
-          {({ errors, touched, isSubmitting }) => (
-            <Form>
-              <DialogContent
-                sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}
-              >
-                <Field
-                  as={TextField}
-                  name="nome"
-                  label="Nome"
-                  fullWidth
-                  error={touched.nome && Boolean(errors.nome)}
-                  helperText={touched.nome && errors.nome}
-                />
-                <Field
-                  as={TextField}
-                  name="tipo"
-                  label="Tipo"
-                  select
-                  fullWidth
-                  error={touched.tipo && Boolean(errors.tipo)}
-                  helperText={touched.tipo && errors.tipo}
-                >
-                  <MenuItem value="">Selecione...</MenuItem>
-                  {TIPOS_CLASSE.map(t => (
-                    <MenuItem key={t} value={t}>
-                      {t}
-                    </MenuItem>
-                  ))}
-                </Field>
-                <Field
-                  as={TextField}
-                  name="descricao"
-                  label="Descrição"
-                  fullWidth
-                  multiline
-                  rows={3}
-                  error={touched.descricao && Boolean(errors.descricao)}
-                  helperText={touched.descricao && errors.descricao}
-                />
-                <Field
-                  as={TextField}
-                  name="habilidades"
-                  label="Habilidades Principais"
-                  fullWidth
-                  multiline
-                  rows={2}
-                  error={touched.habilidades && Boolean(errors.habilidades)}
-                  helperText={touched.habilidades && errors.habilidades}
-                />
-              </DialogContent>
-              <DialogActions sx={{ px: 3, pb: 2 }}>
-                <Button
-                  onClick={() => setModalOpen(false)}
-                  sx={{ color: 'var(--text-muted)' }}
-                >
-                  Cancelar
-                </Button>
-                <Button
-                  type="submit"
-                  variant="contained"
-                  disabled={isSubmitting}
-                  sx={{
-                    background: 'var(--color-primary)',
-                    '&:hover': { background: '#5a2090' },
-                  }}
-                >
-                  Salvar
-                </Button>
-              </DialogActions>
-            </Form>
+                  <Typography
+                    variant="h6"
+                    sx={{
+                      color: 'var(--text-primary)',
+                      fontWeight: 600,
+                      lineHeight: 1.2,
+                    }}
+                  >
+                    {classe.nome}
+                  </Typography>
+                  {classe.raridade && (
+                    <Typography
+                      variant="caption"
+                      sx={{
+                        color: 'var(--color-accent)',
+                        fontWeight: 600,
+                        display: 'block',
+                        mb: 1,
+                      }}
+                    >
+                      {classe.raridade}
+                    </Typography>
+                  )}
+                  {classe.descricao && (
+                    <Typography
+                      variant="body2"
+                      sx={{
+                        color: 'var(--text-secondary)',
+                        mt: 0.5,
+                        display: '-webkit-box',
+                        WebkitLineClamp: 3,
+                        WebkitBoxOrient: 'vertical',
+                        overflow: 'hidden',
+                      }}
+                    >
+                      {classe.descricao}
+                    </Typography>
+                  )}
+                  {classe.habilidades?.length > 0 && (
+                    <Typography
+                      variant="caption"
+                      sx={{
+                        color: 'var(--text-muted)',
+                        mt: 1,
+                        display: 'block',
+                      }}
+                    >
+                      {classe.habilidades.length} habilidade
+                      {classe.habilidades.length !== 1 ? 's' : ''}
+                    </Typography>
+                  )}
+                </ClasseCard>
+              ))}
+            </Box>
           )}
-        </Formik>
-      </Dialog>
+        </>
+      )}
     </Box>
   );
 };

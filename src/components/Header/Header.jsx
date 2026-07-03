@@ -22,32 +22,6 @@ const Header = () => {
         <PageTitle variant="h6" id="page-title">
           {title}
         </PageTitle>
-        <Box sx={{ display: 'flex', gap: 1 }}>
-          <Tooltip title="Pesquisar">
-            <IconButton
-              id="btn-search"
-              aria-label="Pesquisar"
-              sx={{
-                color: 'var(--color-text)',
-                '&:hover': { color: 'var(--color-accent)' },
-              }}
-            >
-              🔍
-            </IconButton>
-          </Tooltip>
-          <Tooltip title="Notificações">
-            <IconButton
-              id="btn-notifications"
-              aria-label="Notificações"
-              sx={{
-                color: 'var(--color-text)',
-                '&:hover': { color: 'var(--color-accent)' },
-              }}
-            >
-              🔔
-            </IconButton>
-          </Tooltip>
-        </Box>
       </Toolbar>
     </StyledAppBar>
   );

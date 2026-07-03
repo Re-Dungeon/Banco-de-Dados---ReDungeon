@@ -80,12 +80,32 @@ export const getRecursos = () => getItems(KEYS.recursos);
 export const addRecurso = recurso => addItem(KEYS.recursos, recurso);
 export const removeRecurso = id => removeItem(KEYS.recursos, id);
 
-// Classes
-export const getClasses = () => getItems(KEYS.classes);
-export const addClass = classe => addItem(KEYS.classes, classe);
-export const removeClass = id => removeItem(KEYS.classes, id);
-export const updateClasse = (id, updates) =>
-  updateItem(KEYS.classes, id, updates);
+// Classes (Firestore)
+const CLASSES_COLLECTION = 'classes';
+
+export const getClasses = async () => {
+  const snapshot = await getDocs(collection(db, CLASSES_COLLECTION));
+  return snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
+};
+
+export const addClasse = async classe => {
+  const docRef = await addDoc(collection(db, CLASSES_COLLECTION), {
+    ...classe,
+    createdAt: serverTimestamp(),
+  });
+  return { id: docRef.id, ...classe };
+};
+
+export const removeClasse = async id => {
+  await deleteDoc(doc(db, CLASSES_COLLECTION, id));
+};
+
+export const updateClasse = async (id, updates) => {
+  await updateDoc(doc(db, CLASSES_COLLECTION, id), {
+    ...updates,
+    updatedAt: serverTimestamp(),
+  });
+};
 
 // Regras
 export const getRegras = () => getItems(KEYS.regras);
