@@ -3,6 +3,7 @@ import react from '@vitejs/plugin-react';
 import { fileURLToPath, URL } from 'url';
 
 export default defineConfig({
+  base: '/Banco-de-Dados---ReDungeon/',
   plugins: [react()],
   resolve: {
     alias: {

@@ -315,7 +315,7 @@ const Classes = () => {
                         mb: 1,
                       }}
                     >
-                      {classe.raridade}
+                      {`${universos.find(u => u.id === classe.universo)?.Nome || 'Universo Desconhecido'} - ${classe.raridade}`}
                     </Typography>
                   )}
                   {classe.descricao && (

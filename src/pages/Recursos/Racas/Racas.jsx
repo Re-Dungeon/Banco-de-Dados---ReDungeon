@@ -311,7 +311,7 @@ const Racas = () => {
                         mb: 1,
                       }}
                     >
-                      {raca.raridade}
+                      {`${universos.find(u => u.id === raca.universo)?.Nome || 'Universo Desconhecido'} - ${raca.raridade}`}
                     </Typography>
                   )}
                   {raca.descricao && (
