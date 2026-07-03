@@ -1,6 +1,4 @@
 ﻿import React, { useState, useEffect } from 'react';
-import { collection, getDocs } from 'firebase/firestore';
-import { db } from 'service/firebase';
 import { useNavigate, useLocation } from 'react-router-dom';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
@@ -14,8 +12,9 @@ import InputLabel from '@mui/material/InputLabel';
 import Divider from '@mui/material/Divider';
 import Paper from '@mui/material/Paper';
 import { Formik, Form, FastField, Field, FieldArray } from 'formik';
-import { addRaca, updateRaca } from 'service/storage';
+import { addRaca, updateRaca, getUniversos } from 'service/storage';
 import { ROUTE_PATHS } from 'common/constants/routes';
+import { useAuth } from 'context/AuthContext';
 import {
   RACA_SCHEMA,
   RACA_INITIAL_VALUES,
@@ -28,7 +27,6 @@ import {
   NIVEL_HABILIDADE,
   RARIDADES,
 } from 'common/constants/constants';
-import { getUniversos } from 'service/storage';
 
 const SectionTitle = ({ children }) => (
   <Typography
@@ -50,6 +48,8 @@ const SectionTitle = ({ children }) => (
 const NovaRaca = () => {
   const navigate = useNavigate();
   const location = useLocation();
+  const { canCreate, canWrite, isAdmin, allowedUniversos, loadingPermissions } =
+    useAuth();
   const racaParaEditar = location.state?.raca ?? null;
   const isEditing = Boolean(racaParaEditar);
   const [imgError, setImgError] = useState(false);
@@ -58,15 +58,25 @@ const NovaRaca = () => {
 
   useEffect(() => {
     getUniversos()
-      .then(res => {
-        console.log('[Universos] resultado:', res);
-        setUniversos(res);
-      })
-      .catch(err => {
-        console.error('[Universos] erro ao buscar:', err);
-      })
+      .then(res => setUniversos(res))
+      .catch(() => {})
       .finally(() => setLoading(false));
   }, []);
+
+  useEffect(() => {
+    if (loadingPermissions) return;
+    const allowed = isEditing
+      ? canWrite(racaParaEditar?.universo)
+      : canCreate();
+    if (!allowed) navigate(ROUTE_PATHS.RACAS);
+  }, [
+    loadingPermissions,
+    isEditing,
+    canWrite,
+    canCreate,
+    racaParaEditar,
+    navigate,
+  ]);
 
   const editInitialValues = racaParaEditar
     ? {
@@ -84,6 +94,10 @@ const NovaRaca = () => {
         },
       }
     : RACA_INITIAL_VALUES;
+
+  const filteredUniversos = isAdmin
+    ? universos
+    : universos.filter(u => allowedUniversos.includes(u.id));
 
   const handleSubmit = async (values, { setSubmitting }) => {
     if (isEditing) {
@@ -197,7 +211,7 @@ const NovaRaca = () => {
                           <FormControl fullWidth>
                             <InputLabel>Universo</InputLabel>
                             <Select {...field} label="Universo">
-                              {universos.map(universo => (
+                              {filteredUniversos.map(universo => (
                                 <MenuItem key={universo.id} value={universo.id}>
                                   {universo.Nome}
                                 </MenuItem>

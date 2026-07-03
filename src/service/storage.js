@@ -1,6 +1,7 @@
 import {
   collection,
   getDocs,
+  getDoc,
   addDoc,
   deleteDoc,
   doc,
@@ -130,4 +131,18 @@ const UNIVERSO_COLLECTION = 'Universo';
 export const getUniversos = async () => {
   const snapshot = await getDocs(collection(db, UNIVERSO_COLLECTION));
   return snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
+};
+
+// ── User Permissions (Firestore) ─────────────────────────────────────────────
+
+const USER_PERMISSIONS_COLLECTION = 'userPermissions';
+
+export const getUserPermissions = async uid => {
+  const snap = await getDoc(doc(db, USER_PERMISSIONS_COLLECTION, uid));
+  if (!snap.exists()) return { isAdmin: false, universos: [] };
+  const data = snap.data();
+  return {
+    isAdmin: data.isAdmin ?? false,
+    universos: Array.isArray(data.universos) ? data.universos : [],
+  };
 };
