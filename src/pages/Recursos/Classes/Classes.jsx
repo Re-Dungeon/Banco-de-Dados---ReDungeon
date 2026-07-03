@@ -10,13 +10,37 @@ import Select from '@mui/material/Select';
 import MenuItem from '@mui/material/MenuItem';
 import FormControl from '@mui/material/FormControl';
 import InputLabel from '@mui/material/InputLabel';
+import Dialog from '@mui/material/Dialog';
+import DialogActions from '@mui/material/DialogActions';
+import DialogContent from '@mui/material/DialogContent';
+import DialogTitle from '@mui/material/DialogTitle';
+import Divider from '@mui/material/Divider';
+import Tooltip from '@mui/material/Tooltip';
 import DeleteOutlineIcon from '@mui/icons-material/DeleteOutlined';
 import EditOutlinedIcon from '@mui/icons-material/EditOutlined';
+import VisibilityOutlinedIcon from '@mui/icons-material/VisibilityOutlined';
 import { getClasses, removeClasse, getUniversos } from 'service/storage';
 import { ROUTE_PATHS } from 'common/constants/routes';
 import { useAuth } from 'context/AuthContext';
 import { RARIDADES } from 'common/constants/constants';
 import { ClasseCard } from './styles';
+
+const ATRIBUTO_LABELS = {
+  forca: 'Força',
+  vitalidade: 'Vitalidade',
+  agilidade: 'Agilidade',
+  inteligencia: 'Inteligência',
+  percepcao: 'Percepção',
+};
+
+const HAB_META_FIELDS = [
+  { key: 'alvo', label: 'Alvo' },
+  { key: 'alcance', label: 'Alcance' },
+  { key: 'custo', label: 'Custo' },
+  { key: 'recarga', label: 'Recarga' },
+  { key: 'duracao', label: 'Duração' },
+  { key: 'dados', label: 'Dados' },
+];
 
 const Classes = () => {
   const navigate = useNavigate();
@@ -27,6 +51,7 @@ const Classes = () => {
   const [filtroNome, setFiltroNome] = useState('');
   const [filtroRaridade, setFiltroRaridade] = useState('');
   const [filtroUniverso, setFiltroUniverso] = useState('');
+  const [classeVisualizando, setClasseVisualizando] = useState(null);
 
   useEffect(() => {
     Promise.all([getClasses(), getUniversos()])
@@ -236,46 +261,61 @@ const Classes = () => {
             >
               {classesFiltradas.map(classe => (
                 <ClasseCard key={classe.id} elevation={0}>
-                  {canWrite(classe.universo) && (
-                    <Box
-                      sx={{
-                        display: 'flex',
-                        justifyContent: 'flex-end',
-                        gap: 0.5,
-                        mb: 1,
-                      }}
-                    >
+                  <Box
+                    sx={{
+                      display: 'flex',
+                      justifyContent: 'flex-end',
+                      gap: 0.5,
+                      mb: 1,
+                    }}
+                  >
+                    <Tooltip title="Visualizar detalhes">
                       <IconButton
                         size="small"
-                        onClick={() =>
-                          navigate(ROUTE_PATHS.NOVA_CLASSE, {
-                            state: { classe },
-                          })
-                        }
+                        onClick={() => setClasseVisualizando(classe)}
                         sx={{
-                          color: 'var(--color-accent)',
-                          '&:hover': {
+                          color: 'var(--text-secondary)',
+                          '&:hover': { color: 'var(--color-accent)' },
+                        }}
+                        aria-label={`Visualizar classe ${classe.nome}`}
+                      >
+                        <VisibilityOutlinedIcon fontSize="small" />
+                      </IconButton>
+                    </Tooltip>
+                    {canWrite(classe.universo) && (
+                      <>
+                        <IconButton
+                          size="small"
+                          onClick={() =>
+                            navigate(ROUTE_PATHS.NOVA_CLASSE, {
+                              state: { classe },
+                            })
+                          }
+                          sx={{
                             color: 'var(--color-accent)',
-                            opacity: 0.8,
-                          },
-                        }}
-                        aria-label={`Editar classe ${classe.nome}`}
-                      >
-                        <EditOutlinedIcon fontSize="small" />
-                      </IconButton>
-                      <IconButton
-                        size="small"
-                        onClick={() => handleRemove(classe.id)}
-                        sx={{
-                          color: '#ef4444',
-                          '&:hover': { color: '#ef4444' },
-                        }}
-                        aria-label={`Remover classe ${classe.nome}`}
-                      >
-                        <DeleteOutlineIcon fontSize="small" />
-                      </IconButton>
-                    </Box>
-                  )}
+                            '&:hover': {
+                              color: 'var(--color-accent)',
+                              opacity: 0.8,
+                            },
+                          }}
+                          aria-label={`Editar classe ${classe.nome}`}
+                        >
+                          <EditOutlinedIcon fontSize="small" />
+                        </IconButton>
+                        <IconButton
+                          size="small"
+                          onClick={() => handleRemove(classe.id)}
+                          sx={{
+                            color: '#ef4444',
+                            '&:hover': { color: '#ef4444' },
+                          }}
+                          aria-label={`Remover classe ${classe.nome}`}
+                        >
+                          <DeleteOutlineIcon fontSize="small" />
+                        </IconButton>
+                      </>
+                    )}
+                  </Box>
                   {classe.linkImagem && (
                     <Box
                       component="img"
@@ -352,6 +392,427 @@ const Classes = () => {
           )}
         </>
       )}
+
+      <Dialog
+        open={Boolean(classeVisualizando)}
+        onClose={() => setClasseVisualizando(null)}
+        maxWidth="sm"
+        fullWidth
+        PaperProps={{
+          sx: {
+            background: 'var(--bg-card)',
+            border: '1px solid var(--border-primary)',
+            borderRadius: 2,
+          },
+        }}
+      >
+        <DialogTitle
+          sx={{ color: 'var(--text-primary)', fontWeight: 700, pb: 1 }}
+        >
+          {classeVisualizando?.nome}
+          {classeVisualizando?.raridade && (
+            <Typography
+              variant="caption"
+              sx={{
+                display: 'block',
+                color: 'var(--color-accent)',
+                fontWeight: 600,
+                mt: 0.5,
+              }}
+            >
+              {`${universos.find(u => u.id === classeVisualizando?.universo)?.Nome || 'Universo Desconhecido'} — ${classeVisualizando.raridade}`}
+            </Typography>
+          )}
+        </DialogTitle>
+        <DialogContent dividers sx={{ borderColor: 'var(--border-primary)' }}>
+          {classeVisualizando?.linkImagem && (
+            <Box
+              component="img"
+              src={classeVisualizando.linkImagem}
+              alt={classeVisualizando.nome}
+              sx={{
+                width: '100%',
+                height: 200,
+                borderRadius: 2,
+                objectFit: 'cover',
+                display: 'block',
+                border: '1px solid var(--border-primary)',
+                mb: 2,
+              }}
+              onError={e => {
+                e.currentTarget.style.display = 'none';
+              }}
+            />
+          )}
+          {classeVisualizando?.descricao && (
+            <>
+              <Typography
+                variant="subtitle2"
+                sx={{
+                  color: 'var(--color-accent)',
+                  fontWeight: 700,
+                  mb: 0.5,
+                  textTransform: 'uppercase',
+                  letterSpacing: 1,
+                  fontSize: '0.72rem',
+                }}
+              >
+                Descrição
+              </Typography>
+              <Typography
+                variant="body2"
+                sx={{ color: 'var(--text-secondary)', mb: 2 }}
+              >
+                {classeVisualizando.descricao}
+              </Typography>
+            </>
+          )}
+          {classeVisualizando?.atributosBasicos &&
+            Object.values(classeVisualizando.atributosBasicos).some(v => v) && (
+              <>
+                <Divider
+                  sx={{ borderColor: 'var(--border-primary)', mb: 1.5 }}
+                />
+                <Typography
+                  variant="subtitle2"
+                  sx={{
+                    color: 'var(--color-accent)',
+                    fontWeight: 700,
+                    mb: 1,
+                    textTransform: 'uppercase',
+                    letterSpacing: 1,
+                    fontSize: '0.72rem',
+                  }}
+                >
+                  Atributos Básicos
+                </Typography>
+                <Box
+                  sx={{
+                    display: 'grid',
+                    gridTemplateColumns: 'repeat(auto-fill, minmax(90px, 1fr))',
+                    gap: 1,
+                    mb: 2,
+                  }}
+                >
+                  {Object.entries(classeVisualizando.atributosBasicos).map(
+                    ([key, value]) =>
+                      value ? (
+                        <Box
+                          key={key}
+                          sx={{
+                            background: 'var(--bg-secondary)',
+                            borderRadius: 1,
+                            p: 1,
+                            textAlign: 'center',
+                          }}
+                        >
+                          <Typography
+                            variant="caption"
+                            sx={{
+                              color: 'var(--text-muted)',
+                              display: 'block',
+                            }}
+                          >
+                            {ATRIBUTO_LABELS[key] ?? key}
+                          </Typography>
+                          <Typography
+                            variant="body2"
+                            sx={{
+                              color: 'var(--text-primary)',
+                              fontWeight: 600,
+                            }}
+                          >
+                            {value}
+                          </Typography>
+                        </Box>
+                      ) : null,
+                  )}
+                </Box>
+              </>
+            )}
+          {classeVisualizando?.habilidadesBasicas?.length > 0 && (
+            <>
+              <Divider sx={{ borderColor: 'var(--border-primary)', mb: 1.5 }} />
+              <Typography
+                variant="subtitle2"
+                sx={{
+                  color: 'var(--color-accent)',
+                  fontWeight: 700,
+                  mb: 1,
+                  textTransform: 'uppercase',
+                  letterSpacing: 1,
+                  fontSize: '0.72rem',
+                }}
+              >
+                Habilidades Básicas
+              </Typography>
+              {classeVisualizando.habilidadesBasicas.map((hab, i) => (
+                <Box
+                  key={i}
+                  sx={{
+                    mb: 1,
+                    p: 1.5,
+                    background: 'var(--bg-secondary)',
+                    borderRadius: 1,
+                    border: '1px solid var(--border-primary)',
+                  }}
+                >
+                  <Box
+                    sx={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'space-between',
+                      mb: 0.5,
+                    }}
+                  >
+                    <Typography
+                      variant="body2"
+                      sx={{ color: 'var(--text-primary)', fontWeight: 600 }}
+                    >
+                      {hab.nome}
+                    </Typography>
+                    {hab.acao && (
+                      <Typography
+                        variant="caption"
+                        sx={{ color: 'var(--color-accent)', fontWeight: 600 }}
+                      >
+                        {hab.acao}
+                      </Typography>
+                    )}
+                  </Box>
+                  {hab.descricao && (
+                    <Typography
+                      variant="caption"
+                      sx={{
+                        color: 'var(--text-secondary)',
+                        display: 'block',
+                        mb: 0.75,
+                      }}
+                    >
+                      {hab.descricao}
+                    </Typography>
+                  )}
+                  {HAB_META_FIELDS.filter(f => hab[f.key]).length > 0 && (
+                    <Box
+                      sx={{
+                        display: 'flex',
+                        flexWrap: 'wrap',
+                        gap: 0.75,
+                        mt: 0.5,
+                      }}
+                    >
+                      {HAB_META_FIELDS.filter(f => hab[f.key]).map(f => (
+                        <Box
+                          key={f.key}
+                          sx={{
+                            background: 'var(--bg-primary)',
+                            borderRadius: 1,
+                            px: 1,
+                            py: 0.5,
+                          }}
+                        >
+                          <Typography
+                            variant="caption"
+                            sx={{
+                              color: 'var(--text-muted)',
+                              display: 'block',
+                              fontSize: '0.65rem',
+                            }}
+                          >
+                            {f.label}
+                          </Typography>
+                          <Typography
+                            variant="caption"
+                            sx={{
+                              color: 'var(--text-primary)',
+                              fontWeight: 600,
+                            }}
+                          >
+                            {hab[f.key]}
+                          </Typography>
+                        </Box>
+                      ))}
+                    </Box>
+                  )}
+                  {hab.bonus?.filter(Boolean).length > 0 && (
+                    <Box sx={{ mt: 0.75 }}>
+                      <Typography
+                        variant="caption"
+                        sx={{
+                          color: 'var(--text-muted)',
+                          display: 'block',
+                          fontSize: '0.65rem',
+                          mb: 0.25,
+                        }}
+                      >
+                        Bônus
+                      </Typography>
+                      {hab.bonus.filter(Boolean).map((b, bi) => (
+                        <Typography
+                          key={bi}
+                          variant="caption"
+                          sx={{
+                            color: 'var(--color-accent)',
+                            display: 'block',
+                          }}
+                        >
+                          • {b}
+                        </Typography>
+                      ))}
+                    </Box>
+                  )}
+                </Box>
+              ))}
+            </>
+          )}
+          {classeVisualizando?.habilidadesAvancadas?.length > 0 && (
+            <>
+              <Divider sx={{ borderColor: 'var(--border-primary)', mb: 1.5 }} />
+              <Typography
+                variant="subtitle2"
+                sx={{
+                  color: 'var(--color-accent)',
+                  fontWeight: 700,
+                  mb: 1,
+                  textTransform: 'uppercase',
+                  letterSpacing: 1,
+                  fontSize: '0.72rem',
+                }}
+              >
+                Habilidades Avançadas
+              </Typography>
+              {classeVisualizando.habilidadesAvancadas.map((hab, i) => (
+                <Box
+                  key={i}
+                  sx={{
+                    mb: 1,
+                    p: 1.5,
+                    background: 'var(--bg-secondary)',
+                    borderRadius: 1,
+                    border: '1px solid var(--border-primary)',
+                  }}
+                >
+                  <Box
+                    sx={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'space-between',
+                      mb: 0.5,
+                    }}
+                  >
+                    <Typography
+                      variant="body2"
+                      sx={{ color: 'var(--text-primary)', fontWeight: 600 }}
+                    >
+                      {hab.nome}
+                    </Typography>
+                    {hab.acao && (
+                      <Typography
+                        variant="caption"
+                        sx={{ color: 'var(--color-accent)', fontWeight: 600 }}
+                      >
+                        {hab.acao}
+                      </Typography>
+                    )}
+                  </Box>
+                  {hab.descricao && (
+                    <Typography
+                      variant="caption"
+                      sx={{
+                        color: 'var(--text-secondary)',
+                        display: 'block',
+                        mb: 0.75,
+                      }}
+                    >
+                      {hab.descricao}
+                    </Typography>
+                  )}
+                  {HAB_META_FIELDS.filter(f => hab[f.key]).length > 0 && (
+                    <Box
+                      sx={{
+                        display: 'flex',
+                        flexWrap: 'wrap',
+                        gap: 0.75,
+                        mt: 0.5,
+                      }}
+                    >
+                      {HAB_META_FIELDS.filter(f => hab[f.key]).map(f => (
+                        <Box
+                          key={f.key}
+                          sx={{
+                            background: 'var(--bg-primary)',
+                            borderRadius: 1,
+                            px: 1,
+                            py: 0.5,
+                          }}
+                        >
+                          <Typography
+                            variant="caption"
+                            sx={{
+                              color: 'var(--text-muted)',
+                              display: 'block',
+                              fontSize: '0.65rem',
+                            }}
+                          >
+                            {f.label}
+                          </Typography>
+                          <Typography
+                            variant="caption"
+                            sx={{
+                              color: 'var(--text-primary)',
+                              fontWeight: 600,
+                            }}
+                          >
+                            {hab[f.key]}
+                          </Typography>
+                        </Box>
+                      ))}
+                    </Box>
+                  )}
+                  {hab.bonus?.filter(Boolean).length > 0 && (
+                    <Box sx={{ mt: 0.75 }}>
+                      <Typography
+                        variant="caption"
+                        sx={{
+                          color: 'var(--text-muted)',
+                          display: 'block',
+                          fontSize: '0.65rem',
+                          mb: 0.25,
+                        }}
+                      >
+                        Bônus
+                      </Typography>
+                      {hab.bonus.filter(Boolean).map((b, bi) => (
+                        <Typography
+                          key={bi}
+                          variant="caption"
+                          sx={{
+                            color: 'var(--color-accent)',
+                            display: 'block',
+                          }}
+                        >
+                          • {b}
+                        </Typography>
+                      ))}
+                    </Box>
+                  )}
+                </Box>
+              ))}
+            </>
+          )}
+        </DialogContent>
+        <DialogActions sx={{ px: 3, py: 2 }}>
+          <Button
+            onClick={() => setClasseVisualizando(null)}
+            sx={{
+              color: 'var(--text-secondary)',
+              '&:hover': { color: 'var(--text-primary)' },
+            }}
+          >
+            Fechar
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Box>
   );
 };

@@ -7,16 +7,6 @@ export const loginSchema = Yup.object({
     .required('Senha é obrigatória'),
 });
 
-export const signupSchema = Yup.object({
-  email: Yup.string().email('E-mail inválido').required('E-mail é obrigatório'),
-  password: Yup.string()
-    .min(6, 'Senha deve ter no mínimo 6 caracteres')
-    .required('Senha é obrigatória'),
-  confirmPassword: Yup.string()
-    .oneOf([Yup.ref('password')], 'As senhas não coincidem')
-    .required('Confirmação de senha é obrigatória'),
-});
-
 export const FIREBASE_ERROR_MESSAGES = {
   'auth/user-not-found': 'Usuário não encontrado.',
   'auth/wrong-password': 'Senha incorreta.',

@@ -4,7 +4,7 @@ import { Formik, Form, Field } from 'formik';
 import IconButton from '@mui/material/IconButton';
 import Box from '@mui/material/Box';
 import { useAuth } from 'context/AuthContext';
-import { loginSchema, signupSchema, getFirebaseErrorMessage } from './utils';
+import { loginSchema, getFirebaseErrorMessage } from './utils';
 import {
   StyledDialog,
   StyledDialogContent,
@@ -12,36 +12,22 @@ import {
   ModalSubtitle,
   StyledTextField,
   SubmitButton,
-  GoogleButton,
-  Divider,
-  ToggleText,
   ErrorAlert,
 } from './styles';
 
 const LoginModal = ({ open, onClose }) => {
-  const [isLogin, setIsLogin] = useState(true);
   const [firebaseError, setFirebaseError] = useState('');
-  const { login, signup, loginWithGoogle } = useAuth();
-
-  const handleToggle = () => {
-    setIsLogin(prev => !prev);
-    setFirebaseError('');
-  };
+  const { login } = useAuth();
 
   const handleClose = () => {
     setFirebaseError('');
-    setIsLogin(true);
     onClose();
   };
 
   const handleSubmit = async (values, { setSubmitting }) => {
     setFirebaseError('');
     try {
-      if (isLogin) {
-        await login(values.email, values.password);
-      } else {
-        await signup(values.email, values.password);
-      }
+      await login(values.email, values.password);
       handleClose();
     } catch (err) {
       setFirebaseError(getFirebaseErrorMessage(err.code));
@@ -50,18 +36,7 @@ const LoginModal = ({ open, onClose }) => {
     }
   };
 
-  const handleGoogleLogin = async () => {
-    setFirebaseError('');
-    try {
-      await loginWithGoogle();
-      handleClose();
-    } catch (err) {
-      setFirebaseError(getFirebaseErrorMessage(err.code));
-    }
-  };
-
   const loginInitialValues = { email: '', password: '' };
-  const signupInitialValues = { email: '', password: '', confirmPassword: '' };
 
   return (
     <StyledDialog
@@ -86,19 +61,12 @@ const LoginModal = ({ open, onClose }) => {
           </IconButton>
         </Box>
 
-        <ModalTitle id="login-modal-title">
-          {isLogin ? '🔐 Entrar' : '✨ Criar Conta'}
-        </ModalTitle>
-        <ModalSubtitle>
-          {isLogin
-            ? 'Acesse o Re:Dungeon com sua conta'
-            : 'Crie sua conta no Re:Dungeon'}
-        </ModalSubtitle>
+        <ModalTitle id="login-modal-title">🔐 Entrar</ModalTitle>
+        <ModalSubtitle>Acesse o Re:Dungeon com sua conta</ModalSubtitle>
 
         <Formik
-          key={isLogin ? 'login' : 'signup'}
-          initialValues={isLogin ? loginInitialValues : signupInitialValues}
-          validationSchema={isLogin ? loginSchema : signupSchema}
+          initialValues={loginInitialValues}
+          validationSchema={loginSchema}
           onSubmit={handleSubmit}
         >
           {({ errors, touched, isSubmitting }) => (
@@ -129,34 +97,11 @@ const LoginModal = ({ open, onClose }) => {
                     size="small"
                     error={touched.password && Boolean(errors.password)}
                     helperText={touched.password && errors.password}
-                    autoComplete={isLogin ? 'current-password' : 'new-password'}
+                    autoComplete="current-password"
                     inputProps={{ 'aria-label': 'Senha' }}
                   />
                 )}
               </Field>
-
-              {!isLogin && (
-                <Field name="confirmPassword">
-                  {({ field }) => (
-                    <StyledTextField
-                      {...field}
-                      label="Confirmar Senha"
-                      type="password"
-                      fullWidth
-                      size="small"
-                      error={
-                        touched.confirmPassword &&
-                        Boolean(errors.confirmPassword)
-                      }
-                      helperText={
-                        touched.confirmPassword && errors.confirmPassword
-                      }
-                      autoComplete="new-password"
-                      inputProps={{ 'aria-label': 'Confirmar Senha' }}
-                    />
-                  )}
-                </Field>
-              )}
 
               {firebaseError && (
                 <ErrorAlert role="alert">{firebaseError}</ErrorAlert>
@@ -166,40 +111,13 @@ const LoginModal = ({ open, onClose }) => {
                 type="submit"
                 fullWidth
                 disabled={isSubmitting}
-                aria-label={isLogin ? 'Entrar' : 'Criar conta'}
+                aria-label="Entrar"
               >
-                {isSubmitting
-                  ? 'Aguarde...'
-                  : isLogin
-                    ? 'Entrar'
-                    : 'Criar Conta'}
+                {isSubmitting ? 'Aguarde...' : 'Entrar'}
               </SubmitButton>
             </Form>
           )}
         </Formik>
-
-        <Divider>ou</Divider>
-
-        <GoogleButton
-          fullWidth
-          onClick={handleGoogleLogin}
-          aria-label="Entrar com Google"
-          startIcon={<span aria-hidden="true">G</span>}
-        >
-          Continuar com Google
-        </GoogleButton>
-
-        <ToggleText>
-          {isLogin ? 'Não tem uma conta? ' : 'Já tem uma conta? '}
-          <span
-            onClick={handleToggle}
-            role="button"
-            tabIndex={0}
-            onKeyDown={e => e.key === 'Enter' && handleToggle()}
-          >
-            {isLogin ? 'Cadastre-se' : 'Entrar'}
-          </span>
-        </ToggleText>
       </StyledDialogContent>
     </StyledDialog>
   );
