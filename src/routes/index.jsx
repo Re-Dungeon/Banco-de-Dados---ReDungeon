@@ -6,6 +6,10 @@ import NPCs from 'pages/NPCs/NPCs';
 import Recursos from 'pages/Recursos/Recursos';
 import Racas from 'pages/Recursos/Racas/Racas';
 import NovaRaca from 'pages/Recursos/Racas/NovaRaca';
+import Itens from 'pages/Recursos/Itens/Itens';
+import NovoItem from 'pages/Recursos/Itens/NovoItem';
+import Materiais from 'pages/Recursos/Materiais/Materiais';
+import NovoMaterial from 'pages/Recursos/Materiais/NovoMaterial';
 import Classes from 'pages/Recursos/Classes/Classes';
 import NovaClasse from 'pages/Recursos/Classes/NovaClasse';
 import Regras from 'pages/Regras/Regras';
@@ -23,6 +27,10 @@ export const ROUTES = [
   { path: ROUTE_PATHS.RECURSOS.slice(1), element: <Recursos /> },
   { path: ROUTE_PATHS.RACAS.slice(1), element: <Racas /> },
   { path: ROUTE_PATHS.NOVA_RACA.slice(1), element: <NovaRaca /> },
+  { path: ROUTE_PATHS.ITENS.slice(1), element: <Itens /> },
+  { path: ROUTE_PATHS.NOVO_ITEM.slice(1), element: <NovoItem /> },
+  { path: ROUTE_PATHS.MATERIAIS.slice(1), element: <Materiais /> },
+  { path: ROUTE_PATHS.NOVO_MATERIAL.slice(1), element: <NovoMaterial /> },
   { path: ROUTE_PATHS.CLASSES.slice(1), element: <Classes /> },
   { path: ROUTE_PATHS.NOVA_CLASSE.slice(1), element: <NovaClasse /> },
   { path: ROUTE_PATHS.REGRAS.slice(1), element: <Regras /> },

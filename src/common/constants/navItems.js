@@ -9,6 +9,8 @@ export const NAV_ITEMS = [
     children: [
       { path: '/recursos/racas', icon: '🧬', label: 'Raças' },
       { path: '/recursos/classes', icon: '⚔️', label: 'Classes' },
+      { path: '/recursos/materiais', icon: '💎', label: 'Materiais' },
+      { path: '/recursos/itens', icon: '⚔️', label: 'Itens' },
     ],
   },
   //{ path: '/regras', icon: '📋', label: 'Regras' },

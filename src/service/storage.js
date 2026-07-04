@@ -117,6 +117,33 @@ export const getMacros = () => getItems(KEYS.macros);
 export const addMacro = macro => addItem(KEYS.macros, macro);
 export const removeMacro = id => removeItem(KEYS.macros, id);
 
+// ── Materiais (Firestore) ─────────────────────────────────────────────────────
+const MATERIAIS_COLLECTION = 'materiais';
+
+export const getMateriais = async () => {
+  const snapshot = await getDocs(collection(db, MATERIAIS_COLLECTION));
+  return snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
+};
+
+export const addMaterial = async material => {
+  const docRef = await addDoc(collection(db, MATERIAIS_COLLECTION), {
+    ...material,
+    createdAt: serverTimestamp(),
+  });
+  return { id: docRef.id, ...material };
+};
+
+export const removeMaterial = async id => {
+  await deleteDoc(doc(db, MATERIAIS_COLLECTION, id));
+};
+
+export const updateMaterial = async (id, updates) => {
+  await updateDoc(doc(db, MATERIAIS_COLLECTION, id), {
+    ...updates,
+    updatedAt: serverTimestamp(),
+  });
+};
+
 // ── Raças (Firestore) ────────────────────────────────────────────────────────
 const RACAS_COLLECTION = 'racas';
 
@@ -139,6 +166,33 @@ export const removeRaca = async id => {
 
 export const updateRaca = async (id, updates) => {
   await updateDoc(doc(db, RACAS_COLLECTION, id), {
+    ...updates,
+    updatedAt: serverTimestamp(),
+  });
+};
+
+// ── Itens (Firestore) ────────────────────────────────────────────────────────
+const ITENS_COLLECTION = 'itens';
+
+export const getItens = async () => {
+  const snapshot = await getDocs(collection(db, ITENS_COLLECTION));
+  return snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
+};
+
+export const addIten = async item => {
+  const docRef = await addDoc(collection(db, ITENS_COLLECTION), {
+    ...item,
+    createdAt: serverTimestamp(),
+  });
+  return { id: docRef.id, ...item };
+};
+
+export const removeIten = async id => {
+  await deleteDoc(doc(db, ITENS_COLLECTION, id));
+};
+
+export const updateIten = async (id, updates) => {
+  await updateDoc(doc(db, ITENS_COLLECTION, id), {
     ...updates,
     updatedAt: serverTimestamp(),
   });

@@ -59,6 +59,24 @@ service cloud.firestore {
       allow delete: if canWriteUniverso(resource.data.universo);
     }
 
+    // ── materiais ──────────────────────────────────────────────────────────────
+    match /materiais/{materialId} {
+      allow read: if isAuth();
+      allow create: if canWriteUniverso(request.resource.data.universo);
+      allow update: if canWriteUniverso(resource.data.universo)
+                    && canWriteUniverso(request.resource.data.universo);
+      allow delete: if canWriteUniverso(resource.data.universo);
+    }
+
+    // ── itens ──────────────────────────────────────────────────────────────────
+    match /itens/{itemId} {
+      allow read: if isAuth();
+      allow create: if canWriteUniverso(request.resource.data.universo);
+      allow update: if canWriteUniverso(resource.data.universo)
+                    && canWriteUniverso(request.resource.data.universo);
+      allow delete: if canWriteUniverso(resource.data.universo);
+    }
+
     // ── Fase 3 (futuro) ────────────────────────────────────────────────────────
     // Quando NPCs e Mesas migrarem para Firestore e ganharem campo
     // `universo`, adicionar regras equivalentes às de `racas` aqui.
