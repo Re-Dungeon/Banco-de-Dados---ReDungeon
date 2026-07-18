@@ -10,45 +10,6 @@ import {
 } from 'firebase/firestore';
 import { db } from './firebase';
 
-const KEYS = {
-  recursos: 'redungeon_recursos',
-  classes: 'redungeon_classes',
-};
-
-function getItems(key) {
-  try {
-    return JSON.parse(localStorage.getItem(key) || '[]');
-  } catch {
-    return [];
-  }
-}
-
-function saveItems(key, items) {
-  localStorage.setItem(key, JSON.stringify(items));
-}
-
-function addItem(key, item) {
-  const items = getItems(key);
-  const newItem = {
-    id: Date.now() + Math.random(),
-    createdAt: new Date().toISOString(),
-    ...item,
-  };
-  items.push(newItem);
-  saveItems(key, items);
-  return newItem;
-}
-
-function removeItem(key, id) {
-  const items = getItems(key).filter(item => item.id !== id);
-  saveItems(key, items);
-}
-
-// Recursos
-export const getRecursos = () => getItems(KEYS.recursos);
-export const addRecurso = recurso => addItem(KEYS.recursos, recurso);
-export const removeRecurso = id => removeItem(KEYS.recursos, id);
-
 // Classes (Firestore)
 const CLASSES_COLLECTION = 'classes';
 
