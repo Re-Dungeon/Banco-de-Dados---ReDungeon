@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import PropTypes from 'prop-types';
 import { useNavigate, useLocation } from 'react-router-dom';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
@@ -38,6 +39,10 @@ const SectionTitle = ({ children }) => (
     {children}
   </Typography>
 );
+
+SectionTitle.propTypes = {
+  children: PropTypes.node.isRequired,
+};
 
 const NovaClasse = () => {
   const navigate = useNavigate();

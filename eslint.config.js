@@ -10,7 +10,7 @@ export default [
   },
   {
     plugins: {
-      reactPlugin,
+      react: reactPlugin,
       'react-hooks': reactHooksPlugin,
       'react-refresh': reactRefresh,
     },

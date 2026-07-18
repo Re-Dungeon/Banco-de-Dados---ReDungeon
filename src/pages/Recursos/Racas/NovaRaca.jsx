@@ -1,4 +1,5 @@
 ﻿import React, { useState, useEffect } from 'react';
+import PropTypes from 'prop-types';
 import { useNavigate, useLocation } from 'react-router-dom';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
@@ -21,12 +22,7 @@ import {
   HABILIDADE_BASICA_INICIAL,
   HABILIDADE_AVANCADA_INICIAL,
 } from './utils';
-import {
-  TIPOS_HABILIDADE,
-  ACAO_HABILIDADE,
-  NIVEL_HABILIDADE,
-  RARIDADES,
-} from 'common/constants/constants';
+import { ACAO_HABILIDADE, RARIDADES } from 'common/constants/constants';
 
 const SectionTitle = ({ children }) => (
   <Typography
@@ -45,6 +41,10 @@ const SectionTitle = ({ children }) => (
   </Typography>
 );
 
+SectionTitle.propTypes = {
+  children: PropTypes.node.isRequired,
+};
+
 const NovaRaca = () => {
   const navigate = useNavigate();
   const location = useLocation();
@@ -54,13 +54,11 @@ const NovaRaca = () => {
   const isEditing = Boolean(racaParaEditar);
   const [imgError, setImgError] = useState(false);
   const [universos, setUniversos] = useState([]);
-  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     getUniversos()
       .then(res => setUniversos(res))
-      .catch(() => {})
-      .finally(() => setLoading(false));
+      .catch(() => {});
   }, []);
 
   useEffect(() => {

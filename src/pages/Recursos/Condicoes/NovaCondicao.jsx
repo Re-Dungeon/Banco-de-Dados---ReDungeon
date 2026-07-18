@@ -12,15 +12,10 @@ import FormControl from '@mui/material/FormControl';
 import InputLabel from '@mui/material/InputLabel';
 import Paper from '@mui/material/Paper';
 import { Formik, Form, FastField, Field, FieldArray } from 'formik';
-import { addIten, updateIten, getUniversos } from 'service/storage';
+import { addCondicao, updateCondicao, getUniversos } from 'service/storage';
 import { ROUTE_PATHS } from 'common/constants/routes';
 import { useAuth } from 'context/AuthContext';
-import {
-  ITEM_SCHEMA,
-  ITEM_INITIAL_VALUES,
-  HABILIDADE_ESPECIAL_INICIAL,
-  TIPOS_ITEM,
-} from './utils';
+import { CONDICAO_SCHEMA, CONDICAO_INITIAL_VALUES } from './utils';
 import { RARIDADES } from 'common/constants/constants';
 
 const SectionTitle = ({ children }) => (
@@ -44,44 +39,47 @@ SectionTitle.propTypes = {
   children: PropTypes.node.isRequired,
 };
 
-const NovoItem = () => {
+const NovaCondicao = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { canCreate, canWrite, isAdmin, allowedUniversos, loadingPermissions } =
     useAuth();
-  const itemParaEditar = location.state?.item ?? null;
-  const isEditing = Boolean(itemParaEditar);
+  const condicaoParaEditar = location.state?.condicao ?? null;
+  const isEditing = Boolean(condicaoParaEditar);
   const [imgError, setImgError] = useState(false);
   const [universos, setUniversos] = useState([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     getUniversos()
       .then(res => setUniversos(res))
-      .catch(() => {});
+      .catch(() => {})
+      .finally(() => setLoading(false));
   }, []);
 
   useEffect(() => {
     if (loadingPermissions) return;
     const allowed = isEditing
-      ? canWrite(itemParaEditar?.universo)
+      ? canWrite(condicaoParaEditar?.universo)
       : canCreate();
-    if (!allowed) navigate(ROUTE_PATHS.ITENS);
+    if (!allowed) navigate(ROUTE_PATHS.CONDICOES);
   }, [
     loadingPermissions,
     isEditing,
     canWrite,
     canCreate,
-    itemParaEditar,
+    condicaoParaEditar,
     navigate,
   ]);
 
-  const editInitialValues = itemParaEditar
+  const editInitialValues = condicaoParaEditar
     ? {
-        ...ITEM_INITIAL_VALUES,
-        ...itemParaEditar,
-        habilidadesEspeciais: itemParaEditar.habilidadesEspeciais || [],
+        ...CONDICAO_INITIAL_VALUES,
+        ...condicaoParaEditar,
+        efeitos: condicaoParaEditar.efeitos || [],
+        interacoes: condicaoParaEditar.interacoes || [],
       }
-    : ITEM_INITIAL_VALUES;
+    : CONDICAO_INITIAL_VALUES;
 
   const filteredUniversos = isAdmin
     ? universos
@@ -89,27 +87,22 @@ const NovoItem = () => {
 
   const handleSubmit = async (values, { setSubmitting }) => {
     if (isEditing) {
-      await updateIten(itemParaEditar.id, values);
+      await updateCondicao(condicaoParaEditar.id, values);
     } else {
-      await addIten(values);
+      await addCondicao(values);
     }
     setSubmitting(false);
-    navigate(ROUTE_PATHS.ITENS);
+    navigate(ROUTE_PATHS.CONDICOES);
   };
+
+  if (loading) return null;
 
   return (
     <Box className="page-container">
       {/* Header */}
-      <Box
-        sx={{
-          display: 'flex',
-          alignItems: 'center',
-          gap: 2,
-          mb: 3,
-        }}
-      >
+      <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 3 }}>
         <Button
-          onClick={() => navigate(ROUTE_PATHS.ITENS)}
+          onClick={() => navigate(ROUTE_PATHS.CONDICOES)}
           sx={{
             color: 'var(--text-muted)',
             minWidth: 'auto',
@@ -124,19 +117,19 @@ const NovoItem = () => {
             variant="h5"
             sx={{ color: 'var(--text-primary)', fontWeight: 700, mb: 0.5 }}
           >
-            {isEditing ? 'Editar Item' : 'Novo Item'}
+            {isEditing ? 'Editar Condição' : 'Nova Condição'}
           </Typography>
           <Typography variant="body2" sx={{ color: 'var(--text-secondary)' }}>
             {isEditing
-              ? `Editando os dados de ${itemParaEditar.nome}`
-              : 'Preencha os dados do novo item'}
+              ? `Editando os dados de ${condicaoParaEditar.nome}`
+              : 'Preencha os dados da nova condição'}
           </Typography>
         </Box>
       </Box>
 
       <Formik
         initialValues={editInitialValues}
-        validationSchema={ITEM_SCHEMA}
+        validationSchema={CONDICAO_SCHEMA}
         onSubmit={handleSubmit}
       >
         {({ values, errors, touched, isSubmitting }) => (
@@ -168,40 +161,26 @@ const NovoItem = () => {
                     <Box
                       sx={{
                         display: 'grid',
-                        gridTemplateColumns: '1fr 1fr 1fr 1fr',
+                        gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr 1fr' },
                         gap: 2,
                       }}
                     >
                       <FastField
                         as={TextField}
                         name="nome"
-                        label="Nome do Item"
+                        label="Nome da Condição"
                         fullWidth
                         error={touched.nome && Boolean(errors.nome)}
                         helperText={touched.nome && errors.nome}
                       />
-                      <FastField name="qualidade">
+                      <FastField name="raridade">
                         {({ field }) => (
                           <FormControl fullWidth>
-                            <InputLabel>Qualidade</InputLabel>
-                            <Select {...field} label="Qualidade">
-                              {RARIDADES.map(r => (
-                                <MenuItem key={r} value={r}>
-                                  {r}
-                                </MenuItem>
-                              ))}
-                            </Select>
-                          </FormControl>
-                        )}
-                      </FastField>
-                      <FastField name="tipo">
-                        {({ field }) => (
-                          <FormControl fullWidth>
-                            <InputLabel>Tipo</InputLabel>
-                            <Select {...field} label="Tipo">
-                              {TIPOS_ITEM.map(t => (
-                                <MenuItem key={t} value={t}>
-                                  {t}
+                            <InputLabel>Raridade</InputLabel>
+                            <Select {...field} label="Raridade">
+                              {RARIDADES.map(raridade => (
+                                <MenuItem key={raridade} value={raridade}>
+                                  {raridade}
                                 </MenuItem>
                               ))}
                             </Select>
@@ -223,11 +202,35 @@ const NovoItem = () => {
                         )}
                       </Field>
                     </Box>
+
+                    <Box
+                      sx={{
+                        display: 'grid',
+                        gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr' },
+                        gap: 2,
+                      }}
+                    >
+                      <FastField
+                        as={TextField}
+                        name="duracao"
+                        label="Duração"
+                        fullWidth
+                        placeholder="ex: 3 turnos"
+                      />
+                      <FastField
+                        as={TextField}
+                        name="aplicacao"
+                        label="Aplicação"
+                        fullWidth
+                        placeholder="ex: contato com veneno"
+                      />
+                    </Box>
+
                     <FastField name="linkImagem">
                       {({ field }) => (
                         <TextField
                           {...field}
-                          label="Link da Imagem do Item"
+                          label="Link da Imagem da Condição"
                           fullWidth
                           placeholder="https://..."
                           onChange={e => {
@@ -237,6 +240,7 @@ const NovoItem = () => {
                         />
                       )}
                     </FastField>
+
                     <FastField
                       as={TextField}
                       name="descricao"
@@ -249,11 +253,7 @@ const NovoItem = () => {
 
                   {/* Preview da imagem */}
                   <Box
-                    sx={{
-                      display: 'flex',
-                      flexDirection: 'column',
-                      gap: 1,
-                    }}
+                    sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}
                   >
                     <Typography
                       variant="caption"
@@ -281,7 +281,7 @@ const NovoItem = () => {
                       {values.linkImagem && !imgError ? (
                         <img
                           src={values.linkImagem}
-                          alt="Preview do item"
+                          alt="Preview da condição"
                           onError={() => setImgError(true)}
                           style={{
                             width: '100%',
@@ -308,7 +308,7 @@ const NovoItem = () => {
                 </Box>
               </Paper>
 
-              {/* Seção: Atributos do Item */}
+              {/* Seção: Efeitos */}
               <Paper
                 elevation={0}
                 sx={{
@@ -318,141 +318,43 @@ const NovoItem = () => {
                   borderRadius: 2,
                 }}
               >
-                <SectionTitle>Atributos do Item</SectionTitle>
-                <Box
-                  sx={{
-                    display: 'grid',
-                    gridTemplateColumns:
-                      'repeat(auto-fill, minmax(160px, 1fr))',
-                    gap: 2,
-                    mt: 1.5,
-                  }}
-                >
-                  <FastField
-                    as={TextField}
-                    name="nivelAtual"
-                    label="Nível Atual"
-                    type="number"
-                    fullWidth
-                    size="small"
-                    inputProps={{ min: 0 }}
-                  />
-                  <FastField
-                    as={TextField}
-                    name="nivelMaximo"
-                    label="Nível Máximo"
-                    type="number"
-                    fullWidth
-                    size="small"
-                    inputProps={{ min: 0 }}
-                  />
-                  <FastField
-                    as={TextField}
-                    name="dados"
-                    label="Dados"
-                    fullWidth
-                    size="small"
-                    placeholder="ex: 2d6+3"
-                  />
-                  <FastField
-                    as={TextField}
-                    name="extra"
-                    label="Extra"
-                    fullWidth
-                    size="small"
-                  />
-                </Box>
-              </Paper>
-
-              {/* Seção: Habilidades Especiais */}
-              <Paper
-                elevation={0}
-                sx={{
-                  p: 3,
-                  background: 'var(--bg-card)',
-                  border: '1px solid var(--border-primary)',
-                  borderRadius: 2,
-                }}
-              >
-                <SectionTitle>Habilidades Especiais</SectionTitle>
-                <FieldArray name="habilidadesEspeciais">
+                <SectionTitle>Efeitos</SectionTitle>
+                <FieldArray name="efeitos">
                   {({ push, remove }) => (
-                    <Box
-                      sx={{
-                        display: 'flex',
-                        flexDirection: 'column',
-                        gap: 2,
-                        mt: 1.5,
-                      }}
-                    >
-                      {values.habilidadesEspeciais.map((hab, idx) => (
+                    <Box sx={{ mt: 1.5 }}>
+                      {values.efeitos.map((_, idx) => (
                         <Box
                           key={idx}
                           sx={{
-                            border: '1px solid var(--border-primary)',
-                            borderRadius: 2,
-                            p: 2,
-                            background: 'var(--bg-secondary)',
+                            display: 'flex',
+                            gap: 1,
+                            mb: 1.5,
+                            alignItems: 'center',
                           }}
                         >
-                          <Box
+                          <FastField
+                            as={TextField}
+                            name={`efeitos[${idx}]`}
+                            label={`Efeito ${idx + 1}`}
+                            fullWidth
+                            size="small"
+                          />
+                          <IconButton
+                            size="small"
+                            onClick={() => remove(idx)}
                             sx={{
-                              display: 'flex',
-                              justifyContent: 'space-between',
-                              alignItems: 'center',
-                              mb: 1.5,
+                              color: 'var(--text-muted)',
+                              '&:hover': { color: '#ef4444' },
                             }}
+                            aria-label="Remover efeito"
                           >
-                            <Typography
-                              variant="body2"
-                              sx={{
-                                color: 'var(--text-secondary)',
-                                fontWeight: 600,
-                              }}
-                            >
-                              Habilidade #{idx + 1}
-                            </Typography>
-                            <IconButton
-                              size="small"
-                              onClick={() => remove(idx)}
-                              sx={{
-                                color: 'var(--text-muted)',
-                                '&:hover': { color: '#ef4444' },
-                              }}
-                              aria-label="Remover habilidade especial"
-                            >
-                              ✕
-                            </IconButton>
-                          </Box>
-                          <Box
-                            sx={{
-                              display: 'flex',
-                              flexDirection: 'column',
-                              gap: 2,
-                            }}
-                          >
-                            <FastField
-                              as={TextField}
-                              name={`habilidadesEspeciais[${idx}].nome`}
-                              label="Nome da Habilidade"
-                              fullWidth
-                              size="small"
-                            />
-                            <FastField
-                              as={TextField}
-                              name={`habilidadesEspeciais[${idx}].descricao`}
-                              label="Descrição da Habilidade"
-                              fullWidth
-                              multiline
-                              rows={2}
-                              size="small"
-                            />
-                          </Box>
+                            ✕
+                          </IconButton>
                         </Box>
                       ))}
                       <Button
                         variant="outlined"
-                        onClick={() => push({ ...HABILIDADE_ESPECIAL_INICIAL })}
+                        onClick={() => push('')}
                         sx={{
                           alignSelf: 'flex-start',
                           borderColor: 'var(--border-primary)',
@@ -463,7 +365,71 @@ const NovoItem = () => {
                           },
                         }}
                       >
-                        + Adicionar Habilidade Especial
+                        + Adicionar Efeito
+                      </Button>
+                    </Box>
+                  )}
+                </FieldArray>
+              </Paper>
+
+              {/* Seção: Interações */}
+              <Paper
+                elevation={0}
+                sx={{
+                  p: 3,
+                  background: 'var(--bg-card)',
+                  border: '1px solid var(--border-primary)',
+                  borderRadius: 2,
+                }}
+              >
+                <SectionTitle>Interações</SectionTitle>
+                <FieldArray name="interacoes">
+                  {({ push, remove }) => (
+                    <Box sx={{ mt: 1.5 }}>
+                      {values.interacoes.map((_, idx) => (
+                        <Box
+                          key={idx}
+                          sx={{
+                            display: 'flex',
+                            gap: 1,
+                            mb: 1.5,
+                            alignItems: 'center',
+                          }}
+                        >
+                          <FastField
+                            as={TextField}
+                            name={`interacoes[${idx}]`}
+                            label={`Interação ${idx + 1}`}
+                            fullWidth
+                            size="small"
+                          />
+                          <IconButton
+                            size="small"
+                            onClick={() => remove(idx)}
+                            sx={{
+                              color: 'var(--text-muted)',
+                              '&:hover': { color: '#ef4444' },
+                            }}
+                            aria-label="Remover interação"
+                          >
+                            ✕
+                          </IconButton>
+                        </Box>
+                      ))}
+                      <Button
+                        variant="outlined"
+                        onClick={() => push('')}
+                        sx={{
+                          alignSelf: 'flex-start',
+                          borderColor: 'var(--border-primary)',
+                          color: 'var(--text-secondary)',
+                          '&:hover': {
+                            borderColor: 'var(--color-accent)',
+                            color: 'var(--color-accent)',
+                          },
+                        }}
+                      >
+                        + Adicionar Interação
                       </Button>
                     </Box>
                   )}
@@ -480,7 +446,7 @@ const NovoItem = () => {
                 }}
               >
                 <Button
-                  onClick={() => navigate(ROUTE_PATHS.ITENS)}
+                  onClick={() => navigate(ROUTE_PATHS.CONDICOES)}
                   sx={{ color: 'var(--text-muted)' }}
                 >
                   Cancelar
@@ -494,7 +460,7 @@ const NovoItem = () => {
                     '&:hover': { background: '#5a2090' },
                   }}
                 >
-                  {isEditing ? 'Salvar Alterações' : 'Salvar Item'}
+                  {isEditing ? 'Salvar Alterações' : 'Salvar Condição'}
                 </Button>
               </Box>
             </Box>
@@ -505,4 +471,4 @@ const NovoItem = () => {
   );
 };
 
-export default NovoItem;
+export default NovaCondicao;

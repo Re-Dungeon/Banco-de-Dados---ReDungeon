@@ -7,24 +7,28 @@ const usePermissions = currentUser => {
   const [loadingPermissions, setLoadingPermissions] = useState(true);
 
   useEffect(() => {
-    if (!currentUser) {
-      setIsAdmin(false);
-      setAllowedUniversos([]);
-      setLoadingPermissions(false);
-      return;
-    }
-
-    setLoadingPermissions(true);
-    getUserPermissions(currentUser.uid)
-      .then(({ isAdmin: admin, universos }) => {
-        setIsAdmin(admin);
-        setAllowedUniversos(universos);
-      })
-      .catch(() => {
+    Promise.resolve().then(async () => {
+      if (!currentUser) {
         setIsAdmin(false);
         setAllowedUniversos([]);
-      })
-      .finally(() => setLoadingPermissions(false));
+        setLoadingPermissions(false);
+        return;
+      }
+
+      setLoadingPermissions(true);
+      try {
+        const { isAdmin: admin, universos } = await getUserPermissions(
+          currentUser.uid,
+        );
+        setIsAdmin(admin);
+        setAllowedUniversos(universos);
+      } catch {
+        setIsAdmin(false);
+        setAllowedUniversos([]);
+      } finally {
+        setLoadingPermissions(false);
+      }
+    });
   }, [currentUser]);
 
   /**
