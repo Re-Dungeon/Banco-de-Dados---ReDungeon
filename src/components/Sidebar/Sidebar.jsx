@@ -59,7 +59,7 @@ const Sidebar = () => {
               textTransform: 'uppercase',
             }}
           >
-            V3.0
+            V3.1
           </Typography>
         </Box>
       </LogoSection>

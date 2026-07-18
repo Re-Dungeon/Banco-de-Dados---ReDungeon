@@ -44,7 +44,7 @@ const Sobre = () => {
             >
               Re:Dungeon
             </Typography>
-            <Chip label="V3.0" color="primary" size="small" sx={{ mt: 0.5 }} />
+            <Chip label="V3.1" color="primary" size="small" sx={{ mt: 0.5 }} />
           </Box>
         </Box>
 
@@ -52,8 +52,10 @@ const Sobre = () => {
           variant="body2"
           sx={{ color: 'var(--text-secondary)', mb: 2 }}
         >
-          Um gerenciador profissional para campanhas de RPG de mesa, com suporte
-          a múltiplas mesas, NPCs, mundos e muito mais.
+          Um banco de dados de campanha para RPG de mesa, com Raças, Classes,
+          Materiais, Itens, Receitas, Condições, Artes, Origens, Regras,
+          CardFlux, Veias Astrais e muito mais, sincronizado em tempo real via
+          Firebase.
         </Typography>
 
         <Divider sx={{ mb: 2, borderColor: 'var(--border-primary)' }} />

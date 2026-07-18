@@ -11,12 +11,8 @@ import {
 import { db } from './firebase';
 
 const KEYS = {
-  npcs: 'redungeon_npcs',
-  mesas: 'redungeon_mesas',
-  mundo: 'redungeon_mundo',
   recursos: 'redungeon_recursos',
   classes: 'redungeon_classes',
-  macros: 'redungeon_macros',
 };
 
 function getItems(key) {
@@ -47,32 +43,6 @@ function removeItem(key, id) {
   const items = getItems(key).filter(item => item.id !== id);
   saveItems(key, items);
 }
-
-function updateItem(key, id, updates) {
-  const items = getItems(key).map(item =>
-    item.id === id
-      ? { ...item, ...updates, updatedAt: new Date().toISOString() }
-      : item,
-  );
-  saveItems(key, items);
-}
-
-// NPCs
-export const getNPCs = () => getItems(KEYS.npcs);
-export const addNPC = npc => addItem(KEYS.npcs, npc);
-export const removeNPC = id => removeItem(KEYS.npcs, id);
-export const updateNPC = (id, updates) => updateItem(KEYS.npcs, id, updates);
-
-// Mesas
-export const getMesas = () => getItems(KEYS.mesas);
-export const addMesa = mesa => addItem(KEYS.mesas, mesa);
-export const removeMesa = id => removeItem(KEYS.mesas, id);
-export const updateMesa = (id, updates) => updateItem(KEYS.mesas, id, updates);
-
-// Mundo
-export const getMundos = () => getItems(KEYS.mundo);
-export const addMundo = mundo => addItem(KEYS.mundo, mundo);
-export const removeMundo = id => removeItem(KEYS.mundo, id);
 
 // Recursos
 export const getRecursos = () => getItems(KEYS.recursos);
@@ -105,11 +75,6 @@ export const updateClasse = async (id, updates) => {
     updatedAt: serverTimestamp(),
   });
 };
-
-// Macros
-export const getMacros = () => getItems(KEYS.macros);
-export const addMacro = macro => addItem(KEYS.macros, macro);
-export const removeMacro = id => removeItem(KEYS.macros, id);
 
 // ── Materiais (Firestore) ─────────────────────────────────────────────────────
 const MATERIAIS_COLLECTION = 'materiais';

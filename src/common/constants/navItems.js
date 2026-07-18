@@ -17,7 +17,6 @@ export const NAV_ITEMS = [
 ];
 
 export const NAV_ITEMS_SECONDARY = [
-  //{ path: '/patch-notes', icon: '📄', label: 'Patch Notes' },
-  //{ path: '/nucleo', icon: '⚡', label: 'Núcleo' },
+  { path: '/patch-notes', icon: '📄', label: 'Patch Notes' },
   { path: '/sobre', icon: 'ⓘ', label: 'Sobre' },
 ];

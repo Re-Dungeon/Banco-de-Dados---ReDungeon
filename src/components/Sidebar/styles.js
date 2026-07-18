@@ -39,6 +39,8 @@ export const StyledNavLink = styled(NavLink)`
   text-decoration: none;
   color: inherit;
   display: block;
+  width: 100%;
+  flex: 1 1 auto;
 
   &.active .nav-item-btn {
     background: rgba(111, 45, 168, 0.3);
