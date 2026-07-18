@@ -78,3 +78,18 @@ export const CIRCULOS_MAGICOS = [
 export const TIPOS_ORIGEM = ['Origem', 'Região', 'Cenário'];
 
 export const NIVEIS_PERIGO = ['Baixo', 'Médio', 'Alto', 'Crítico'];
+
+export const CATEGORIAS_REGRA = [
+  'Combate',
+  'Recursos',
+  'Progressão',
+  'Habilidades',
+  'Condições',
+  'Atributos',
+  'Social',
+  'Economia',
+  'Ambiente',
+  'Outro',
+];
+
+export const COMPLEXIDADES_REGRA = ['Simples', 'Moderada', 'Avançada'];

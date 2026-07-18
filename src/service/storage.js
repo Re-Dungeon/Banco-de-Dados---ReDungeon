@@ -16,7 +16,6 @@ const KEYS = {
   mundo: 'redungeon_mundo',
   recursos: 'redungeon_recursos',
   classes: 'redungeon_classes',
-  regras: 'redungeon_regras',
   macros: 'redungeon_macros',
 };
 
@@ -106,11 +105,6 @@ export const updateClasse = async (id, updates) => {
     updatedAt: serverTimestamp(),
   });
 };
-
-// Regras
-export const getRegras = () => getItems(KEYS.regras);
-export const addRegra = regra => addItem(KEYS.regras, regra);
-export const removeRegra = id => removeItem(KEYS.regras, id);
 
 // Macros
 export const getMacros = () => getItems(KEYS.macros);
@@ -301,6 +295,33 @@ export const removeOrigem = async id => {
 
 export const updateOrigem = async (id, updates) => {
   await updateDoc(doc(db, ORIGENS_COLLECTION, id), {
+    ...updates,
+    updatedAt: serverTimestamp(),
+  });
+};
+
+// ── Regras (Firestore) ───────────────────────────────────────────────────────
+const REGRAS_COLLECTION = 'regras';
+
+export const getRegras = async () => {
+  const snapshot = await getDocs(collection(db, REGRAS_COLLECTION));
+  return snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
+};
+
+export const addRegra = async regra => {
+  const docRef = await addDoc(collection(db, REGRAS_COLLECTION), {
+    ...regra,
+    createdAt: serverTimestamp(),
+  });
+  return { id: docRef.id, ...regra };
+};
+
+export const removeRegra = async id => {
+  await deleteDoc(doc(db, REGRAS_COLLECTION, id));
+};
+
+export const updateRegra = async (id, updates) => {
+  await updateDoc(doc(db, REGRAS_COLLECTION, id), {
     ...updates,
     updatedAt: serverTimestamp(),
   });

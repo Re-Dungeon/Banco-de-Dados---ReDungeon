@@ -10,7 +10,7 @@ export const NAV_ITEMS = [
   { path: '/recursos/condicoes', icon: '💫', label: 'Condições' },
   { path: '/recursos/artes', icon: '🥋', label: 'Artes' },
   { path: '/recursos/origens', icon: '🗺️', label: 'Origens' },
-  //{ path: '/regras', icon: '📋', label: 'Regras' },
+  { path: '/regras', icon: '📋', label: 'Regras' },
   //{ path: '/macros', icon: '⚙', label: 'Macros' },
 ];
 
