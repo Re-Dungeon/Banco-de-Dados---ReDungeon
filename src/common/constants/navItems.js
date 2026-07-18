@@ -12,6 +12,7 @@ export const NAV_ITEMS = [
   { path: '/recursos/origens', icon: '🗺️', label: 'Origens' },
   { path: '/recursos/cardflux', icon: '🃏', label: 'CardFlux' },
   { path: '/regras', icon: '📋', label: 'Regras' },
+  { path: '/recursos/veias-astrais', icon: '🌌', label: 'Veias Astrais' },
   //{ path: '/macros', icon: '⚙', label: 'Macros' },
 ];
 

@@ -183,3 +183,11 @@ export const DECKS_CARDFLUX = [
 ];
 
 export const TIPOS_ATIVACAO_CARDFLUX = ['Automático', 'Opcional', 'Chance'];
+
+export const DIVINDADES_VEIAS_ASTRAIS = [
+  '⚔️ Arty — Divindade do Caos',
+  '✨ Aune — Divindade do Destino',
+  '🧩 Ephelias — Divindade da Compreensão',
+  '🔵 Nishi — Divindade do Equilíbrio',
+  '🍃 Hestia — Divindade da Criação',
+];

@@ -24,6 +24,8 @@ import CardFlux from 'pages/Recursos/CardFlux/CardFlux';
 import NovoCardFlux from 'pages/Recursos/CardFlux/NovoCardFlux';
 import Regras from 'pages/Regras/Regras';
 import NovaRegra from 'pages/Regras/NovaRegra';
+import VeiasAstrais from 'pages/Recursos/VeiasAstrais/VeiasAstrais';
+import NovaVeiaAstral from 'pages/Recursos/VeiasAstrais/NovaVeiaAstral';
 import Macros from 'pages/Macros/Macros';
 import PatchNotes from 'pages/PatchNotes/PatchNotes';
 import Nucleo from 'pages/Nucleo/Nucleo';
@@ -56,6 +58,11 @@ export const ROUTES = [
   { path: ROUTE_PATHS.NOVO_CARDFLUX.slice(1), element: <NovoCardFlux /> },
   { path: ROUTE_PATHS.REGRAS.slice(1), element: <Regras /> },
   { path: ROUTE_PATHS.NOVA_REGRA.slice(1), element: <NovaRegra /> },
+  { path: ROUTE_PATHS.VEIAS_ASTRAIS.slice(1), element: <VeiasAstrais /> },
+  {
+    path: ROUTE_PATHS.NOVA_VEIA_ASTRAL.slice(1),
+    element: <NovaVeiaAstral />,
+  },
   { path: ROUTE_PATHS.MACROS.slice(1), element: <Macros /> },
   { path: 'patch-notes', element: <PatchNotes /> },
   { path: ROUTE_PATHS.NUCLEO.slice(1), element: <Nucleo /> },

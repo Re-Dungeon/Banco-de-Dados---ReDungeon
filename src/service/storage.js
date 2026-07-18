@@ -354,6 +354,33 @@ export const updateCardFlux = async (id, updates) => {
   });
 };
 
+// ── Veias Astrais (Firestore) ───────────────────────────────────────────────
+const VEIAS_ASTRAIS_COLLECTION = 'veiasAstrais';
+
+export const getVeiasAstrais = async () => {
+  const snapshot = await getDocs(collection(db, VEIAS_ASTRAIS_COLLECTION));
+  return snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
+};
+
+export const addVeiaAstral = async veiaAstral => {
+  const docRef = await addDoc(collection(db, VEIAS_ASTRAIS_COLLECTION), {
+    ...veiaAstral,
+    createdAt: serverTimestamp(),
+  });
+  return { id: docRef.id, ...veiaAstral };
+};
+
+export const removeVeiaAstral = async id => {
+  await deleteDoc(doc(db, VEIAS_ASTRAIS_COLLECTION, id));
+};
+
+export const updateVeiaAstral = async (id, updates) => {
+  await updateDoc(doc(db, VEIAS_ASTRAIS_COLLECTION, id), {
+    ...updates,
+    updatedAt: serverTimestamp(),
+  });
+};
+
 // ── Universo (Firestore) ────────────────────────────────────────────────────────
 
 const UNIVERSO_COLLECTION = 'Universo';
