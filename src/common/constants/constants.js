@@ -154,8 +154,32 @@ export const TIPOS_CARDFLUX = [
   '😈 Demônio',
   '🔥 Fogo Amigo',
   '💀 Emboscada Letal',
+  '⚔️ Golpe Fatal',
+  '🐺 Horda',
 ];
 
-export const DECKS_CARDFLUX = ['Jornada', 'Floresta', 'Tundra'];
+export const DECKS_CARDFLUX = [
+  '🚩 Jornada',
+  '🌲 Floresta',
+  '❄️ Tundra',
+  '🌵 Deserto',
+  '⛰️ Montanha',
+  '🐊 Pântano',
+  '🏖️ Costa',
+  '🌊 Mar Aberto',
+  '🕳️ Subterrâneo',
+  '🌋 Vulcânico',
+  '🔮 Espiritual',
+  '⭐ Celestial',
+  '🌑 Sombrio',
+  '⚔️ Guerra',
+  '🏰 Cerco',
+  '🏃 Perseguição',
+  '👹 Boss',
+  '🏙️ Cidade',
+  '🗝️ Dungeon',
+  '⚠️ Presságios',
+  '👑 Social',
+];
 
 export const TIPOS_ATIVACAO_CARDFLUX = ['Automático', 'Opcional', 'Chance'];
