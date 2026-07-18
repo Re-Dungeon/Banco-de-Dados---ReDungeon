@@ -35,3 +35,7 @@ yarn-error.log*
 
 # about.json
 /public/about.json
+
+
+/.github/prompts
+/dist

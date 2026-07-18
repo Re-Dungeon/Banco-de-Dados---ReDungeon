@@ -12,6 +12,14 @@ import Materiais from 'pages/Recursos/Materiais/Materiais';
 import NovoMaterial from 'pages/Recursos/Materiais/NovoMaterial';
 import Classes from 'pages/Recursos/Classes/Classes';
 import NovaClasse from 'pages/Recursos/Classes/NovaClasse';
+import Receitas from 'pages/Recursos/Receitas/Receitas';
+import NovaReceita from 'pages/Recursos/Receitas/NovaReceita';
+import Condicoes from 'pages/Recursos/Condicoes/Condicoes';
+import NovaCondicao from 'pages/Recursos/Condicoes/NovaCondicao';
+import Artes from 'pages/Recursos/Artes/Artes';
+import NovaArte from 'pages/Recursos/Artes/NovaArte';
+import Origens from 'pages/Recursos/Origens/Origens';
+import NovaOrigem from 'pages/Recursos/Origens/NovaOrigem';
 import Regras from 'pages/Regras/Regras';
 import Macros from 'pages/Macros/Macros';
 import PatchNotes from 'pages/PatchNotes/PatchNotes';
@@ -33,6 +41,14 @@ export const ROUTES = [
   { path: ROUTE_PATHS.NOVO_MATERIAL.slice(1), element: <NovoMaterial /> },
   { path: ROUTE_PATHS.CLASSES.slice(1), element: <Classes /> },
   { path: ROUTE_PATHS.NOVA_CLASSE.slice(1), element: <NovaClasse /> },
+  { path: ROUTE_PATHS.RECEITAS.slice(1), element: <Receitas /> },
+  { path: ROUTE_PATHS.NOVA_RECEITA.slice(1), element: <NovaReceita /> },
+  { path: ROUTE_PATHS.CONDICOES.slice(1), element: <Condicoes /> },
+  { path: ROUTE_PATHS.NOVA_CONDICAO.slice(1), element: <NovaCondicao /> },
+  { path: ROUTE_PATHS.ARTES.slice(1), element: <Artes /> },
+  { path: ROUTE_PATHS.NOVA_ARTE.slice(1), element: <NovaArte /> },
+  { path: ROUTE_PATHS.ORIGENS.slice(1), element: <Origens /> },
+  { path: ROUTE_PATHS.NOVA_ORIGEM.slice(1), element: <NovaOrigem /> },
   { path: ROUTE_PATHS.REGRAS.slice(1), element: <Regras /> },
   { path: ROUTE_PATHS.MACROS.slice(1), element: <Macros /> },
   { path: 'patch-notes', element: <PatchNotes /> },

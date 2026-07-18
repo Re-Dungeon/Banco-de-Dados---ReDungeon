@@ -198,6 +198,114 @@ export const updateIten = async (id, updates) => {
   });
 };
 
+// ── Receitas (Firestore) ─────────────────────────────────────────────────────
+const RECEITAS_COLLECTION = 'receitas';
+
+export const getReceitas = async () => {
+  const snapshot = await getDocs(collection(db, RECEITAS_COLLECTION));
+  return snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
+};
+
+export const addReceita = async receita => {
+  const docRef = await addDoc(collection(db, RECEITAS_COLLECTION), {
+    ...receita,
+    createdAt: serverTimestamp(),
+  });
+  return { id: docRef.id, ...receita };
+};
+
+export const removeReceita = async id => {
+  await deleteDoc(doc(db, RECEITAS_COLLECTION, id));
+};
+
+export const updateReceita = async (id, updates) => {
+  await updateDoc(doc(db, RECEITAS_COLLECTION, id), {
+    ...updates,
+    updatedAt: serverTimestamp(),
+  });
+};
+
+// ── Condições (Firestore) ────────────────────────────────────────────────────
+const CONDICOES_COLLECTION = 'condicoes';
+
+export const getCondicoes = async () => {
+  const snapshot = await getDocs(collection(db, CONDICOES_COLLECTION));
+  return snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
+};
+
+export const addCondicao = async condicao => {
+  const docRef = await addDoc(collection(db, CONDICOES_COLLECTION), {
+    ...condicao,
+    createdAt: serverTimestamp(),
+  });
+  return { id: docRef.id, ...condicao };
+};
+
+export const removeCondicao = async id => {
+  await deleteDoc(doc(db, CONDICOES_COLLECTION, id));
+};
+
+export const updateCondicao = async (id, updates) => {
+  await updateDoc(doc(db, CONDICOES_COLLECTION, id), {
+    ...updates,
+    updatedAt: serverTimestamp(),
+  });
+};
+
+// ── Artes (Firestore) ────────────────────────────────────────────────────────
+const ARTES_COLLECTION = 'artes';
+
+export const getArtes = async () => {
+  const snapshot = await getDocs(collection(db, ARTES_COLLECTION));
+  return snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
+};
+
+export const addArte = async arte => {
+  const docRef = await addDoc(collection(db, ARTES_COLLECTION), {
+    ...arte,
+    createdAt: serverTimestamp(),
+  });
+  return { id: docRef.id, ...arte };
+};
+
+export const removeArte = async id => {
+  await deleteDoc(doc(db, ARTES_COLLECTION, id));
+};
+
+export const updateArte = async (id, updates) => {
+  await updateDoc(doc(db, ARTES_COLLECTION, id), {
+    ...updates,
+    updatedAt: serverTimestamp(),
+  });
+};
+
+// ── Origens (Firestore) ──────────────────────────────────────────────────────
+const ORIGENS_COLLECTION = 'origens';
+
+export const getOrigens = async () => {
+  const snapshot = await getDocs(collection(db, ORIGENS_COLLECTION));
+  return snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
+};
+
+export const addOrigem = async origem => {
+  const docRef = await addDoc(collection(db, ORIGENS_COLLECTION), {
+    ...origem,
+    createdAt: serverTimestamp(),
+  });
+  return { id: docRef.id, ...origem };
+};
+
+export const removeOrigem = async id => {
+  await deleteDoc(doc(db, ORIGENS_COLLECTION, id));
+};
+
+export const updateOrigem = async (id, updates) => {
+  await updateDoc(doc(db, ORIGENS_COLLECTION, id), {
+    ...updates,
+    updatedAt: serverTimestamp(),
+  });
+};
+
 // ── Universo (Firestore) ────────────────────────────────────────────────────────
 
 const UNIVERSO_COLLECTION = 'Universo';
