@@ -35,3 +35,8 @@ yarn-error.log*
 
 # about.json
 /public/about.json
+
+#Claude
+CLAUDE.md
+
+/.github/prompts
