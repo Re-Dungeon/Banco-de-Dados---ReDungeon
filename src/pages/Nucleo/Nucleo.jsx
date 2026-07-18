@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import Grid from '@mui/material/Grid';
@@ -33,14 +33,20 @@ const Nucleo = () => {
   const npcs = getNPCs();
   const mesas = getMesas();
   const mundos = getMundos();
-  const regras = getRegras();
+  const [regrasCount, setRegrasCount] = useState(0);
+
+  useEffect(() => {
+    getRegras()
+      .then(regras => setRegrasCount(regras.length))
+      .catch(() => {});
+  }, []);
 
   const barData = {
     labels: ['NPCs', 'Mesas', 'Mundos', 'Regras'],
     datasets: [
       {
         label: 'Total de Registros',
-        data: [npcs.length, mesas.length, mundos.length, regras.length],
+        data: [npcs.length, mesas.length, mundos.length, regrasCount],
         backgroundColor: [
           'rgba(111, 45, 168, 0.7)',
           'rgba(0, 217, 255, 0.7)',
@@ -62,7 +68,7 @@ const Nucleo = () => {
           npcs.length || 1,
           mesas.length || 1,
           mundos.length || 1,
-          regras.length || 1,
+          regrasCount || 1,
         ],
         backgroundColor: [
           'rgba(111, 45, 168, 0.8)',
@@ -80,7 +86,7 @@ const Nucleo = () => {
     { label: 'NPCs', value: npcs.length, icon: '👤', color: '#6f2da8' },
     { label: 'Mesas', value: mesas.length, icon: '⬡', color: '#00d9ff' },
     { label: 'Mundos', value: mundos.length, icon: '◉', color: '#3b82f6' },
-    { label: 'Regras', value: regras.length, icon: '📋', color: '#60a5fa' },
+    { label: 'Regras', value: regrasCount, icon: '📋', color: '#60a5fa' },
   ];
 
   return (

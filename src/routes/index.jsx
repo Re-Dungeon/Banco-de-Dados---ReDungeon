@@ -21,6 +21,7 @@ import NovaArte from 'pages/Recursos/Artes/NovaArte';
 import Origens from 'pages/Recursos/Origens/Origens';
 import NovaOrigem from 'pages/Recursos/Origens/NovaOrigem';
 import Regras from 'pages/Regras/Regras';
+import NovaRegra from 'pages/Regras/NovaRegra';
 import Macros from 'pages/Macros/Macros';
 import PatchNotes from 'pages/PatchNotes/PatchNotes';
 import Nucleo from 'pages/Nucleo/Nucleo';
@@ -50,6 +51,7 @@ export const ROUTES = [
   { path: ROUTE_PATHS.ORIGENS.slice(1), element: <Origens /> },
   { path: ROUTE_PATHS.NOVA_ORIGEM.slice(1), element: <NovaOrigem /> },
   { path: ROUTE_PATHS.REGRAS.slice(1), element: <Regras /> },
+  { path: ROUTE_PATHS.NOVA_REGRA.slice(1), element: <NovaRegra /> },
   { path: ROUTE_PATHS.MACROS.slice(1), element: <Macros /> },
   { path: 'patch-notes', element: <PatchNotes /> },
   { path: ROUTE_PATHS.NUCLEO.slice(1), element: <Nucleo /> },
