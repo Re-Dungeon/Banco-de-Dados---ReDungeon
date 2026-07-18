@@ -327,6 +327,33 @@ export const updateRegra = async (id, updates) => {
   });
 };
 
+// ── CardFlux (Firestore) ─────────────────────────────────────────────────────
+const CARDFLUX_COLLECTION = 'cardflux';
+
+export const getCardFlux = async () => {
+  const snapshot = await getDocs(collection(db, CARDFLUX_COLLECTION));
+  return snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
+};
+
+export const addCardFlux = async cardFlux => {
+  const docRef = await addDoc(collection(db, CARDFLUX_COLLECTION), {
+    ...cardFlux,
+    createdAt: serverTimestamp(),
+  });
+  return { id: docRef.id, ...cardFlux };
+};
+
+export const removeCardFlux = async id => {
+  await deleteDoc(doc(db, CARDFLUX_COLLECTION, id));
+};
+
+export const updateCardFlux = async (id, updates) => {
+  await updateDoc(doc(db, CARDFLUX_COLLECTION, id), {
+    ...updates,
+    updatedAt: serverTimestamp(),
+  });
+};
+
 // ── Universo (Firestore) ────────────────────────────────────────────────────────
 
 const UNIVERSO_COLLECTION = 'Universo';

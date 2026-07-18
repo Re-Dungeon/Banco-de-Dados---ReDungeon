@@ -20,6 +20,8 @@ import Artes from 'pages/Recursos/Artes/Artes';
 import NovaArte from 'pages/Recursos/Artes/NovaArte';
 import Origens from 'pages/Recursos/Origens/Origens';
 import NovaOrigem from 'pages/Recursos/Origens/NovaOrigem';
+import CardFlux from 'pages/Recursos/CardFlux/CardFlux';
+import NovoCardFlux from 'pages/Recursos/CardFlux/NovoCardFlux';
 import Regras from 'pages/Regras/Regras';
 import NovaRegra from 'pages/Regras/NovaRegra';
 import Macros from 'pages/Macros/Macros';
@@ -50,6 +52,8 @@ export const ROUTES = [
   { path: ROUTE_PATHS.NOVA_ARTE.slice(1), element: <NovaArte /> },
   { path: ROUTE_PATHS.ORIGENS.slice(1), element: <Origens /> },
   { path: ROUTE_PATHS.NOVA_ORIGEM.slice(1), element: <NovaOrigem /> },
+  { path: ROUTE_PATHS.CARDFLUX.slice(1), element: <CardFlux /> },
+  { path: ROUTE_PATHS.NOVO_CARDFLUX.slice(1), element: <NovoCardFlux /> },
   { path: ROUTE_PATHS.REGRAS.slice(1), element: <Regras /> },
   { path: ROUTE_PATHS.NOVA_REGRA.slice(1), element: <NovaRegra /> },
   { path: ROUTE_PATHS.MACROS.slice(1), element: <Macros /> },
