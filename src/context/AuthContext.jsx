@@ -1,4 +1,11 @@
-import React, { createContext, useContext, useEffect, useState } from 'react';
+import React, {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useState,
+} from 'react';
 import PropTypes from 'prop-types';
 import {
   onAuthStateChanged,
@@ -29,38 +36,56 @@ export const AuthProvider = ({ children }) => {
     };
   }, []);
 
-  const login = (email, password) =>
-    signInWithEmailAndPassword(auth, email, password);
+  const login = useCallback(
+    (email, password) => signInWithEmailAndPassword(auth, email, password),
+    [],
+  );
 
-  const signup = (email, password) =>
-    createUserWithEmailAndPassword(auth, email, password);
+  const signup = useCallback(
+    (email, password) => createUserWithEmailAndPassword(auth, email, password),
+    [],
+  );
 
-  const loginWithGoogle = () => signInWithPopup(auth, googleProvider);
+  const loginWithGoogle = useCallback(
+    () => signInWithPopup(auth, googleProvider),
+    [],
+  );
 
-  const logout = () => signOut(auth);
+  const logout = useCallback(() => signOut(auth), []);
 
   const { isAdmin, allowedUniversos, loadingPermissions, canCreate, canWrite } =
     usePermissions(currentUser);
 
-  return (
-    <AuthContext.Provider
-      value={{
-        currentUser,
-        loading,
-        login,
-        signup,
-        loginWithGoogle,
-        logout,
-        isAdmin,
-        allowedUniversos,
-        loadingPermissions,
-        canCreate,
-        canWrite,
-      }}
-    >
-      {children}
-    </AuthContext.Provider>
+  const value = useMemo(
+    () => ({
+      currentUser,
+      loading,
+      login,
+      signup,
+      loginWithGoogle,
+      logout,
+      isAdmin,
+      allowedUniversos,
+      loadingPermissions,
+      canCreate,
+      canWrite,
+    }),
+    [
+      currentUser,
+      loading,
+      login,
+      signup,
+      loginWithGoogle,
+      logout,
+      isAdmin,
+      allowedUniversos,
+      loadingPermissions,
+      canCreate,
+      canWrite,
+    ],
   );
+
+  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 };
 
 AuthProvider.propTypes = {

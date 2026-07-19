@@ -1,50 +1,40 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import Button from '@mui/material/Button';
 import IconButton from '@mui/material/IconButton';
 import CircularProgress from '@mui/material/CircularProgress';
-import TextField from '@mui/material/TextField';
-import Select from '@mui/material/Select';
-import MenuItem from '@mui/material/MenuItem';
-import FormControl from '@mui/material/FormControl';
-import InputLabel from '@mui/material/InputLabel';
-import Dialog from '@mui/material/Dialog';
-import DialogActions from '@mui/material/DialogActions';
-import DialogContent from '@mui/material/DialogContent';
-import DialogTitle from '@mui/material/DialogTitle';
 import Divider from '@mui/material/Divider';
 import Tooltip from '@mui/material/Tooltip';
 import LinearProgress from '@mui/material/LinearProgress';
 import DeleteOutlineIcon from '@mui/icons-material/DeleteOutlined';
 import EditOutlinedIcon from '@mui/icons-material/EditOutlined';
 import VisibilityOutlinedIcon from '@mui/icons-material/VisibilityOutlined';
-import { getMateriais, removeMaterial, getUniversos } from 'service/storage';
+import { getMateriais, removeMaterial } from 'service/storage';
 import { ROUTE_PATHS } from 'common/constants/routes';
 import { useAuth } from 'context/AuthContext';
 import { RARIDADES } from 'common/constants/constants';
+import useEntityCRUD from 'hooks/useEntityCRUD';
+import useUniversos from 'hooks/useUniversos';
+import EntityFilters from 'components/EntityFilters/EntityFilters';
+import EntityViewDialog from 'components/EntityViewDialog/EntityViewDialog';
 import { MaterialCard } from './styles';
 
 const Materiais = () => {
   const navigate = useNavigate();
   const { canCreate, canWrite } = useAuth();
-  const [materiais, setMateriais] = useState([]);
-  const [universos, setUniversos] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const {
+    items: materiais,
+    loading: loadingMateriais,
+    remove: handleRemove,
+  } = useEntityCRUD({ getAll: getMateriais, remove: removeMaterial });
+  const { universos, loadingUniversos } = useUniversos();
+  const loading = loadingMateriais || loadingUniversos;
   const [filtroNome, setFiltroNome] = useState('');
   const [filtroRaridade, setFiltroRaridade] = useState('');
   const [filtroUniverso, setFiltroUniverso] = useState('');
   const [materialVisualizando, setMaterialVisualizando] = useState(null);
-
-  useEffect(() => {
-    Promise.all([getMateriais(), getUniversos()])
-      .then(([materiaisData, universosData]) => {
-        setMateriais(materiaisData);
-        setUniversos(universosData);
-      })
-      .finally(() => setLoading(false));
-  }, []);
 
   const materiaisFiltrados = useMemo(() => {
     return materiais.filter(material => {
@@ -58,47 +48,6 @@ const Materiais = () => {
       return matchNome && matchRaridade && matchUniverso;
     });
   }, [materiais, filtroNome, filtroRaridade, filtroUniverso]);
-
-  const handleRemove = async id => {
-    await removeMaterial(id);
-    setMateriais(prev => prev.filter(m => m.id !== id));
-  };
-
-  const inputSx = {
-    '& .MuiOutlinedInput-root': {
-      color: 'var(--text-primary)',
-      '& fieldset': { borderColor: 'var(--border-primary)' },
-      '&:hover fieldset': { borderColor: 'var(--border-hover)' },
-      '&.Mui-focused fieldset': { borderColor: 'var(--color-accent)' },
-    },
-    '& .MuiInputLabel-root': { color: 'var(--text-secondary)' },
-    '& .MuiInputLabel-root.Mui-focused': { color: 'var(--color-accent)' },
-  };
-
-  const selectSx = {
-    color: 'var(--text-primary)',
-    '& .MuiOutlinedInput-notchedOutline': {
-      borderColor: 'var(--border-primary)',
-    },
-    '&:hover .MuiOutlinedInput-notchedOutline': {
-      borderColor: 'var(--border-hover)',
-    },
-    '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
-      borderColor: 'var(--color-accent)',
-    },
-    '& .MuiSvgIcon-root': { color: 'var(--text-secondary)' },
-  };
-
-  const menuPropsSx = {
-    PaperProps: {
-      sx: { background: 'var(--bg-card)', color: 'var(--text-primary)' },
-    },
-  };
-
-  const labelSx = {
-    color: 'var(--text-secondary)',
-    '&.Mui-focused': { color: 'var(--color-accent)' },
-  };
 
   return (
     <Box
@@ -145,57 +94,22 @@ const Materiais = () => {
         </Box>
       ) : (
         <>
-          <Box
-            sx={{
-              display: 'grid',
-              gridTemplateColumns: { xs: '1fr', sm: '2fr 1fr 1fr' },
-              gap: 2,
-              mb: 3,
-            }}
-          >
-            <TextField
-              label="Buscar por nome"
-              size="small"
-              value={filtroNome}
-              onChange={e => setFiltroNome(e.target.value)}
-              slotProps={{ inputLabel: { shrink: true } }}
-              sx={inputSx}
-            />
-            <FormControl size="small">
-              <InputLabel sx={labelSx}>Raridade</InputLabel>
-              <Select
-                label="Raridade"
-                value={filtroRaridade}
-                onChange={e => setFiltroRaridade(e.target.value)}
-                sx={selectSx}
-                MenuProps={menuPropsSx}
-              >
-                <MenuItem value="">Todas</MenuItem>
-                {RARIDADES.map(r => (
-                  <MenuItem key={r} value={r}>
-                    {r}
-                  </MenuItem>
-                ))}
-              </Select>
-            </FormControl>
-            <FormControl size="small">
-              <InputLabel sx={labelSx}>Universo</InputLabel>
-              <Select
-                label="Universo"
-                value={filtroUniverso}
-                onChange={e => setFiltroUniverso(e.target.value)}
-                sx={selectSx}
-                MenuProps={menuPropsSx}
-              >
-                <MenuItem value="">Todos</MenuItem>
-                {universos.map(u => (
-                  <MenuItem key={u.id} value={u.id}>
-                    {u.Nome}
-                  </MenuItem>
-                ))}
-              </Select>
-            </FormControl>
-          </Box>
+          <EntityFilters
+            nomeValue={filtroNome}
+            onNomeChange={setFiltroNome}
+            extraFilters={[
+              {
+                label: 'Raridade',
+                value: filtroRaridade,
+                onChange: setFiltroRaridade,
+                options: RARIDADES,
+                allLabel: 'Todas',
+              },
+            ]}
+            universos={universos}
+            universoValue={filtroUniverso}
+            onUniversoChange={setFiltroUniverso}
+          />
 
           {materiaisFiltrados.length === 0 ? (
             <Box
@@ -453,244 +367,20 @@ const Materiais = () => {
         </>
       )}
 
-      {/* Dialog de detalhes */}
-      <Dialog
+      <EntityViewDialog
         open={Boolean(materialVisualizando)}
         onClose={() => setMaterialVisualizando(null)}
-        maxWidth="sm"
-        fullWidth
-        PaperProps={{
-          sx: {
-            background: 'var(--bg-card)',
-            border: '1px solid var(--border-primary)',
-            borderRadius: 2,
-          },
-        }}
-      >
-        <DialogTitle
-          sx={{ color: 'var(--text-primary)', fontWeight: 700, pb: 1 }}
-        >
-          {materialVisualizando?.nome}
-          {materialVisualizando?.raridade && (
-            <Typography
-              variant="caption"
-              sx={{
-                color: 'var(--color-accent)',
-                display: 'block',
-                fontWeight: 600,
-              }}
-            >
-              {[materialVisualizando.tipo, materialVisualizando.raridade]
-                .filter(Boolean)
-                .join(' · ')}
-            </Typography>
-          )}
-        </DialogTitle>
-
-        <DialogContent dividers sx={{ borderColor: 'var(--border-primary)' }}>
-          {materialVisualizando?.linkImagem && (
-            <Box
-              component="img"
-              src={materialVisualizando.linkImagem}
-              alt={materialVisualizando.nome}
-              sx={{
-                width: '100%',
-                maxHeight: 220,
-                borderRadius: 2,
-                objectFit: 'cover',
-                border: '1px solid var(--border-primary)',
-                mb: 2,
-              }}
-              onError={e => {
-                e.currentTarget.style.display = 'none';
-              }}
-            />
-          )}
-
-          {(materialVisualizando?.valorMercado ||
-            materialVisualizando?.quantidadeBase) && (
-            <Box sx={{ display: 'flex', gap: 3, mb: 2 }}>
-              {materialVisualizando.valorMercado && (
-                <Box>
-                  <Typography
-                    variant="caption"
-                    sx={{
-                      color: 'var(--text-muted)',
-                      display: 'block',
-                      mb: 0.3,
-                    }}
-                  >
-                    Valor de Mercado
-                  </Typography>
-                  <Typography
-                    variant="body2"
-                    sx={{ color: 'var(--text-primary)', fontWeight: 600 }}
-                  >
-                    {materialVisualizando.valorMercado}
-                  </Typography>
-                </Box>
-              )}
-              {materialVisualizando.quantidadeBase && (
-                <Box>
-                  <Typography
-                    variant="caption"
-                    sx={{
-                      color: 'var(--text-muted)',
-                      display: 'block',
-                      mb: 0.3,
-                    }}
-                  >
-                    Quantidade Base
-                  </Typography>
-                  <Typography
-                    variant="body2"
-                    sx={{ color: 'var(--text-primary)', fontWeight: 600 }}
-                  >
-                    {materialVisualizando.quantidadeBase}
-                  </Typography>
-                </Box>
-              )}
-            </Box>
-          )}
-
-          {(materialVisualizando?.pureza !== undefined ||
-            materialVisualizando?.taxaDrop !== undefined) && (
-            <Box
-              sx={{ mb: 2, display: 'flex', flexDirection: 'column', gap: 1.5 }}
-            >
-              <Divider sx={{ borderColor: 'var(--border-primary)' }} />
-              {materialVisualizando.pureza !== undefined && (
-                <Box>
-                  <Box
-                    sx={{
-                      display: 'flex',
-                      justifyContent: 'space-between',
-                      mb: 0.5,
-                    }}
-                  >
-                    <Typography
-                      variant="body2"
-                      sx={{ color: 'var(--text-secondary)', fontWeight: 600 }}
-                    >
-                      Pureza
-                    </Typography>
-                    <Typography
-                      variant="body2"
-                      sx={{ color: 'var(--color-accent)', fontWeight: 700 }}
-                    >
-                      {materialVisualizando.pureza}%
-                    </Typography>
-                  </Box>
-                  <LinearProgress
-                    variant="determinate"
-                    value={materialVisualizando.pureza}
-                    sx={{
-                      height: 6,
-                      borderRadius: 3,
-                      background: 'var(--border-primary)',
-                      '& .MuiLinearProgress-bar': {
-                        background: 'var(--color-accent)',
-                      },
-                    }}
-                  />
-                </Box>
-              )}
-              {materialVisualizando.taxaDrop !== undefined && (
-                <Box>
-                  <Box
-                    sx={{
-                      display: 'flex',
-                      justifyContent: 'space-between',
-                      mb: 0.5,
-                    }}
-                  >
-                    <Typography
-                      variant="body2"
-                      sx={{ color: 'var(--text-secondary)', fontWeight: 600 }}
-                    >
-                      Taxa de Drop
-                    </Typography>
-                    <Typography
-                      variant="body2"
-                      sx={{ color: '#a855f7', fontWeight: 700 }}
-                    >
-                      {materialVisualizando.taxaDrop}%
-                    </Typography>
-                  </Box>
-                  <LinearProgress
-                    variant="determinate"
-                    value={materialVisualizando.taxaDrop}
-                    sx={{
-                      height: 6,
-                      borderRadius: 3,
-                      background: 'var(--border-primary)',
-                      '& .MuiLinearProgress-bar': { background: '#a855f7' },
-                    }}
-                  />
-                </Box>
-              )}
-            </Box>
-          )}
-
-          {materialVisualizando?.descricao && (
-            <>
-              <Divider sx={{ borderColor: 'var(--border-primary)', mb: 1.5 }} />
-              <Typography
-                variant="caption"
-                sx={{
-                  color: 'var(--text-muted)',
-                  textTransform: 'uppercase',
-                  letterSpacing: 0.5,
-                  display: 'block',
-                  mb: 0.5,
-                }}
-              >
-                Descrição
-              </Typography>
-              <Typography
-                variant="body2"
-                sx={{ color: 'var(--text-secondary)' }}
-              >
-                {materialVisualizando.descricao}
-              </Typography>
-            </>
-          )}
-
-          {materialVisualizando?.propriedades && (
-            <>
-              <Divider
-                sx={{ borderColor: 'var(--border-primary)', mt: 1.5, mb: 1.5 }}
-              />
-              <Typography
-                variant="caption"
-                sx={{
-                  color: 'var(--text-muted)',
-                  textTransform: 'uppercase',
-                  letterSpacing: 0.5,
-                  display: 'block',
-                  mb: 0.5,
-                }}
-              >
-                Propriedades
-              </Typography>
-              <Typography
-                variant="body2"
-                sx={{ color: 'var(--text-secondary)' }}
-              >
-                {materialVisualizando.propriedades}
-              </Typography>
-            </>
-          )}
-        </DialogContent>
-
-        <DialogActions sx={{ px: 3, py: 2 }}>
-          <Button
-            onClick={() => setMaterialVisualizando(null)}
-            sx={{ color: 'var(--text-muted)' }}
-          >
-            Fechar
-          </Button>
-          {canWrite(materialVisualizando?.universo) && (
+        titulo={materialVisualizando?.nome}
+        subtitulo={
+          materialVisualizando?.raridade &&
+          [materialVisualizando.tipo, materialVisualizando.raridade]
+            .filter(Boolean)
+            .join(' · ')
+        }
+        imagem={materialVisualizando?.linkImagem}
+        imagemSx={{ height: 'auto', maxHeight: 220 }}
+        actions={
+          canWrite(materialVisualizando?.universo) && (
             <Button
               variant="contained"
               onClick={() => {
@@ -706,9 +396,178 @@ const Materiais = () => {
             >
               Editar
             </Button>
-          )}
-        </DialogActions>
-      </Dialog>
+          )
+        }
+      >
+        {(materialVisualizando?.valorMercado ||
+          materialVisualizando?.quantidadeBase) && (
+          <Box sx={{ display: 'flex', gap: 3, mb: 2 }}>
+            {materialVisualizando.valorMercado && (
+              <Box>
+                <Typography
+                  variant="caption"
+                  sx={{
+                    color: 'var(--text-muted)',
+                    display: 'block',
+                    mb: 0.3,
+                  }}
+                >
+                  Valor de Mercado
+                </Typography>
+                <Typography
+                  variant="body2"
+                  sx={{ color: 'var(--text-primary)', fontWeight: 600 }}
+                >
+                  {materialVisualizando.valorMercado}
+                </Typography>
+              </Box>
+            )}
+            {materialVisualizando.quantidadeBase && (
+              <Box>
+                <Typography
+                  variant="caption"
+                  sx={{
+                    color: 'var(--text-muted)',
+                    display: 'block',
+                    mb: 0.3,
+                  }}
+                >
+                  Quantidade Base
+                </Typography>
+                <Typography
+                  variant="body2"
+                  sx={{ color: 'var(--text-primary)', fontWeight: 600 }}
+                >
+                  {materialVisualizando.quantidadeBase}
+                </Typography>
+              </Box>
+            )}
+          </Box>
+        )}
+
+        {(materialVisualizando?.pureza !== undefined ||
+          materialVisualizando?.taxaDrop !== undefined) && (
+          <Box
+            sx={{ mb: 2, display: 'flex', flexDirection: 'column', gap: 1.5 }}
+          >
+            <Divider sx={{ borderColor: 'var(--border-primary)' }} />
+            {materialVisualizando.pureza !== undefined && (
+              <Box>
+                <Box
+                  sx={{
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    mb: 0.5,
+                  }}
+                >
+                  <Typography
+                    variant="body2"
+                    sx={{ color: 'var(--text-secondary)', fontWeight: 600 }}
+                  >
+                    Pureza
+                  </Typography>
+                  <Typography
+                    variant="body2"
+                    sx={{ color: 'var(--color-accent)', fontWeight: 700 }}
+                  >
+                    {materialVisualizando.pureza}%
+                  </Typography>
+                </Box>
+                <LinearProgress
+                  variant="determinate"
+                  value={materialVisualizando.pureza}
+                  sx={{
+                    height: 6,
+                    borderRadius: 3,
+                    background: 'var(--border-primary)',
+                    '& .MuiLinearProgress-bar': {
+                      background: 'var(--color-accent)',
+                    },
+                  }}
+                />
+              </Box>
+            )}
+            {materialVisualizando.taxaDrop !== undefined && (
+              <Box>
+                <Box
+                  sx={{
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    mb: 0.5,
+                  }}
+                >
+                  <Typography
+                    variant="body2"
+                    sx={{ color: 'var(--text-secondary)', fontWeight: 600 }}
+                  >
+                    Taxa de Drop
+                  </Typography>
+                  <Typography
+                    variant="body2"
+                    sx={{ color: '#a855f7', fontWeight: 700 }}
+                  >
+                    {materialVisualizando.taxaDrop}%
+                  </Typography>
+                </Box>
+                <LinearProgress
+                  variant="determinate"
+                  value={materialVisualizando.taxaDrop}
+                  sx={{
+                    height: 6,
+                    borderRadius: 3,
+                    background: 'var(--border-primary)',
+                    '& .MuiLinearProgress-bar': { background: '#a855f7' },
+                  }}
+                />
+              </Box>
+            )}
+          </Box>
+        )}
+
+        {materialVisualizando?.descricao && (
+          <>
+            <Divider sx={{ borderColor: 'var(--border-primary)', mb: 1.5 }} />
+            <Typography
+              variant="caption"
+              sx={{
+                color: 'var(--text-muted)',
+                textTransform: 'uppercase',
+                letterSpacing: 0.5,
+                display: 'block',
+                mb: 0.5,
+              }}
+            >
+              Descrição
+            </Typography>
+            <Typography variant="body2" sx={{ color: 'var(--text-secondary)' }}>
+              {materialVisualizando.descricao}
+            </Typography>
+          </>
+        )}
+
+        {materialVisualizando?.propriedades && (
+          <>
+            <Divider
+              sx={{ borderColor: 'var(--border-primary)', mt: 1.5, mb: 1.5 }}
+            />
+            <Typography
+              variant="caption"
+              sx={{
+                color: 'var(--text-muted)',
+                textTransform: 'uppercase',
+                letterSpacing: 0.5,
+                display: 'block',
+                mb: 0.5,
+              }}
+            >
+              Propriedades
+            </Typography>
+            <Typography variant="body2" sx={{ color: 'var(--text-secondary)' }}>
+              {materialVisualizando.propriedades}
+            </Typography>
+          </>
+        )}
+      </EntityViewDialog>
     </Box>
   );
 };

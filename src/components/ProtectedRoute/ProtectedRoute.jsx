@@ -1,27 +1,29 @@
-import React from 'react';
+import React, { Suspense } from 'react';
 import { Outlet } from 'react-router-dom';
 import Box from '@mui/material/Box';
 import CircularProgress from '@mui/material/CircularProgress';
 import Typography from '@mui/material/Typography';
 import { useAuth } from 'context/AuthContext';
 
+const PageLoadingFallback = () => (
+  <Box
+    sx={{
+      display: 'flex',
+      justifyContent: 'center',
+      alignItems: 'center',
+      flex: 1,
+      height: '100%',
+    }}
+  >
+    <CircularProgress sx={{ color: 'var(--color-primary)' }} />
+  </Box>
+);
+
 const ProtectedRoute = () => {
   const { currentUser, loading } = useAuth();
 
   if (loading) {
-    return (
-      <Box
-        sx={{
-          display: 'flex',
-          justifyContent: 'center',
-          alignItems: 'center',
-          flex: 1,
-          height: '100%',
-        }}
-      >
-        <CircularProgress sx={{ color: 'var(--color-primary)' }} />
-      </Box>
-    );
+    return <PageLoadingFallback />;
   }
 
   if (!currentUser) {
@@ -62,7 +64,11 @@ const ProtectedRoute = () => {
     );
   }
 
-  return <Outlet />;
+  return (
+    <Suspense fallback={<PageLoadingFallback />}>
+      <Outlet />
+    </Suspense>
+  );
 };
 
 export default ProtectedRoute;

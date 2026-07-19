@@ -1,31 +1,26 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import Button from '@mui/material/Button';
 import IconButton from '@mui/material/IconButton';
 import CircularProgress from '@mui/material/CircularProgress';
-import TextField from '@mui/material/TextField';
-import Select from '@mui/material/Select';
-import MenuItem from '@mui/material/MenuItem';
-import FormControl from '@mui/material/FormControl';
-import InputLabel from '@mui/material/InputLabel';
-import Dialog from '@mui/material/Dialog';
-import DialogActions from '@mui/material/DialogActions';
-import DialogContent from '@mui/material/DialogContent';
-import DialogTitle from '@mui/material/DialogTitle';
 import Divider from '@mui/material/Divider';
 import Tooltip from '@mui/material/Tooltip';
 import DeleteOutlineIcon from '@mui/icons-material/DeleteOutlined';
 import EditOutlinedIcon from '@mui/icons-material/EditOutlined';
 import VisibilityOutlinedIcon from '@mui/icons-material/VisibilityOutlined';
-import { getRegras, removeRegra, getUniversos } from 'service/storage';
+import { getRegras, removeRegra } from 'service/storage';
 import { ROUTE_PATHS } from 'common/constants/routes';
 import { useAuth } from 'context/AuthContext';
 import {
   CATEGORIAS_REGRA,
   COMPLEXIDADES_REGRA,
 } from 'common/constants/constants';
+import useEntityCRUD from 'hooks/useEntityCRUD';
+import useUniversos from 'hooks/useUniversos';
+import EntityFilters from 'components/EntityFilters/EntityFilters';
+import EntityViewDialog from 'components/EntityViewDialog/EntityViewDialog';
 import { RegraCard } from './styles';
 
 const CAMPOS_FUNCIONAMENTO = [
@@ -44,23 +39,18 @@ const CAMPOS_RESTRICOES = [
 const Regras = () => {
   const navigate = useNavigate();
   const { canCreate, canWrite } = useAuth();
-  const [regras, setRegras] = useState([]);
-  const [universos, setUniversos] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const {
+    items: regras,
+    loading: loadingRegras,
+    remove: handleRemove,
+  } = useEntityCRUD({ getAll: getRegras, remove: removeRegra });
+  const { universos, loadingUniversos } = useUniversos();
+  const loading = loadingRegras || loadingUniversos;
   const [filtroNome, setFiltroNome] = useState('');
   const [filtroCategoria, setFiltroCategoria] = useState('');
   const [filtroComplexidade, setFiltroComplexidade] = useState('');
   const [filtroUniverso, setFiltroUniverso] = useState('');
   const [regraVisualizando, setRegraVisualizando] = useState(null);
-
-  useEffect(() => {
-    Promise.all([getRegras(), getUniversos()])
-      .then(([regrasData, universosData]) => {
-        setRegras(regrasData);
-        setUniversos(universosData);
-      })
-      .finally(() => setLoading(false));
-  }, []);
 
   const regrasFiltradas = useMemo(() => {
     return regras.filter(regra => {
@@ -76,47 +66,6 @@ const Regras = () => {
       return matchNome && matchCategoria && matchComplexidade && matchUniverso;
     });
   }, [regras, filtroNome, filtroCategoria, filtroComplexidade, filtroUniverso]);
-
-  const handleRemove = async id => {
-    await removeRegra(id);
-    setRegras(prev => prev.filter(r => r.id !== id));
-  };
-
-  const inputSx = {
-    '& .MuiOutlinedInput-root': {
-      color: 'var(--text-primary)',
-      '& fieldset': { borderColor: 'var(--border-primary)' },
-      '&:hover fieldset': { borderColor: 'var(--border-hover)' },
-      '&.Mui-focused fieldset': { borderColor: 'var(--color-accent)' },
-    },
-    '& .MuiInputLabel-root': { color: 'var(--text-secondary)' },
-    '& .MuiInputLabel-root.Mui-focused': { color: 'var(--color-accent)' },
-  };
-
-  const selectSx = {
-    color: 'var(--text-primary)',
-    '& .MuiOutlinedInput-notchedOutline': {
-      borderColor: 'var(--border-primary)',
-    },
-    '&:hover .MuiOutlinedInput-notchedOutline': {
-      borderColor: 'var(--border-hover)',
-    },
-    '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
-      borderColor: 'var(--color-accent)',
-    },
-    '& .MuiSvgIcon-root': { color: 'var(--text-secondary)' },
-  };
-
-  const menuPropsSx = {
-    PaperProps: {
-      sx: { background: 'var(--bg-card)', color: 'var(--text-primary)' },
-    },
-  };
-
-  const labelSx = {
-    color: 'var(--text-secondary)',
-    '&.Mui-focused': { color: 'var(--color-accent)' },
-  };
 
   return (
     <Box className="page-container" id="redungeon-regras" data-page="regras">
@@ -159,78 +108,36 @@ const Regras = () => {
         </Box>
       ) : (
         <>
-          <Box
+          <EntityFilters
+            nomeValue={filtroNome}
+            onNomeChange={setFiltroNome}
+            extraFilters={[
+              {
+                label: 'Categoria',
+                value: filtroCategoria,
+                onChange: setFiltroCategoria,
+                options: CATEGORIAS_REGRA,
+                allLabel: 'Todas',
+              },
+              {
+                label: 'Complexidade',
+                value: filtroComplexidade,
+                onChange: setFiltroComplexidade,
+                options: COMPLEXIDADES_REGRA,
+                allLabel: 'Todas',
+              },
+            ]}
+            universos={universos}
+            universoValue={filtroUniverso}
+            onUniversoChange={setFiltroUniverso}
             sx={{
-              display: 'grid',
               gridTemplateColumns: {
                 xs: '1fr',
                 sm: '2fr 1fr 1fr',
                 md: '2fr 1fr 1fr 1fr',
               },
-              gap: 2,
-              mb: 3,
             }}
-          >
-            <TextField
-              label="Buscar por nome"
-              size="small"
-              value={filtroNome}
-              onChange={e => setFiltroNome(e.target.value)}
-              slotProps={{ inputLabel: { shrink: true } }}
-              sx={inputSx}
-            />
-            <FormControl size="small">
-              <InputLabel sx={labelSx}>Categoria</InputLabel>
-              <Select
-                label="Categoria"
-                value={filtroCategoria}
-                onChange={e => setFiltroCategoria(e.target.value)}
-                sx={selectSx}
-                MenuProps={menuPropsSx}
-              >
-                <MenuItem value="">Todas</MenuItem>
-                {CATEGORIAS_REGRA.map(c => (
-                  <MenuItem key={c} value={c}>
-                    {c}
-                  </MenuItem>
-                ))}
-              </Select>
-            </FormControl>
-            <FormControl size="small">
-              <InputLabel sx={labelSx}>Complexidade</InputLabel>
-              <Select
-                label="Complexidade"
-                value={filtroComplexidade}
-                onChange={e => setFiltroComplexidade(e.target.value)}
-                sx={selectSx}
-                MenuProps={menuPropsSx}
-              >
-                <MenuItem value="">Todas</MenuItem>
-                {COMPLEXIDADES_REGRA.map(c => (
-                  <MenuItem key={c} value={c}>
-                    {c}
-                  </MenuItem>
-                ))}
-              </Select>
-            </FormControl>
-            <FormControl size="small">
-              <InputLabel sx={labelSx}>Universo</InputLabel>
-              <Select
-                label="Universo"
-                value={filtroUniverso}
-                onChange={e => setFiltroUniverso(e.target.value)}
-                sx={selectSx}
-                MenuProps={menuPropsSx}
-              >
-                <MenuItem value="">Todos</MenuItem>
-                {universos.map(u => (
-                  <MenuItem key={u.id} value={u.id}>
-                    {u.Nome}
-                  </MenuItem>
-                ))}
-              </Select>
-            </FormControl>
-          </Box>
+          />
 
           {regrasFiltradas.length === 0 ? (
             <Box
@@ -393,232 +300,20 @@ const Regras = () => {
         </>
       )}
 
-      {/* Dialog de detalhes */}
-      <Dialog
+      <EntityViewDialog
         open={Boolean(regraVisualizando)}
         onClose={() => setRegraVisualizando(null)}
-        maxWidth="sm"
-        fullWidth
-        PaperProps={{
-          sx: {
-            background: 'var(--bg-card)',
-            border: '1px solid var(--border-primary)',
-            borderRadius: 2,
-          },
-        }}
-      >
-        <DialogTitle
-          sx={{ color: 'var(--text-primary)', fontWeight: 700, pb: 1 }}
-        >
-          {regraVisualizando?.nome}
-          {(regraVisualizando?.categoria ||
-            regraVisualizando?.complexidade) && (
-            <Typography
-              variant="caption"
-              sx={{
-                color: 'var(--color-accent)',
-                display: 'block',
-                fontWeight: 600,
-              }}
-            >
-              {[regraVisualizando.categoria, regraVisualizando.complexidade]
-                .filter(Boolean)
-                .join(' · ')}
-            </Typography>
-          )}
-        </DialogTitle>
-
-        <DialogContent dividers sx={{ borderColor: 'var(--border-primary)' }}>
-          {regraVisualizando?.linkImagem && (
-            <Box
-              component="img"
-              src={regraVisualizando.linkImagem}
-              alt={regraVisualizando.nome}
-              sx={{
-                width: '100%',
-                maxHeight: 220,
-                borderRadius: 2,
-                objectFit: 'cover',
-                border: '1px solid var(--border-primary)',
-                mb: 2,
-              }}
-              onError={e => {
-                e.currentTarget.style.display = 'none';
-              }}
-            />
-          )}
-
-          {regraVisualizando?.descricaoCurta && (
-            <Typography
-              variant="body2"
-              sx={{
-                color: 'var(--text-primary)',
-                fontWeight: 600,
-                mb: 2,
-                fontStyle: 'italic',
-              }}
-            >
-              {regraVisualizando.descricaoCurta}
-            </Typography>
-          )}
-
-          {regraVisualizando?.explicacaoCompleta && (
-            <>
-              <Typography
-                variant="caption"
-                sx={{
-                  color: 'var(--text-muted)',
-                  textTransform: 'uppercase',
-                  letterSpacing: 0.5,
-                  display: 'block',
-                  mb: 0.5,
-                }}
-              >
-                Explicação Completa
-              </Typography>
-              <Typography
-                variant="body2"
-                sx={{ color: 'var(--text-secondary)', mb: 2 }}
-              >
-                {regraVisualizando.explicacaoCompleta}
-              </Typography>
-            </>
-          )}
-
-          {CAMPOS_FUNCIONAMENTO.filter(f => regraVisualizando?.[f.key]).length >
-            0 && (
-            <>
-              <Divider sx={{ borderColor: 'var(--border-primary)', mb: 1.5 }} />
-              <Typography
-                variant="subtitle2"
-                sx={{
-                  color: 'var(--color-accent)',
-                  fontWeight: 700,
-                  mb: 1,
-                  textTransform: 'uppercase',
-                  letterSpacing: 1,
-                  fontSize: '0.72rem',
-                }}
-              >
-                Funcionamento
-              </Typography>
-              {CAMPOS_FUNCIONAMENTO.filter(f => regraVisualizando[f.key]).map(
-                f => (
-                  <Box key={f.key} sx={{ mb: 1.25 }}>
-                    <Typography
-                      variant="caption"
-                      sx={{
-                        color: 'var(--text-muted)',
-                        display: 'block',
-                        fontSize: '0.7rem',
-                      }}
-                    >
-                      {f.label}
-                    </Typography>
-                    <Typography
-                      variant="body2"
-                      sx={{ color: 'var(--text-secondary)' }}
-                    >
-                      {regraVisualizando[f.key]}
-                    </Typography>
-                  </Box>
-                ),
-              )}
-            </>
-          )}
-
-          {CAMPOS_RESTRICOES.filter(f => regraVisualizando?.[f.key]).length >
-            0 && (
-            <>
-              <Divider sx={{ borderColor: 'var(--border-primary)', mb: 1.5 }} />
-              <Typography
-                variant="subtitle2"
-                sx={{
-                  color: 'var(--color-accent)',
-                  fontWeight: 700,
-                  mb: 1,
-                  textTransform: 'uppercase',
-                  letterSpacing: 1,
-                  fontSize: '0.72rem',
-                }}
-              >
-                Restrições
-              </Typography>
-              <Box
-                sx={{
-                  display: 'flex',
-                  flexWrap: 'wrap',
-                  gap: 0.75,
-                  mb: 2,
-                }}
-              >
-                {CAMPOS_RESTRICOES.filter(f => regraVisualizando[f.key]).map(
-                  f => (
-                    <Box
-                      key={f.key}
-                      sx={{
-                        background: 'var(--bg-secondary)',
-                        borderRadius: 1,
-                        px: 1,
-                        py: 0.5,
-                      }}
-                    >
-                      <Typography
-                        variant="caption"
-                        sx={{
-                          color: 'var(--text-muted)',
-                          display: 'block',
-                          fontSize: '0.65rem',
-                        }}
-                      >
-                        {f.label}
-                      </Typography>
-                      <Typography
-                        variant="body2"
-                        sx={{ color: 'var(--text-primary)', fontWeight: 600 }}
-                      >
-                        {regraVisualizando[f.key]}
-                      </Typography>
-                    </Box>
-                  ),
-                )}
-              </Box>
-            </>
-          )}
-
-          {regraVisualizando?.exemplo && (
-            <>
-              <Divider sx={{ borderColor: 'var(--border-primary)', mb: 1.5 }} />
-              <Typography
-                variant="caption"
-                sx={{
-                  color: 'var(--text-muted)',
-                  textTransform: 'uppercase',
-                  letterSpacing: 0.5,
-                  display: 'block',
-                  mb: 0.5,
-                }}
-              >
-                Exemplo
-              </Typography>
-              <Typography
-                variant="body2"
-                sx={{ color: 'var(--text-secondary)', fontStyle: 'italic' }}
-              >
-                {regraVisualizando.exemplo}
-              </Typography>
-            </>
-          )}
-        </DialogContent>
-
-        <DialogActions sx={{ px: 3, py: 2 }}>
-          <Button
-            onClick={() => setRegraVisualizando(null)}
-            sx={{ color: 'var(--text-muted)' }}
-          >
-            Fechar
-          </Button>
-          {canWrite(regraVisualizando?.universo) && (
+        titulo={regraVisualizando?.nome}
+        subtitulo={
+          (regraVisualizando?.categoria || regraVisualizando?.complexidade) &&
+          [regraVisualizando.categoria, regraVisualizando.complexidade]
+            .filter(Boolean)
+            .join(' · ')
+        }
+        imagem={regraVisualizando?.linkImagem}
+        imagemSx={{ height: 'auto', maxHeight: 220 }}
+        actions={
+          canWrite(regraVisualizando?.universo) && (
             <Button
               variant="contained"
               onClick={() => {
@@ -634,9 +329,171 @@ const Regras = () => {
             >
               Editar
             </Button>
-          )}
-        </DialogActions>
-      </Dialog>
+          )
+        }
+      >
+        {regraVisualizando?.descricaoCurta && (
+          <Typography
+            variant="body2"
+            sx={{
+              color: 'var(--text-primary)',
+              fontWeight: 600,
+              mb: 2,
+              fontStyle: 'italic',
+            }}
+          >
+            {regraVisualizando.descricaoCurta}
+          </Typography>
+        )}
+
+        {regraVisualizando?.explicacaoCompleta && (
+          <>
+            <Typography
+              variant="caption"
+              sx={{
+                color: 'var(--text-muted)',
+                textTransform: 'uppercase',
+                letterSpacing: 0.5,
+                display: 'block',
+                mb: 0.5,
+              }}
+            >
+              Explicação Completa
+            </Typography>
+            <Typography
+              variant="body2"
+              sx={{ color: 'var(--text-secondary)', mb: 2 }}
+            >
+              {regraVisualizando.explicacaoCompleta}
+            </Typography>
+          </>
+        )}
+
+        {CAMPOS_FUNCIONAMENTO.filter(f => regraVisualizando?.[f.key]).length >
+          0 && (
+          <>
+            <Divider sx={{ borderColor: 'var(--border-primary)', mb: 1.5 }} />
+            <Typography
+              variant="subtitle2"
+              sx={{
+                color: 'var(--color-accent)',
+                fontWeight: 700,
+                mb: 1,
+                textTransform: 'uppercase',
+                letterSpacing: 1,
+                fontSize: '0.72rem',
+              }}
+            >
+              Funcionamento
+            </Typography>
+            {CAMPOS_FUNCIONAMENTO.filter(f => regraVisualizando[f.key]).map(
+              f => (
+                <Box key={f.key} sx={{ mb: 1.25 }}>
+                  <Typography
+                    variant="caption"
+                    sx={{
+                      color: 'var(--text-muted)',
+                      display: 'block',
+                      fontSize: '0.7rem',
+                    }}
+                  >
+                    {f.label}
+                  </Typography>
+                  <Typography
+                    variant="body2"
+                    sx={{ color: 'var(--text-secondary)' }}
+                  >
+                    {regraVisualizando[f.key]}
+                  </Typography>
+                </Box>
+              ),
+            )}
+          </>
+        )}
+
+        {CAMPOS_RESTRICOES.filter(f => regraVisualizando?.[f.key]).length >
+          0 && (
+          <>
+            <Divider sx={{ borderColor: 'var(--border-primary)', mb: 1.5 }} />
+            <Typography
+              variant="subtitle2"
+              sx={{
+                color: 'var(--color-accent)',
+                fontWeight: 700,
+                mb: 1,
+                textTransform: 'uppercase',
+                letterSpacing: 1,
+                fontSize: '0.72rem',
+              }}
+            >
+              Restrições
+            </Typography>
+            <Box
+              sx={{
+                display: 'flex',
+                flexWrap: 'wrap',
+                gap: 0.75,
+                mb: 2,
+              }}
+            >
+              {CAMPOS_RESTRICOES.filter(f => regraVisualizando[f.key]).map(
+                f => (
+                  <Box
+                    key={f.key}
+                    sx={{
+                      background: 'var(--bg-secondary)',
+                      borderRadius: 1,
+                      px: 1,
+                      py: 0.5,
+                    }}
+                  >
+                    <Typography
+                      variant="caption"
+                      sx={{
+                        color: 'var(--text-muted)',
+                        display: 'block',
+                        fontSize: '0.65rem',
+                      }}
+                    >
+                      {f.label}
+                    </Typography>
+                    <Typography
+                      variant="body2"
+                      sx={{ color: 'var(--text-primary)', fontWeight: 600 }}
+                    >
+                      {regraVisualizando[f.key]}
+                    </Typography>
+                  </Box>
+                ),
+              )}
+            </Box>
+          </>
+        )}
+
+        {regraVisualizando?.exemplo && (
+          <>
+            <Divider sx={{ borderColor: 'var(--border-primary)', mb: 1.5 }} />
+            <Typography
+              variant="caption"
+              sx={{
+                color: 'var(--text-muted)',
+                textTransform: 'uppercase',
+                letterSpacing: 0.5,
+                display: 'block',
+                mb: 0.5,
+              }}
+            >
+              Exemplo
+            </Typography>
+            <Typography
+              variant="body2"
+              sx={{ color: 'var(--text-secondary)', fontStyle: 'italic' }}
+            >
+              {regraVisualizando.exemplo}
+            </Typography>
+          </>
+        )}
+      </EntityViewDialog>
     </Box>
   );
 };

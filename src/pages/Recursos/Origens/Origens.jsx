@@ -1,29 +1,24 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import Button from '@mui/material/Button';
 import IconButton from '@mui/material/IconButton';
 import CircularProgress from '@mui/material/CircularProgress';
-import TextField from '@mui/material/TextField';
-import Select from '@mui/material/Select';
-import MenuItem from '@mui/material/MenuItem';
-import FormControl from '@mui/material/FormControl';
-import InputLabel from '@mui/material/InputLabel';
-import Dialog from '@mui/material/Dialog';
-import DialogActions from '@mui/material/DialogActions';
-import DialogContent from '@mui/material/DialogContent';
-import DialogTitle from '@mui/material/DialogTitle';
 import Divider from '@mui/material/Divider';
 import Tooltip from '@mui/material/Tooltip';
 import Chip from '@mui/material/Chip';
 import DeleteOutlineIcon from '@mui/icons-material/DeleteOutlined';
 import EditOutlinedIcon from '@mui/icons-material/EditOutlined';
 import VisibilityOutlinedIcon from '@mui/icons-material/VisibilityOutlined';
-import { getOrigens, removeOrigem, getUniversos } from 'service/storage';
+import { getOrigens, removeOrigem } from 'service/storage';
 import { ROUTE_PATHS } from 'common/constants/routes';
 import { useAuth } from 'context/AuthContext';
 import { RARIDADES, TIPOS_ORIGEM } from 'common/constants/constants';
+import useEntityCRUD from 'hooks/useEntityCRUD';
+import useUniversos from 'hooks/useUniversos';
+import EntityFilters from 'components/EntityFilters/EntityFilters';
+import EntityViewDialog from 'components/EntityViewDialog/EntityViewDialog';
 import { CAMPOS_POR_TIPO } from './utils';
 import { OrigemCard } from './styles';
 
@@ -36,23 +31,18 @@ const parseTags = tags =>
 const Origens = () => {
   const navigate = useNavigate();
   const { canCreate, canWrite } = useAuth();
-  const [origens, setOrigens] = useState([]);
-  const [universos, setUniversos] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const {
+    items: origens,
+    loading: loadingOrigens,
+    remove: handleRemove,
+  } = useEntityCRUD({ getAll: getOrigens, remove: removeOrigem });
+  const { universos, loadingUniversos } = useUniversos();
+  const loading = loadingOrigens || loadingUniversos;
   const [filtroNome, setFiltroNome] = useState('');
   const [filtroTipo, setFiltroTipo] = useState('');
   const [filtroRaridade, setFiltroRaridade] = useState('');
   const [filtroUniverso, setFiltroUniverso] = useState('');
   const [origemVisualizando, setOrigemVisualizando] = useState(null);
-
-  useEffect(() => {
-    Promise.all([getOrigens(), getUniversos()])
-      .then(([origensData, universosData]) => {
-        setOrigens(origensData);
-        setUniversos(universosData);
-      })
-      .finally(() => setLoading(false));
-  }, []);
 
   const origensFiltradas = useMemo(() => {
     return origens.filter(origem => {
@@ -67,47 +57,6 @@ const Origens = () => {
       return matchNome && matchTipo && matchRaridade && matchUniverso;
     });
   }, [origens, filtroNome, filtroTipo, filtroRaridade, filtroUniverso]);
-
-  const handleRemove = async id => {
-    await removeOrigem(id);
-    setOrigens(prev => prev.filter(o => o.id !== id));
-  };
-
-  const inputSx = {
-    '& .MuiOutlinedInput-root': {
-      color: 'var(--text-primary)',
-      '& fieldset': { borderColor: 'var(--border-primary)' },
-      '&:hover fieldset': { borderColor: 'var(--border-hover)' },
-      '&.Mui-focused fieldset': { borderColor: 'var(--color-accent)' },
-    },
-    '& .MuiInputLabel-root': { color: 'var(--text-secondary)' },
-    '& .MuiInputLabel-root.Mui-focused': { color: 'var(--color-accent)' },
-  };
-
-  const selectSx = {
-    color: 'var(--text-primary)',
-    '& .MuiOutlinedInput-notchedOutline': {
-      borderColor: 'var(--border-primary)',
-    },
-    '&:hover .MuiOutlinedInput-notchedOutline': {
-      borderColor: 'var(--border-hover)',
-    },
-    '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
-      borderColor: 'var(--color-accent)',
-    },
-    '& .MuiSvgIcon-root': { color: 'var(--text-secondary)' },
-  };
-
-  const menuPropsSx = {
-    PaperProps: {
-      sx: { background: 'var(--bg-card)', color: 'var(--text-primary)' },
-    },
-  };
-
-  const labelSx = {
-    color: 'var(--text-secondary)',
-    '&.Mui-focused': { color: 'var(--color-accent)' },
-  };
 
   return (
     <Box className="page-container" id="redungeon-origens" data-page="origens">
@@ -150,78 +99,36 @@ const Origens = () => {
         </Box>
       ) : (
         <>
-          <Box
+          <EntityFilters
+            nomeValue={filtroNome}
+            onNomeChange={setFiltroNome}
+            extraFilters={[
+              {
+                label: 'Tipo',
+                value: filtroTipo,
+                onChange: setFiltroTipo,
+                options: TIPOS_ORIGEM,
+                allLabel: 'Todos',
+              },
+              {
+                label: 'Raridade',
+                value: filtroRaridade,
+                onChange: setFiltroRaridade,
+                options: RARIDADES,
+                allLabel: 'Todas',
+              },
+            ]}
+            universos={universos}
+            universoValue={filtroUniverso}
+            onUniversoChange={setFiltroUniverso}
             sx={{
-              display: 'grid',
               gridTemplateColumns: {
                 xs: '1fr',
                 sm: '2fr 1fr 1fr',
                 md: '2fr 1fr 1fr 1fr',
               },
-              gap: 2,
-              mb: 3,
             }}
-          >
-            <TextField
-              label="Buscar por nome"
-              size="small"
-              value={filtroNome}
-              onChange={e => setFiltroNome(e.target.value)}
-              slotProps={{ inputLabel: { shrink: true } }}
-              sx={inputSx}
-            />
-            <FormControl size="small">
-              <InputLabel sx={labelSx}>Tipo</InputLabel>
-              <Select
-                label="Tipo"
-                value={filtroTipo}
-                onChange={e => setFiltroTipo(e.target.value)}
-                sx={selectSx}
-                MenuProps={menuPropsSx}
-              >
-                <MenuItem value="">Todos</MenuItem>
-                {TIPOS_ORIGEM.map(t => (
-                  <MenuItem key={t} value={t}>
-                    {t}
-                  </MenuItem>
-                ))}
-              </Select>
-            </FormControl>
-            <FormControl size="small">
-              <InputLabel sx={labelSx}>Raridade</InputLabel>
-              <Select
-                label="Raridade"
-                value={filtroRaridade}
-                onChange={e => setFiltroRaridade(e.target.value)}
-                sx={selectSx}
-                MenuProps={menuPropsSx}
-              >
-                <MenuItem value="">Todas</MenuItem>
-                {RARIDADES.map(r => (
-                  <MenuItem key={r} value={r}>
-                    {r}
-                  </MenuItem>
-                ))}
-              </Select>
-            </FormControl>
-            <FormControl size="small">
-              <InputLabel sx={labelSx}>Universo</InputLabel>
-              <Select
-                label="Universo"
-                value={filtroUniverso}
-                onChange={e => setFiltroUniverso(e.target.value)}
-                sx={selectSx}
-                MenuProps={menuPropsSx}
-              >
-                <MenuItem value="">Todos</MenuItem>
-                {universos.map(u => (
-                  <MenuItem key={u.id} value={u.id}>
-                    {u.Nome}
-                  </MenuItem>
-                ))}
-              </Select>
-            </FormControl>
-          </Box>
+          />
 
           {origensFiltradas.length === 0 ? (
             <Box
@@ -395,141 +302,20 @@ const Origens = () => {
         </>
       )}
 
-      {/* Dialog de detalhes */}
-      <Dialog
+      <EntityViewDialog
         open={Boolean(origemVisualizando)}
         onClose={() => setOrigemVisualizando(null)}
-        maxWidth="sm"
-        fullWidth
-        PaperProps={{
-          sx: {
-            background: 'var(--bg-card)',
-            border: '1px solid var(--border-primary)',
-            borderRadius: 2,
-          },
-        }}
-      >
-        <DialogTitle
-          sx={{ color: 'var(--text-primary)', fontWeight: 700, pb: 1 }}
-        >
-          {origemVisualizando?.nome}
-          {(origemVisualizando?.tipo || origemVisualizando?.raridade) && (
-            <Typography
-              variant="caption"
-              sx={{
-                color: 'var(--color-accent)',
-                display: 'block',
-                fontWeight: 600,
-              }}
-            >
-              {[origemVisualizando.tipo, origemVisualizando.raridade]
-                .filter(Boolean)
-                .join(' · ')}
-            </Typography>
-          )}
-        </DialogTitle>
-
-        <DialogContent dividers sx={{ borderColor: 'var(--border-primary)' }}>
-          {origemVisualizando?.linkImagem && (
-            <Box
-              component="img"
-              src={origemVisualizando.linkImagem}
-              alt={origemVisualizando.nome}
-              sx={{
-                width: '100%',
-                maxHeight: 220,
-                borderRadius: 2,
-                objectFit: 'cover',
-                border: '1px solid var(--border-primary)',
-                mb: 2,
-              }}
-              onError={e => {
-                e.currentTarget.style.display = 'none';
-              }}
-            />
-          )}
-
-          {parseTags(origemVisualizando?.tags).length > 0 && (
-            <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.75, mb: 2 }}>
-              {parseTags(origemVisualizando.tags).map(tag => (
-                <Chip
-                  key={tag}
-                  label={tag}
-                  size="small"
-                  sx={{
-                    background: 'var(--bg-secondary)',
-                    color: 'var(--text-secondary)',
-                    border: '1px solid var(--border-primary)',
-                  }}
-                />
-              ))}
-            </Box>
-          )}
-
-          {origemVisualizando?.descricao && (
-            <>
-              <Typography
-                variant="caption"
-                sx={{
-                  color: 'var(--text-muted)',
-                  textTransform: 'uppercase',
-                  letterSpacing: 0.5,
-                  display: 'block',
-                  mb: 0.5,
-                }}
-              >
-                Descrição
-              </Typography>
-              <Typography
-                variant="body2"
-                sx={{ color: 'var(--text-secondary)', mb: 2 }}
-              >
-                {origemVisualizando.descricao}
-              </Typography>
-            </>
-          )}
-
-          {(CAMPOS_POR_TIPO[origemVisualizando?.tipo] || []).filter(
-            f => origemVisualizando[f.key],
-          ).length > 0 && (
-            <>
-              <Divider sx={{ borderColor: 'var(--border-primary)', mb: 1.5 }} />
-              {(CAMPOS_POR_TIPO[origemVisualizando?.tipo] || [])
-                .filter(f => origemVisualizando[f.key])
-                .map(f => (
-                  <Box key={f.key} sx={{ mb: 1.5 }}>
-                    <Typography
-                      variant="caption"
-                      sx={{
-                        color: 'var(--text-muted)',
-                        textTransform: 'uppercase',
-                        letterSpacing: 0.5,
-                        display: 'block',
-                        mb: 0.25,
-                      }}
-                    >
-                      {f.label}
-                    </Typography>
-                    <Typography
-                      variant="body2"
-                      sx={{ color: 'var(--text-secondary)' }}
-                    >
-                      {origemVisualizando[f.key]}
-                    </Typography>
-                  </Box>
-                ))}
-            </>
-          )}
-        </DialogContent>
-
-        <DialogActions sx={{ px: 3, py: 2 }}>
-          <Button
-            onClick={() => setOrigemVisualizando(null)}
-            sx={{ color: 'var(--text-muted)' }}
-          >
-            Fechar
-          </Button>
-          {canWrite(origemVisualizando?.universo) && (
+        titulo={origemVisualizando?.nome}
+        subtitulo={
+          (origemVisualizando?.tipo || origemVisualizando?.raridade) &&
+          [origemVisualizando.tipo, origemVisualizando.raridade]
+            .filter(Boolean)
+            .join(' · ')
+        }
+        imagem={origemVisualizando?.linkImagem}
+        imagemSx={{ height: 'auto', maxHeight: 220 }}
+        actions={
+          canWrite(origemVisualizando?.universo) && (
             <Button
               variant="contained"
               onClick={() => {
@@ -545,9 +331,81 @@ const Origens = () => {
             >
               Editar
             </Button>
-          )}
-        </DialogActions>
-      </Dialog>
+          )
+        }
+      >
+        {parseTags(origemVisualizando?.tags).length > 0 && (
+          <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.75, mb: 2 }}>
+            {parseTags(origemVisualizando.tags).map(tag => (
+              <Chip
+                key={tag}
+                label={tag}
+                size="small"
+                sx={{
+                  background: 'var(--bg-secondary)',
+                  color: 'var(--text-secondary)',
+                  border: '1px solid var(--border-primary)',
+                }}
+              />
+            ))}
+          </Box>
+        )}
+
+        {origemVisualizando?.descricao && (
+          <>
+            <Typography
+              variant="caption"
+              sx={{
+                color: 'var(--text-muted)',
+                textTransform: 'uppercase',
+                letterSpacing: 0.5,
+                display: 'block',
+                mb: 0.5,
+              }}
+            >
+              Descrição
+            </Typography>
+            <Typography
+              variant="body2"
+              sx={{ color: 'var(--text-secondary)', mb: 2 }}
+            >
+              {origemVisualizando.descricao}
+            </Typography>
+          </>
+        )}
+
+        {(CAMPOS_POR_TIPO[origemVisualizando?.tipo] || []).filter(
+          f => origemVisualizando[f.key],
+        ).length > 0 && (
+          <>
+            <Divider sx={{ borderColor: 'var(--border-primary)', mb: 1.5 }} />
+            {(CAMPOS_POR_TIPO[origemVisualizando?.tipo] || [])
+              .filter(f => origemVisualizando[f.key])
+              .map(f => (
+                <Box key={f.key} sx={{ mb: 1.5 }}>
+                  <Typography
+                    variant="caption"
+                    sx={{
+                      color: 'var(--text-muted)',
+                      textTransform: 'uppercase',
+                      letterSpacing: 0.5,
+                      display: 'block',
+                      mb: 0.25,
+                    }}
+                  >
+                    {f.label}
+                  </Typography>
+                  <Typography
+                    variant="body2"
+                    sx={{ color: 'var(--text-secondary)' }}
+                  >
+                    {origemVisualizando[f.key]}
+                  </Typography>
+                </Box>
+              ))}
+          </>
+        )}
+      </EntityViewDialog>
     </Box>
   );
 };

@@ -1,28 +1,23 @@
-﻿import React, { useState, useEffect, useMemo } from 'react';
+﻿import React, { useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import Button from '@mui/material/Button';
 import IconButton from '@mui/material/IconButton';
 import CircularProgress from '@mui/material/CircularProgress';
-import TextField from '@mui/material/TextField';
-import Select from '@mui/material/Select';
-import MenuItem from '@mui/material/MenuItem';
-import FormControl from '@mui/material/FormControl';
-import InputLabel from '@mui/material/InputLabel';
-import Dialog from '@mui/material/Dialog';
-import DialogActions from '@mui/material/DialogActions';
-import DialogContent from '@mui/material/DialogContent';
-import DialogTitle from '@mui/material/DialogTitle';
 import Divider from '@mui/material/Divider';
 import Tooltip from '@mui/material/Tooltip';
 import DeleteOutlineIcon from '@mui/icons-material/DeleteOutlined';
 import EditOutlinedIcon from '@mui/icons-material/EditOutlined';
 import VisibilityOutlinedIcon from '@mui/icons-material/VisibilityOutlined';
-import { getRacas, removeRaca, getUniversos } from 'service/storage';
+import { getRacas, removeRaca } from 'service/storage';
 import { ROUTE_PATHS } from 'common/constants/routes';
 import { useAuth } from 'context/AuthContext';
 import { RARIDADES } from 'common/constants/constants';
+import useEntityCRUD from 'hooks/useEntityCRUD';
+import useUniversos from 'hooks/useUniversos';
+import EntityFilters from 'components/EntityFilters/EntityFilters';
+import EntityViewDialog from 'components/EntityViewDialog/EntityViewDialog';
 import { RacaCard } from './styles';
 
 const ATRIBUTO_LABELS = {
@@ -47,22 +42,17 @@ const HAB_META_FIELDS = [
 const Racas = () => {
   const navigate = useNavigate();
   const { canCreate, canWrite } = useAuth();
-  const [racas, setRacas] = useState([]);
-  const [universos, setUniversos] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const {
+    items: racas,
+    loading: loadingRacas,
+    remove: handleRemove,
+  } = useEntityCRUD({ getAll: getRacas, remove: removeRaca });
+  const { universos, loadingUniversos } = useUniversos();
+  const loading = loadingRacas || loadingUniversos;
   const [filtroNome, setFiltroNome] = useState('');
   const [filtroRaridade, setFiltroRaridade] = useState('');
   const [filtroUniverso, setFiltroUniverso] = useState('');
   const [racaVisualizando, setRacaVisualizando] = useState(null);
-
-  useEffect(() => {
-    Promise.all([getRacas(), getUniversos()])
-      .then(([racasData, universosData]) => {
-        setRacas(racasData);
-        setUniversos(universosData);
-      })
-      .finally(() => setLoading(false));
-  }, []);
 
   const racasFiltradas = useMemo(() => {
     return racas.filter(raca => {
@@ -74,11 +64,6 @@ const Racas = () => {
       return matchNome && matchRaridade && matchUniverso;
     });
   }, [racas, filtroNome, filtroRaridade, filtroUniverso]);
-
-  const handleRemove = async id => {
-    await removeRaca(id);
-    setRacas(prev => prev.filter(r => r.id !== id));
-  };
 
   return (
     <Box className="page-container" id="redungeon-racas" data-page="racas">
@@ -121,122 +106,22 @@ const Racas = () => {
         </Box>
       ) : (
         <>
-          <Box
-            sx={{
-              display: 'grid',
-              gridTemplateColumns: { xs: '1fr', sm: '2fr 1fr 1fr' },
-              gap: 2,
-              mb: 3,
-            }}
-          >
-            <TextField
-              label="Buscar por nome"
-              size="small"
-              value={filtroNome}
-              onChange={e => setFiltroNome(e.target.value)}
-              slotProps={{ inputLabel: { shrink: true } }}
-              sx={{
-                '& .MuiOutlinedInput-root': {
-                  color: 'var(--text-primary)',
-                  '& fieldset': { borderColor: 'var(--border-primary)' },
-                  '&:hover fieldset': { borderColor: 'var(--border-hover)' },
-                  '&.Mui-focused fieldset': {
-                    borderColor: 'var(--color-accent)',
-                  },
-                },
-                '& .MuiInputLabel-root': { color: 'var(--text-secondary)' },
-                '& .MuiInputLabel-root.Mui-focused': {
-                  color: 'var(--color-accent)',
-                },
-              }}
-            />
-            <FormControl size="small">
-              <InputLabel
-                sx={{
-                  color: 'var(--text-secondary)',
-                  '&.Mui-focused': { color: 'var(--color-accent)' },
-                }}
-              >
-                Raridade
-              </InputLabel>
-              <Select
-                label="Raridade"
-                value={filtroRaridade}
-                onChange={e => setFiltroRaridade(e.target.value)}
-                sx={{
-                  color: 'var(--text-primary)',
-                  '& .MuiOutlinedInput-notchedOutline': {
-                    borderColor: 'var(--border-primary)',
-                  },
-                  '&:hover .MuiOutlinedInput-notchedOutline': {
-                    borderColor: 'var(--border-hover)',
-                  },
-                  '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
-                    borderColor: 'var(--color-accent)',
-                  },
-                  '& .MuiSvgIcon-root': { color: 'var(--text-secondary)' },
-                }}
-                MenuProps={{
-                  PaperProps: {
-                    sx: {
-                      background: 'var(--bg-card)',
-                      color: 'var(--text-primary)',
-                    },
-                  },
-                }}
-              >
-                <MenuItem value="">Todas</MenuItem>
-                {RARIDADES.map(r => (
-                  <MenuItem key={r} value={r}>
-                    {r}
-                  </MenuItem>
-                ))}
-              </Select>
-            </FormControl>
-            <FormControl size="small">
-              <InputLabel
-                sx={{
-                  color: 'var(--text-secondary)',
-                  '&.Mui-focused': { color: 'var(--color-accent)' },
-                }}
-              >
-                Universo
-              </InputLabel>
-              <Select
-                label="Universo"
-                value={filtroUniverso}
-                onChange={e => setFiltroUniverso(e.target.value)}
-                sx={{
-                  color: 'var(--text-primary)',
-                  '& .MuiOutlinedInput-notchedOutline': {
-                    borderColor: 'var(--border-primary)',
-                  },
-                  '&:hover .MuiOutlinedInput-notchedOutline': {
-                    borderColor: 'var(--border-hover)',
-                  },
-                  '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
-                    borderColor: 'var(--color-accent)',
-                  },
-                  '& .MuiSvgIcon-root': { color: 'var(--text-secondary)' },
-                }}
-                MenuProps={{
-                  PaperProps: {
-                    sx: {
-                      background: 'var(--bg-card)',
-                      color: 'var(--text-primary)',
-                    },
-                  },
-                }}
-              >
-                <MenuItem value="">Todos</MenuItem>
-                {universos.map(u => (
-                  <MenuItem key={u.id} value={u.id}>
-                    {u.Nome}
-                  </MenuItem>
-                ))}
-              </Select>
-            </FormControl>
-          </Box>
+          <EntityFilters
+            nomeValue={filtroNome}
+            onNomeChange={setFiltroNome}
+            extraFilters={[
+              {
+                label: 'Raridade',
+                value: filtroRaridade,
+                onChange: setFiltroRaridade,
+                options: RARIDADES,
+                allLabel: 'Todas',
+              },
+            ]}
+            universos={universos}
+            universoValue={filtroUniverso}
+            onUniversoChange={setFiltroUniverso}
+          />
 
           {racasFiltradas.length === 0 ? (
             <Box
@@ -379,117 +264,242 @@ const Racas = () => {
         </>
       )}
 
-      <Dialog
+      <EntityViewDialog
         open={Boolean(racaVisualizando)}
         onClose={() => setRacaVisualizando(null)}
-        maxWidth="sm"
-        fullWidth
-        PaperProps={{
-          sx: {
-            background: 'var(--bg-card)',
-            border: '1px solid var(--border-primary)',
-            borderRadius: 2,
-          },
-        }}
+        titulo={racaVisualizando?.nome}
+        subtitulo={
+          racaVisualizando?.raridade &&
+          `${universos.find(u => u.id === racaVisualizando?.universo)?.Nome || 'Universo Desconhecido'} — ${racaVisualizando.raridade}`
+        }
+        imagem={racaVisualizando?.linkImagem}
+        descricao={racaVisualizando?.descricao}
       >
-        <DialogTitle
-          sx={{ color: 'var(--text-primary)', fontWeight: 700, pb: 1 }}
-        >
-          {racaVisualizando?.nome}
-          {racaVisualizando?.raridade && (
-            <Typography
-              variant="caption"
-              sx={{
-                display: 'block',
-                color: 'var(--color-accent)',
-                fontWeight: 600,
-                mt: 0.5,
-              }}
-            >
-              {`${universos.find(u => u.id === racaVisualizando?.universo)?.Nome || 'Universo Desconhecido'} — ${racaVisualizando.raridade}`}
-            </Typography>
-          )}
-        </DialogTitle>
-        <DialogContent dividers sx={{ borderColor: 'var(--border-primary)' }}>
-          {racaVisualizando?.linkImagem && (
-            <Box
-              component="img"
-              src={racaVisualizando.linkImagem}
-              alt={racaVisualizando.nome}
-              sx={{
-                width: '100%',
-                height: 200,
-                borderRadius: 2,
-                objectFit: 'cover',
-                display: 'block',
-                border: '1px solid var(--border-primary)',
-                mb: 2,
-              }}
-              onError={e => {
-                e.currentTarget.style.display = 'none';
-              }}
-            />
-          )}
-          {racaVisualizando?.descricao && (
+        {racaVisualizando?.atributosBasicos &&
+          Object.values(racaVisualizando.atributosBasicos).some(v => v) && (
             <>
+              <Divider sx={{ borderColor: 'var(--border-primary)', mb: 1.5 }} />
               <Typography
                 variant="subtitle2"
                 sx={{
                   color: 'var(--color-accent)',
                   fontWeight: 700,
-                  mb: 0.5,
+                  mb: 1,
                   textTransform: 'uppercase',
                   letterSpacing: 1,
                   fontSize: '0.72rem',
                 }}
               >
-                Descrição
+                Atributos Básicos
               </Typography>
-              <Typography
-                variant="body2"
-                sx={{ color: 'var(--text-secondary)', mb: 2 }}
+              <Box
+                sx={{
+                  display: 'grid',
+                  gridTemplateColumns: 'repeat(auto-fill, minmax(90px, 1fr))',
+                  gap: 1,
+                  mb: 2,
+                }}
               >
-                {racaVisualizando.descricao}
-              </Typography>
+                {Object.entries(racaVisualizando.atributosBasicos).map(
+                  ([key, value]) =>
+                    value ? (
+                      <Box
+                        key={key}
+                        sx={{
+                          background: 'var(--bg-secondary)',
+                          borderRadius: 1,
+                          p: 1,
+                          textAlign: 'center',
+                        }}
+                      >
+                        <Typography
+                          variant="caption"
+                          sx={{
+                            color: 'var(--text-muted)',
+                            display: 'block',
+                          }}
+                        >
+                          {ATRIBUTO_LABELS[key] ?? key}
+                        </Typography>
+                        <Typography
+                          variant="body2"
+                          sx={{
+                            color: 'var(--text-primary)',
+                            fontWeight: 600,
+                          }}
+                        >
+                          {value}
+                        </Typography>
+                      </Box>
+                    ) : null,
+                )}
+              </Box>
             </>
           )}
-          {racaVisualizando?.atributosBasicos &&
-            Object.values(racaVisualizando.atributosBasicos).some(v => v) && (
-              <>
-                <Divider
-                  sx={{ borderColor: 'var(--border-primary)', mb: 1.5 }}
-                />
-                <Typography
-                  variant="subtitle2"
-                  sx={{
-                    color: 'var(--color-accent)',
-                    fontWeight: 700,
-                    mb: 1,
-                    textTransform: 'uppercase',
-                    letterSpacing: 1,
-                    fontSize: '0.72rem',
-                  }}
-                >
-                  Atributos Básicos
-                </Typography>
+        {racaVisualizando?.habilidadesRaciais?.habilidadesBasicas?.length >
+          0 && (
+          <>
+            <Divider sx={{ borderColor: 'var(--border-primary)', mb: 1.5 }} />
+            <Typography
+              variant="subtitle2"
+              sx={{
+                color: 'var(--color-accent)',
+                fontWeight: 700,
+                mb: 1,
+                textTransform: 'uppercase',
+                letterSpacing: 1,
+                fontSize: '0.72rem',
+              }}
+            >
+              Habilidades Básicas
+            </Typography>
+            {racaVisualizando.habilidadesRaciais.habilidadesBasicas.map(
+              (hab, i) => (
                 <Box
+                  key={i}
                   sx={{
-                    display: 'grid',
-                    gridTemplateColumns: 'repeat(auto-fill, minmax(90px, 1fr))',
-                    gap: 1,
-                    mb: 2,
+                    mb: 1,
+                    p: 1.5,
+                    background: 'var(--bg-secondary)',
+                    borderRadius: 1,
+                    border: '1px solid var(--border-primary)',
                   }}
                 >
-                  {Object.entries(racaVisualizando.atributosBasicos).map(
-                    ([key, value]) =>
-                      value ? (
-                        <Box
-                          key={key}
+                  <Typography
+                    variant="body2"
+                    sx={{
+                      color: 'var(--text-primary)',
+                      fontWeight: 600,
+                      mb: 0.5,
+                    }}
+                  >
+                    {hab.nome}
+                  </Typography>
+                  {hab.descricao && (
+                    <Typography
+                      variant="caption"
+                      sx={{
+                        color: 'var(--text-secondary)',
+                        display: 'block',
+                        mb: 0.75,
+                      }}
+                    >
+                      {hab.descricao}
+                    </Typography>
+                  )}
+                  {hab.bonus?.filter(Boolean).length > 0 && (
+                    <Box sx={{ mt: 0.5 }}>
+                      <Typography
+                        variant="caption"
+                        sx={{
+                          color: 'var(--text-muted)',
+                          display: 'block',
+                          fontSize: '0.65rem',
+                          mb: 0.25,
+                        }}
+                      >
+                        Bônus
+                      </Typography>
+                      {hab.bonus.filter(Boolean).map((b, bi) => (
+                        <Typography
+                          key={bi}
+                          variant="caption"
                           sx={{
-                            background: 'var(--bg-secondary)',
+                            color: 'var(--color-accent)',
+                            display: 'block',
+                          }}
+                        >
+                          • {b}
+                        </Typography>
+                      ))}
+                    </Box>
+                  )}
+                </Box>
+              ),
+            )}
+          </>
+        )}
+        {racaVisualizando?.habilidadesRaciais?.habilidadesAvancadas?.length >
+          0 && (
+          <>
+            <Divider sx={{ borderColor: 'var(--border-primary)', mb: 1.5 }} />
+            <Typography
+              variant="subtitle2"
+              sx={{
+                color: 'var(--color-accent)',
+                fontWeight: 700,
+                mb: 1,
+                textTransform: 'uppercase',
+                letterSpacing: 1,
+                fontSize: '0.72rem',
+              }}
+            >
+              Habilidades Avançadas
+            </Typography>
+            {racaVisualizando.habilidadesRaciais.habilidadesAvancadas.map(
+              (hab, i) => (
+                <Box
+                  key={i}
+                  sx={{
+                    mb: 1,
+                    p: 1.5,
+                    background: 'var(--bg-secondary)',
+                    borderRadius: 1,
+                    border: '1px solid var(--border-primary)',
+                  }}
+                >
+                  <Box
+                    sx={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'space-between',
+                      mb: 0.5,
+                    }}
+                  >
+                    <Typography
+                      variant="body2"
+                      sx={{ color: 'var(--text-primary)', fontWeight: 600 }}
+                    >
+                      {hab.nome}
+                    </Typography>
+                    {hab.acao && (
+                      <Typography
+                        variant="caption"
+                        sx={{ color: 'var(--color-accent)', fontWeight: 600 }}
+                      >
+                        {hab.acao}
+                      </Typography>
+                    )}
+                  </Box>
+                  {hab.descricao && (
+                    <Typography
+                      variant="caption"
+                      sx={{
+                        color: 'var(--text-secondary)',
+                        display: 'block',
+                        mb: 0.75,
+                      }}
+                    >
+                      {hab.descricao}
+                    </Typography>
+                  )}
+                  {HAB_META_FIELDS.filter(f => hab[f.key]).length > 0 && (
+                    <Box
+                      sx={{
+                        display: 'flex',
+                        flexWrap: 'wrap',
+                        gap: 0.75,
+                        mt: 0.5,
+                      }}
+                    >
+                      {HAB_META_FIELDS.filter(f => hab[f.key]).map(f => (
+                        <Box
+                          key={f.key}
+                          sx={{
+                            background: 'var(--bg-primary)',
                             borderRadius: 1,
-                            p: 1,
-                            textAlign: 'center',
+                            px: 1,
+                            py: 0.5,
                           }}
                         >
                           <Typography
@@ -497,259 +507,57 @@ const Racas = () => {
                             sx={{
                               color: 'var(--text-muted)',
                               display: 'block',
+                              fontSize: '0.65rem',
                             }}
                           >
-                            {ATRIBUTO_LABELS[key] ?? key}
+                            {f.label}
                           </Typography>
                           <Typography
-                            variant="body2"
+                            variant="caption"
                             sx={{
                               color: 'var(--text-primary)',
                               fontWeight: 600,
                             }}
                           >
-                            {value}
+                            {hab[f.key]}
                           </Typography>
                         </Box>
-                      ) : null,
+                      ))}
+                    </Box>
+                  )}
+                  {hab.bonus?.filter(Boolean).length > 0 && (
+                    <Box sx={{ mt: 0.75 }}>
+                      <Typography
+                        variant="caption"
+                        sx={{
+                          color: 'var(--text-muted)',
+                          display: 'block',
+                          fontSize: '0.65rem',
+                          mb: 0.25,
+                        }}
+                      >
+                        Bônus
+                      </Typography>
+                      {hab.bonus.filter(Boolean).map((b, bi) => (
+                        <Typography
+                          key={bi}
+                          variant="caption"
+                          sx={{
+                            color: 'var(--color-accent)',
+                            display: 'block',
+                          }}
+                        >
+                          • {b}
+                        </Typography>
+                      ))}
+                    </Box>
                   )}
                 </Box>
-              </>
+              ),
             )}
-          {racaVisualizando?.habilidadesRaciais?.habilidadesBasicas?.length >
-            0 && (
-            <>
-              <Divider sx={{ borderColor: 'var(--border-primary)', mb: 1.5 }} />
-              <Typography
-                variant="subtitle2"
-                sx={{
-                  color: 'var(--color-accent)',
-                  fontWeight: 700,
-                  mb: 1,
-                  textTransform: 'uppercase',
-                  letterSpacing: 1,
-                  fontSize: '0.72rem',
-                }}
-              >
-                Habilidades Básicas
-              </Typography>
-              {racaVisualizando.habilidadesRaciais.habilidadesBasicas.map(
-                (hab, i) => (
-                  <Box
-                    key={i}
-                    sx={{
-                      mb: 1,
-                      p: 1.5,
-                      background: 'var(--bg-secondary)',
-                      borderRadius: 1,
-                      border: '1px solid var(--border-primary)',
-                    }}
-                  >
-                    <Typography
-                      variant="body2"
-                      sx={{
-                        color: 'var(--text-primary)',
-                        fontWeight: 600,
-                        mb: 0.5,
-                      }}
-                    >
-                      {hab.nome}
-                    </Typography>
-                    {hab.descricao && (
-                      <Typography
-                        variant="caption"
-                        sx={{
-                          color: 'var(--text-secondary)',
-                          display: 'block',
-                          mb: 0.75,
-                        }}
-                      >
-                        {hab.descricao}
-                      </Typography>
-                    )}
-                    {hab.bonus?.filter(Boolean).length > 0 && (
-                      <Box sx={{ mt: 0.5 }}>
-                        <Typography
-                          variant="caption"
-                          sx={{
-                            color: 'var(--text-muted)',
-                            display: 'block',
-                            fontSize: '0.65rem',
-                            mb: 0.25,
-                          }}
-                        >
-                          Bônus
-                        </Typography>
-                        {hab.bonus.filter(Boolean).map((b, bi) => (
-                          <Typography
-                            key={bi}
-                            variant="caption"
-                            sx={{
-                              color: 'var(--color-accent)',
-                              display: 'block',
-                            }}
-                          >
-                            • {b}
-                          </Typography>
-                        ))}
-                      </Box>
-                    )}
-                  </Box>
-                ),
-              )}
-            </>
-          )}
-          {racaVisualizando?.habilidadesRaciais?.habilidadesAvancadas?.length >
-            0 && (
-            <>
-              <Divider sx={{ borderColor: 'var(--border-primary)', mb: 1.5 }} />
-              <Typography
-                variant="subtitle2"
-                sx={{
-                  color: 'var(--color-accent)',
-                  fontWeight: 700,
-                  mb: 1,
-                  textTransform: 'uppercase',
-                  letterSpacing: 1,
-                  fontSize: '0.72rem',
-                }}
-              >
-                Habilidades Avançadas
-              </Typography>
-              {racaVisualizando.habilidadesRaciais.habilidadesAvancadas.map(
-                (hab, i) => (
-                  <Box
-                    key={i}
-                    sx={{
-                      mb: 1,
-                      p: 1.5,
-                      background: 'var(--bg-secondary)',
-                      borderRadius: 1,
-                      border: '1px solid var(--border-primary)',
-                    }}
-                  >
-                    <Box
-                      sx={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'space-between',
-                        mb: 0.5,
-                      }}
-                    >
-                      <Typography
-                        variant="body2"
-                        sx={{ color: 'var(--text-primary)', fontWeight: 600 }}
-                      >
-                        {hab.nome}
-                      </Typography>
-                      {hab.acao && (
-                        <Typography
-                          variant="caption"
-                          sx={{ color: 'var(--color-accent)', fontWeight: 600 }}
-                        >
-                          {hab.acao}
-                        </Typography>
-                      )}
-                    </Box>
-                    {hab.descricao && (
-                      <Typography
-                        variant="caption"
-                        sx={{
-                          color: 'var(--text-secondary)',
-                          display: 'block',
-                          mb: 0.75,
-                        }}
-                      >
-                        {hab.descricao}
-                      </Typography>
-                    )}
-                    {HAB_META_FIELDS.filter(f => hab[f.key]).length > 0 && (
-                      <Box
-                        sx={{
-                          display: 'flex',
-                          flexWrap: 'wrap',
-                          gap: 0.75,
-                          mt: 0.5,
-                        }}
-                      >
-                        {HAB_META_FIELDS.filter(f => hab[f.key]).map(f => (
-                          <Box
-                            key={f.key}
-                            sx={{
-                              background: 'var(--bg-primary)',
-                              borderRadius: 1,
-                              px: 1,
-                              py: 0.5,
-                            }}
-                          >
-                            <Typography
-                              variant="caption"
-                              sx={{
-                                color: 'var(--text-muted)',
-                                display: 'block',
-                                fontSize: '0.65rem',
-                              }}
-                            >
-                              {f.label}
-                            </Typography>
-                            <Typography
-                              variant="caption"
-                              sx={{
-                                color: 'var(--text-primary)',
-                                fontWeight: 600,
-                              }}
-                            >
-                              {hab[f.key]}
-                            </Typography>
-                          </Box>
-                        ))}
-                      </Box>
-                    )}
-                    {hab.bonus?.filter(Boolean).length > 0 && (
-                      <Box sx={{ mt: 0.75 }}>
-                        <Typography
-                          variant="caption"
-                          sx={{
-                            color: 'var(--text-muted)',
-                            display: 'block',
-                            fontSize: '0.65rem',
-                            mb: 0.25,
-                          }}
-                        >
-                          Bônus
-                        </Typography>
-                        {hab.bonus.filter(Boolean).map((b, bi) => (
-                          <Typography
-                            key={bi}
-                            variant="caption"
-                            sx={{
-                              color: 'var(--color-accent)',
-                              display: 'block',
-                            }}
-                          >
-                            • {b}
-                          </Typography>
-                        ))}
-                      </Box>
-                    )}
-                  </Box>
-                ),
-              )}
-            </>
-          )}
-        </DialogContent>
-        <DialogActions sx={{ px: 3, py: 2 }}>
-          <Button
-            onClick={() => setRacaVisualizando(null)}
-            sx={{
-              color: 'var(--text-secondary)',
-              '&:hover': { color: 'var(--text-primary)' },
-            }}
-          >
-            Fechar
-          </Button>
-        </DialogActions>
-      </Dialog>
+          </>
+        )}
+      </EntityViewDialog>
     </Box>
   );
 };

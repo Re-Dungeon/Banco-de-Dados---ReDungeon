@@ -2,7 +2,7 @@
 
 ## Visão Geral do Projeto
 
-Esta é uma aplicação frontend para o **Re-Dungeon**, um banco de dados de campanha de RPG de mesa. Ela permite gerenciar NPCs, Mesas, Mundo, Recursos, Regras, Macros e outras informações relevantes para sessões de RPG.
+Esta é uma aplicação frontend para o **Re-Dungeon**, um banco de dados de campanha de RPG de mesa. Ela permite gerenciar Classes, Raças, Itens, Materiais, Condições, Artes, Origens, Receitas, CardFlux, Veias Astrais e Regras, entre outras informações relevantes para sessões de RPG.
 
 ### Tech Stack
 - **React 19** com **Vite** como bundler
@@ -11,10 +11,11 @@ Esta é uma aplicação frontend para o **Re-Dungeon**, um banco de dados de cam
 - **React Router DOM v7** para navegação
 - **Formik** com **Yup** para formulários e validação
 - **Chart.js** com **react-chartjs-2** para visualizações de dados
-- **localStorage** como camada de persistência de dados (via `service/storage.js`)
+- **Firebase/Firestore** como camada de persistência de dados (via `service/storage.js`)
+- **Firebase Auth** para autenticação de usuários
 
 ### Persistência de Dados
-Toda a persistência é feita via **localStorage** através do serviço `src/service/storage.js`. Não há backend ou API externa. As chaves de armazenamento seguem o prefixo `redungeon_`.
+Toda a persistência é feita via **Firebase/Firestore** através do serviço `src/service/storage.js`. Não há uso de `localStorage` no projeto — cada entidade (Classes, Materiais, Raças, Itens, Receitas, Condições, Artes, Origens, Regras, CardFlux, Veias Astrais) é uma coleção Firestore própria, acessada por funções CRUD (`get*`/`add*`/`remove*`/`update*`) que seguem o mesmo padrão genérico. As coleções `Universo` e `userPermissions` são somente-leitura pelo frontend (`getUniversos`, `getUserPermissions`).
 
 ---
 
@@ -29,19 +30,39 @@ src/
 │   └── styles/        # CSS global e estilos compartilhados
 ├── components/        # Componentes reutilizáveis (Header, Layout, Sidebar)
 ├── pages/             # Páginas da aplicação
-│   ├── Macros/
-│   ├── Mesas/
-│   ├── Mundo/
-│   ├── NPCs/
-│   ├── Nucleo/
 │   ├── PatchNotes/
 │   ├── Recursos/
+│   │   ├── Artes/
+│   │   ├── CardFlux/
+│   │   ├── Classes/
+│   │   ├── Condicoes/
+│   │   ├── Itens/
+│   │   ├── Materiais/
+│   │   ├── Origens/
+│   │   ├── Racas/
+│   │   ├── Receitas/
+│   │   └── VeiasAstrais/
 │   ├── Regras/
 │   └── Sobre/
 ├── routes/            # Definição das rotas
 └── service/
-    └── storage.js     # Camada de acesso ao localStorage
+    └── storage.js     # Camada de acesso ao Firestore
 ```
+
+### Autenticação e Permissões
+
+A aplicação usa **Firebase Auth** (`src/service/firebase.js`) com três fluxos de login: e-mail/senha, cadastro e Google (popup).
+
+- **`src/context/AuthContext.jsx`** — `AuthProvider` + hook `useAuth()`. Expõe `{ currentUser, loading, login, signup, loginWithGoogle, logout, isAdmin, allowedUniversos, loadingPermissions, canCreate, canWrite }`.
+- **`src/hooks/usePermissions.js`** — `usePermissions(currentUser)` calcula permissões a partir do documento `userPermissions/{uid}` no Firestore:
+  - `isAdmin`: booleano.
+  - `allowedUniversos`: lista de IDs de Universo em que o usuário pode escrever.
+  - `canCreate()`: `true` se `isAdmin` ou `allowedUniversos.length > 0`.
+  - `canWrite(universoId)`: `true` se `isAdmin` ou `universoId` está em `allowedUniversos`.
+- **`src/components/ProtectedRoute/ProtectedRoute.jsx`** — guarda de rota (layout route) que bloqueia acesso enquanto `loading` é `true` ou quando não há `currentUser`; não valida `canCreate`/`canWrite` (isso é feito dentro de cada página).
+- **`src/components/LoginModal/LoginModal.jsx`** — UI de login (e-mail/senha + Google), consumida via `useAuth()`.
+
+Ao criar uma página com operações de escrita, use `canCreate()`/`canWrite(universoId)` de `useAuth()` para exibir/ocultar botões de criar, editar e remover.
 
 ### Padrão de Arquivos por Página
 Cada página pode conter:
@@ -186,21 +207,21 @@ Todas as operações de dados devem passar por `service/storage.js`:
 
 ```javascript
 // Leitura
-import { getNPCs, getMesas } from 'service/storage';
+import { getRacas, getItens } from 'service/storage';
 
 // Criação
-import { addNPC, addMesa } from 'service/storage';
+import { addRaca, addIten } from 'service/storage';
 
 // Remoção
-import { removeNPC, removeMesa } from 'service/storage';
+import { removeRaca, removeIten } from 'service/storage';
 
 // Atualização
-import { updateNPC, updateMesa } from 'service/storage';
+import { updateRaca, updateIten } from 'service/storage';
 ```
 
 Ao adicionar uma nova entidade ao sistema:
-1. Registre a chave em `KEYS` dentro de `storage.js`
-2. Exporte as funções CRUD usando as funções genéricas internas (`getItems`, `addItem`, `removeItem`, `updateItem`)
+1. Crie a coleção correspondente no Firestore.
+2. Exporte as funções `get*`/`add*`/`remove*`/`update*` em `storage.js`, seguindo o mesmo padrão das entidades existentes (`getDocs`/`addDoc`/`deleteDoc`/`updateDoc` com `createdAt`/`updatedAt` via `serverTimestamp()`).
 
 ---
 
@@ -275,14 +296,14 @@ npm run eslint    # Verificar lint
 
 - Use `React.memo()` para componentes que recebem as mesmas props frequentemente.
 - Use `useCallback` e `useMemo` quando evitar re-renders desnecessários for relevante.
-- Inicialize estado de localStorage com função lazy: `useState(() => getItems())`.
+- Inicialize estado com função lazy quando o valor inicial exigir cálculo custoso: `useState(() => calcularValorInicial())`.
 
 ---
 
 ## Considerações de Segurança
 
-- Sanitize inputs do usuário antes de salvar no localStorage.
-- Não armazene dados sensíveis no localStorage.
+- Sanitize inputs do usuário antes de persistir no Firestore.
+- A autorização de escrita é reforçada em duas camadas: no frontend, via `canCreate()`/`canWrite(universoId)` (`useAuth()`), usados para esconder ações não permitidas na UI; e no backend, via **regras de segurança do Firestore** (`firestore.rules`), que é a camada que efetivamente impede escrita não autorizada — nunca confie somente na checagem de UI.
 - Valide dados no frontend com Yup antes de persistir.
 - Siga as diretrizes OWASP para segurança no cliente.
 

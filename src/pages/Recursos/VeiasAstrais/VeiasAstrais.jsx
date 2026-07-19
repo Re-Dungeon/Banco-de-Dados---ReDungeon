@@ -1,53 +1,39 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import Button from '@mui/material/Button';
 import IconButton from '@mui/material/IconButton';
 import CircularProgress from '@mui/material/CircularProgress';
-import TextField from '@mui/material/TextField';
-import Select from '@mui/material/Select';
-import MenuItem from '@mui/material/MenuItem';
-import FormControl from '@mui/material/FormControl';
-import InputLabel from '@mui/material/InputLabel';
-import Dialog from '@mui/material/Dialog';
-import DialogActions from '@mui/material/DialogActions';
-import DialogContent from '@mui/material/DialogContent';
-import DialogTitle from '@mui/material/DialogTitle';
 import Divider from '@mui/material/Divider';
 import Tooltip from '@mui/material/Tooltip';
 import DeleteOutlineIcon from '@mui/icons-material/DeleteOutlined';
 import EditOutlinedIcon from '@mui/icons-material/EditOutlined';
 import VisibilityOutlinedIcon from '@mui/icons-material/VisibilityOutlined';
-import {
-  getVeiasAstrais,
-  removeVeiaAstral,
-  getUniversos,
-} from 'service/storage';
+import { getVeiasAstrais, removeVeiaAstral } from 'service/storage';
 import { ROUTE_PATHS } from 'common/constants/routes';
 import { useAuth } from 'context/AuthContext';
 import { DIVINDADES_VEIAS_ASTRAIS } from 'common/constants/constants';
+import useEntityCRUD from 'hooks/useEntityCRUD';
+import useUniversos from 'hooks/useUniversos';
+import EntityFilters from 'components/EntityFilters/EntityFilters';
+import EntityViewDialog from 'components/EntityViewDialog/EntityViewDialog';
 import { VeiaAstralCard } from './styles';
 
 const VeiasAstrais = () => {
   const navigate = useNavigate();
   const { canCreate, canWrite } = useAuth();
-  const [veiasAstrais, setVeiasAstrais] = useState([]);
-  const [universos, setUniversos] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const {
+    items: veiasAstrais,
+    loading: loadingVeiasAstrais,
+    remove: handleRemove,
+  } = useEntityCRUD({ getAll: getVeiasAstrais, remove: removeVeiaAstral });
+  const { universos, loadingUniversos } = useUniversos();
+  const loading = loadingVeiasAstrais || loadingUniversos;
   const [filtroNome, setFiltroNome] = useState('');
   const [filtroDivindade, setFiltroDivindade] = useState('');
   const [filtroUniverso, setFiltroUniverso] = useState('');
   const [veiaAstralVisualizando, setVeiaAstralVisualizando] = useState(null);
-
-  useEffect(() => {
-    Promise.all([getVeiasAstrais(), getUniversos()])
-      .then(([veiasAstraisData, universosData]) => {
-        setVeiasAstrais(veiasAstraisData);
-        setUniversos(universosData);
-      })
-      .finally(() => setLoading(false));
-  }, []);
 
   const veiasAstraisFiltradas = useMemo(() => {
     return veiasAstrais.filter(veiaAstral => {
@@ -61,47 +47,6 @@ const VeiasAstrais = () => {
       return matchNome && matchDivindade && matchUniverso;
     });
   }, [veiasAstrais, filtroNome, filtroDivindade, filtroUniverso]);
-
-  const handleRemove = async id => {
-    await removeVeiaAstral(id);
-    setVeiasAstrais(prev => prev.filter(v => v.id !== id));
-  };
-
-  const inputSx = {
-    '& .MuiOutlinedInput-root': {
-      color: 'var(--text-primary)',
-      '& fieldset': { borderColor: 'var(--border-primary)' },
-      '&:hover fieldset': { borderColor: 'var(--border-hover)' },
-      '&.Mui-focused fieldset': { borderColor: 'var(--color-accent)' },
-    },
-    '& .MuiInputLabel-root': { color: 'var(--text-secondary)' },
-    '& .MuiInputLabel-root.Mui-focused': { color: 'var(--color-accent)' },
-  };
-
-  const selectSx = {
-    color: 'var(--text-primary)',
-    '& .MuiOutlinedInput-notchedOutline': {
-      borderColor: 'var(--border-primary)',
-    },
-    '&:hover .MuiOutlinedInput-notchedOutline': {
-      borderColor: 'var(--border-hover)',
-    },
-    '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
-      borderColor: 'var(--color-accent)',
-    },
-    '& .MuiSvgIcon-root': { color: 'var(--text-secondary)' },
-  };
-
-  const menuPropsSx = {
-    PaperProps: {
-      sx: { background: 'var(--bg-card)', color: 'var(--text-primary)' },
-    },
-  };
-
-  const labelSx = {
-    color: 'var(--text-secondary)',
-    '&.Mui-focused': { color: 'var(--color-accent)' },
-  };
 
   return (
     <Box
@@ -149,57 +94,22 @@ const VeiasAstrais = () => {
         </Box>
       ) : (
         <>
-          <Box
-            sx={{
-              display: 'grid',
-              gridTemplateColumns: { xs: '1fr', sm: '2fr 1fr 1fr' },
-              gap: 2,
-              mb: 3,
-            }}
-          >
-            <TextField
-              label="Buscar por nome"
-              size="small"
-              value={filtroNome}
-              onChange={e => setFiltroNome(e.target.value)}
-              slotProps={{ inputLabel: { shrink: true } }}
-              sx={inputSx}
-            />
-            <FormControl size="small">
-              <InputLabel sx={labelSx}>Divindade/Constelação</InputLabel>
-              <Select
-                label="Divindade/Constelação"
-                value={filtroDivindade}
-                onChange={e => setFiltroDivindade(e.target.value)}
-                sx={selectSx}
-                MenuProps={menuPropsSx}
-              >
-                <MenuItem value="">Todas</MenuItem>
-                {DIVINDADES_VEIAS_ASTRAIS.map(d => (
-                  <MenuItem key={d} value={d}>
-                    {d}
-                  </MenuItem>
-                ))}
-              </Select>
-            </FormControl>
-            <FormControl size="small">
-              <InputLabel sx={labelSx}>Universo</InputLabel>
-              <Select
-                label="Universo"
-                value={filtroUniverso}
-                onChange={e => setFiltroUniverso(e.target.value)}
-                sx={selectSx}
-                MenuProps={menuPropsSx}
-              >
-                <MenuItem value="">Todos</MenuItem>
-                {universos.map(u => (
-                  <MenuItem key={u.id} value={u.id}>
-                    {u.Nome}
-                  </MenuItem>
-                ))}
-              </Select>
-            </FormControl>
-          </Box>
+          <EntityFilters
+            nomeValue={filtroNome}
+            onNomeChange={setFiltroNome}
+            extraFilters={[
+              {
+                label: 'Divindade/Constelação',
+                value: filtroDivindade,
+                onChange: setFiltroDivindade,
+                options: DIVINDADES_VEIAS_ASTRAIS,
+                allLabel: 'Todas',
+              },
+            ]}
+            universos={universos}
+            universoValue={filtroUniverso}
+            onUniversoChange={setFiltroUniverso}
+          />
 
           {veiasAstraisFiltradas.length === 0 ? (
             <Box
@@ -367,143 +277,26 @@ const VeiasAstrais = () => {
         </>
       )}
 
-      {/* Dialog de detalhes */}
-      <Dialog
+      <EntityViewDialog
         open={Boolean(veiaAstralVisualizando)}
         onClose={() => setVeiaAstralVisualizando(null)}
-        maxWidth="sm"
-        fullWidth
-        PaperProps={{
-          sx: {
-            background: 'var(--bg-card)',
-            border: '1px solid var(--border-primary)',
-            borderRadius: 2,
-          },
-        }}
-      >
-        <DialogTitle
-          sx={{ color: 'var(--text-primary)', fontWeight: 700, pb: 1 }}
-        >
-          {veiaAstralVisualizando?.nome}
-          {(veiaAstralVisualizando?.divindade ||
-            veiaAstralVisualizando?.nivel) && (
-            <Typography
-              variant="caption"
-              sx={{
-                color: 'var(--color-accent)',
-                display: 'block',
-                fontWeight: 600,
-              }}
-            >
-              {[
-                veiaAstralVisualizando.divindade,
-                veiaAstralVisualizando.nivel
-                  ? `Nível ${veiaAstralVisualizando.nivel}`
-                  : null,
-              ]
-                .filter(Boolean)
-                .join(' · ')}
-            </Typography>
-          )}
-        </DialogTitle>
-
-        <DialogContent dividers sx={{ borderColor: 'var(--border-primary)' }}>
-          {veiaAstralVisualizando?.linkImagem && (
-            <Box
-              component="img"
-              src={veiaAstralVisualizando.linkImagem}
-              alt={veiaAstralVisualizando.nome}
-              sx={{
-                width: '100%',
-                maxHeight: 220,
-                borderRadius: 2,
-                objectFit: 'cover',
-                border: '1px solid var(--border-primary)',
-                mb: 2,
-              }}
-              onError={e => {
-                e.currentTarget.style.display = 'none';
-              }}
-            />
-          )}
-
-          {veiaAstralVisualizando?.custo && (
-            <Box sx={{ mb: 2 }}>
-              <Typography
-                variant="caption"
-                sx={{
-                  color: 'var(--text-muted)',
-                  display: 'block',
-                  mb: 0.3,
-                }}
-              >
-                Custo
-              </Typography>
-              <Typography
-                variant="body2"
-                sx={{ color: 'var(--text-primary)', fontWeight: 600 }}
-              >
-                {veiaAstralVisualizando.custo}
-              </Typography>
-            </Box>
-          )}
-
-          {veiaAstralVisualizando?.descricao && (
-            <>
-              <Typography
-                variant="caption"
-                sx={{
-                  color: 'var(--text-muted)',
-                  textTransform: 'uppercase',
-                  letterSpacing: 0.5,
-                  display: 'block',
-                  mb: 0.5,
-                }}
-              >
-                Descrição
-              </Typography>
-              <Typography
-                variant="body2"
-                sx={{ color: 'var(--text-secondary)', mb: 2 }}
-              >
-                {veiaAstralVisualizando.descricao}
-              </Typography>
-            </>
-          )}
-
-          {veiaAstralVisualizando?.aprimoramento && (
-            <>
-              <Divider sx={{ borderColor: 'var(--border-primary)', mb: 1.5 }} />
-              <Typography
-                variant="caption"
-                sx={{
-                  color: 'var(--text-muted)',
-                  textTransform: 'uppercase',
-                  letterSpacing: 0.5,
-                  display: 'block',
-                  mb: 0.5,
-                }}
-              >
-                Aprimoramento
-              </Typography>
-              <Typography
-                variant="body2"
-                sx={{ color: 'var(--text-secondary)' }}
-              >
-                {veiaAstralVisualizando.aprimoramento}
-              </Typography>
-            </>
-          )}
-        </DialogContent>
-
-        <DialogActions sx={{ px: 3, py: 2 }}>
-          <Button
-            onClick={() => setVeiaAstralVisualizando(null)}
-            sx={{ color: 'var(--text-muted)' }}
-          >
-            Fechar
-          </Button>
-          {canWrite(veiaAstralVisualizando?.universo) && (
+        titulo={veiaAstralVisualizando?.nome}
+        subtitulo={
+          (veiaAstralVisualizando?.divindade ||
+            veiaAstralVisualizando?.nivel) &&
+          [
+            veiaAstralVisualizando.divindade,
+            veiaAstralVisualizando.nivel
+              ? `Nível ${veiaAstralVisualizando.nivel}`
+              : null,
+          ]
+            .filter(Boolean)
+            .join(' · ')
+        }
+        imagem={veiaAstralVisualizando?.linkImagem}
+        imagemSx={{ height: 'auto', maxHeight: 220 }}
+        actions={
+          canWrite(veiaAstralVisualizando?.universo) && (
             <Button
               variant="contained"
               onClick={() => {
@@ -519,9 +312,74 @@ const VeiasAstrais = () => {
             >
               Editar
             </Button>
-          )}
-        </DialogActions>
-      </Dialog>
+          )
+        }
+      >
+        {veiaAstralVisualizando?.custo && (
+          <Box sx={{ mb: 2 }}>
+            <Typography
+              variant="caption"
+              sx={{
+                color: 'var(--text-muted)',
+                display: 'block',
+                mb: 0.3,
+              }}
+            >
+              Custo
+            </Typography>
+            <Typography
+              variant="body2"
+              sx={{ color: 'var(--text-primary)', fontWeight: 600 }}
+            >
+              {veiaAstralVisualizando.custo}
+            </Typography>
+          </Box>
+        )}
+
+        {veiaAstralVisualizando?.descricao && (
+          <>
+            <Typography
+              variant="caption"
+              sx={{
+                color: 'var(--text-muted)',
+                textTransform: 'uppercase',
+                letterSpacing: 0.5,
+                display: 'block',
+                mb: 0.5,
+              }}
+            >
+              Descrição
+            </Typography>
+            <Typography
+              variant="body2"
+              sx={{ color: 'var(--text-secondary)', mb: 2 }}
+            >
+              {veiaAstralVisualizando.descricao}
+            </Typography>
+          </>
+        )}
+
+        {veiaAstralVisualizando?.aprimoramento && (
+          <>
+            <Divider sx={{ borderColor: 'var(--border-primary)', mb: 1.5 }} />
+            <Typography
+              variant="caption"
+              sx={{
+                color: 'var(--text-muted)',
+                textTransform: 'uppercase',
+                letterSpacing: 0.5,
+                display: 'block',
+                mb: 0.5,
+              }}
+            >
+              Aprimoramento
+            </Typography>
+            <Typography variant="body2" sx={{ color: 'var(--text-secondary)' }}>
+              {veiaAstralVisualizando.aprimoramento}
+            </Typography>
+          </>
+        )}
+      </EntityViewDialog>
     </Box>
   );
 };

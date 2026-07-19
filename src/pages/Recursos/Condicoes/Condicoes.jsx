@@ -1,49 +1,39 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import Button from '@mui/material/Button';
 import IconButton from '@mui/material/IconButton';
 import CircularProgress from '@mui/material/CircularProgress';
-import TextField from '@mui/material/TextField';
-import Select from '@mui/material/Select';
-import MenuItem from '@mui/material/MenuItem';
-import FormControl from '@mui/material/FormControl';
-import InputLabel from '@mui/material/InputLabel';
-import Dialog from '@mui/material/Dialog';
-import DialogActions from '@mui/material/DialogActions';
-import DialogContent from '@mui/material/DialogContent';
-import DialogTitle from '@mui/material/DialogTitle';
 import Divider from '@mui/material/Divider';
 import Tooltip from '@mui/material/Tooltip';
 import DeleteOutlineIcon from '@mui/icons-material/DeleteOutlined';
 import EditOutlinedIcon from '@mui/icons-material/EditOutlined';
 import VisibilityOutlinedIcon from '@mui/icons-material/VisibilityOutlined';
-import { getCondicoes, removeCondicao, getUniversos } from 'service/storage';
+import { getCondicoes, removeCondicao } from 'service/storage';
 import { ROUTE_PATHS } from 'common/constants/routes';
 import { useAuth } from 'context/AuthContext';
 import { RARIDADES } from 'common/constants/constants';
+import useEntityCRUD from 'hooks/useEntityCRUD';
+import useUniversos from 'hooks/useUniversos';
+import EntityFilters from 'components/EntityFilters/EntityFilters';
+import EntityViewDialog from 'components/EntityViewDialog/EntityViewDialog';
 import { CondicaoCard } from './styles';
 
 const Condicoes = () => {
   const navigate = useNavigate();
   const { canCreate, canWrite } = useAuth();
-  const [condicoes, setCondicoes] = useState([]);
-  const [universos, setUniversos] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const {
+    items: condicoes,
+    loading: loadingCondicoes,
+    remove: handleRemove,
+  } = useEntityCRUD({ getAll: getCondicoes, remove: removeCondicao });
+  const { universos, loadingUniversos } = useUniversos();
+  const loading = loadingCondicoes || loadingUniversos;
   const [filtroNome, setFiltroNome] = useState('');
   const [filtroRaridade, setFiltroRaridade] = useState('');
   const [filtroUniverso, setFiltroUniverso] = useState('');
   const [condicaoVisualizando, setCondicaoVisualizando] = useState(null);
-
-  useEffect(() => {
-    Promise.all([getCondicoes(), getUniversos()])
-      .then(([condicoesData, universosData]) => {
-        setCondicoes(condicoesData);
-        setUniversos(universosData);
-      })
-      .finally(() => setLoading(false));
-  }, []);
 
   const condicoesFiltradas = useMemo(() => {
     return condicoes.filter(condicao => {
@@ -57,47 +47,6 @@ const Condicoes = () => {
       return matchNome && matchRaridade && matchUniverso;
     });
   }, [condicoes, filtroNome, filtroRaridade, filtroUniverso]);
-
-  const handleRemove = async id => {
-    await removeCondicao(id);
-    setCondicoes(prev => prev.filter(c => c.id !== id));
-  };
-
-  const inputSx = {
-    '& .MuiOutlinedInput-root': {
-      color: 'var(--text-primary)',
-      '& fieldset': { borderColor: 'var(--border-primary)' },
-      '&:hover fieldset': { borderColor: 'var(--border-hover)' },
-      '&.Mui-focused fieldset': { borderColor: 'var(--color-accent)' },
-    },
-    '& .MuiInputLabel-root': { color: 'var(--text-secondary)' },
-    '& .MuiInputLabel-root.Mui-focused': { color: 'var(--color-accent)' },
-  };
-
-  const selectSx = {
-    color: 'var(--text-primary)',
-    '& .MuiOutlinedInput-notchedOutline': {
-      borderColor: 'var(--border-primary)',
-    },
-    '&:hover .MuiOutlinedInput-notchedOutline': {
-      borderColor: 'var(--border-hover)',
-    },
-    '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
-      borderColor: 'var(--color-accent)',
-    },
-    '& .MuiSvgIcon-root': { color: 'var(--text-secondary)' },
-  };
-
-  const menuPropsSx = {
-    PaperProps: {
-      sx: { background: 'var(--bg-card)', color: 'var(--text-primary)' },
-    },
-  };
-
-  const labelSx = {
-    color: 'var(--text-secondary)',
-    '&.Mui-focused': { color: 'var(--color-accent)' },
-  };
 
   return (
     <Box
@@ -144,57 +93,22 @@ const Condicoes = () => {
         </Box>
       ) : (
         <>
-          <Box
-            sx={{
-              display: 'grid',
-              gridTemplateColumns: { xs: '1fr', sm: '2fr 1fr 1fr' },
-              gap: 2,
-              mb: 3,
-            }}
-          >
-            <TextField
-              label="Buscar por nome"
-              size="small"
-              value={filtroNome}
-              onChange={e => setFiltroNome(e.target.value)}
-              slotProps={{ inputLabel: { shrink: true } }}
-              sx={inputSx}
-            />
-            <FormControl size="small">
-              <InputLabel sx={labelSx}>Raridade</InputLabel>
-              <Select
-                label="Raridade"
-                value={filtroRaridade}
-                onChange={e => setFiltroRaridade(e.target.value)}
-                sx={selectSx}
-                MenuProps={menuPropsSx}
-              >
-                <MenuItem value="">Todas</MenuItem>
-                {RARIDADES.map(r => (
-                  <MenuItem key={r} value={r}>
-                    {r}
-                  </MenuItem>
-                ))}
-              </Select>
-            </FormControl>
-            <FormControl size="small">
-              <InputLabel sx={labelSx}>Universo</InputLabel>
-              <Select
-                label="Universo"
-                value={filtroUniverso}
-                onChange={e => setFiltroUniverso(e.target.value)}
-                sx={selectSx}
-                MenuProps={menuPropsSx}
-              >
-                <MenuItem value="">Todos</MenuItem>
-                {universos.map(u => (
-                  <MenuItem key={u.id} value={u.id}>
-                    {u.Nome}
-                  </MenuItem>
-                ))}
-              </Select>
-            </FormControl>
-          </Box>
+          <EntityFilters
+            nomeValue={filtroNome}
+            onNomeChange={setFiltroNome}
+            extraFilters={[
+              {
+                label: 'Raridade',
+                value: filtroRaridade,
+                onChange: setFiltroRaridade,
+                options: RARIDADES,
+                allLabel: 'Todas',
+              },
+            ]}
+            universos={universos}
+            universoValue={filtroUniverso}
+            onUniversoChange={setFiltroUniverso}
+          />
 
           {condicoesFiltradas.length === 0 ? (
             <Box
@@ -366,182 +280,21 @@ const Condicoes = () => {
         </>
       )}
 
-      <Dialog
+      <EntityViewDialog
         open={Boolean(condicaoVisualizando)}
         onClose={() => setCondicaoVisualizando(null)}
-        maxWidth="sm"
-        fullWidth
-        PaperProps={{
-          sx: {
-            background: 'var(--bg-card)',
-            border: '1px solid var(--border-primary)',
-            borderRadius: 2,
-          },
-        }}
-      >
-        <DialogTitle
-          sx={{ color: 'var(--text-primary)', fontWeight: 700, pb: 1 }}
-        >
-          {condicaoVisualizando?.nome}
-          {(condicaoVisualizando?.raridade ||
-            condicaoVisualizando?.duracao) && (
-            <Typography
-              variant="caption"
-              sx={{
-                display: 'block',
-                color: 'var(--color-accent)',
-                fontWeight: 600,
-                mt: 0.5,
-              }}
-            >
-              {[condicaoVisualizando.raridade, condicaoVisualizando.duracao]
-                .filter(Boolean)
-                .join(' · ')}
-            </Typography>
-          )}
-        </DialogTitle>
-        <DialogContent dividers sx={{ borderColor: 'var(--border-primary)' }}>
-          {condicaoVisualizando?.linkImagem && (
-            <Box
-              component="img"
-              src={condicaoVisualizando.linkImagem}
-              alt={condicaoVisualizando.nome}
-              sx={{
-                width: '100%',
-                maxHeight: 220,
-                borderRadius: 2,
-                objectFit: 'cover',
-                border: '1px solid var(--border-primary)',
-                mb: 2,
-              }}
-              onError={e => {
-                e.currentTarget.style.display = 'none';
-              }}
-            />
-          )}
-
-          {condicaoVisualizando?.descricao && (
-            <>
-              <Typography
-                variant="subtitle2"
-                sx={{
-                  color: 'var(--color-accent)',
-                  fontWeight: 700,
-                  mb: 0.5,
-                  textTransform: 'uppercase',
-                  letterSpacing: 1,
-                  fontSize: '0.72rem',
-                }}
-              >
-                Descrição
-              </Typography>
-              <Typography
-                variant="body2"
-                sx={{ color: 'var(--text-secondary)', mb: 2 }}
-              >
-                {condicaoVisualizando.descricao}
-              </Typography>
-            </>
-          )}
-
-          {condicaoVisualizando?.aplicacao && (
-            <>
-              <Divider sx={{ borderColor: 'var(--border-primary)', mb: 1.5 }} />
-              <Typography
-                variant="subtitle2"
-                sx={{
-                  color: 'var(--color-accent)',
-                  fontWeight: 700,
-                  mb: 0.5,
-                  textTransform: 'uppercase',
-                  letterSpacing: 1,
-                  fontSize: '0.72rem',
-                }}
-              >
-                Aplicação
-              </Typography>
-              <Typography
-                variant="body2"
-                sx={{ color: 'var(--text-secondary)', mb: 2 }}
-              >
-                {condicaoVisualizando.aplicacao}
-              </Typography>
-            </>
-          )}
-
-          {condicaoVisualizando?.efeitos?.filter(Boolean).length > 0 && (
-            <>
-              <Divider sx={{ borderColor: 'var(--border-primary)', mb: 1.5 }} />
-              <Typography
-                variant="subtitle2"
-                sx={{
-                  color: 'var(--color-accent)',
-                  fontWeight: 700,
-                  mb: 1,
-                  textTransform: 'uppercase',
-                  letterSpacing: 1,
-                  fontSize: '0.72rem',
-                }}
-              >
-                Efeitos
-              </Typography>
-              <Box sx={{ mb: 2 }}>
-                {condicaoVisualizando.efeitos.filter(Boolean).map((e, i) => (
-                  <Typography
-                    key={i}
-                    variant="body2"
-                    sx={{ color: 'var(--text-secondary)', mb: 0.5 }}
-                  >
-                    • {e}
-                  </Typography>
-                ))}
-              </Box>
-            </>
-          )}
-
-          {condicaoVisualizando?.interacoes?.filter(Boolean).length > 0 && (
-            <>
-              <Divider sx={{ borderColor: 'var(--border-primary)', mb: 1.5 }} />
-              <Typography
-                variant="subtitle2"
-                sx={{
-                  color: 'var(--color-accent)',
-                  fontWeight: 700,
-                  mb: 1,
-                  textTransform: 'uppercase',
-                  letterSpacing: 1,
-                  fontSize: '0.72rem',
-                }}
-              >
-                Interações
-              </Typography>
-              <Box>
-                {condicaoVisualizando.interacoes
-                  .filter(Boolean)
-                  .map((it, i) => (
-                    <Typography
-                      key={i}
-                      variant="body2"
-                      sx={{ color: 'var(--text-secondary)', mb: 0.5 }}
-                    >
-                      • {it}
-                    </Typography>
-                  ))}
-              </Box>
-            </>
-          )}
-        </DialogContent>
-        <DialogActions sx={{ px: 3, py: 2 }}>
-          <Button
-            onClick={() => setCondicaoVisualizando(null)}
-            sx={{
-              color: 'var(--text-secondary)',
-              '&:hover': { color: 'var(--text-primary)' },
-            }}
-          >
-            Fechar
-          </Button>
-          {canWrite(condicaoVisualizando?.universo) && (
+        titulo={condicaoVisualizando?.nome}
+        subtitulo={
+          (condicaoVisualizando?.raridade || condicaoVisualizando?.duracao) &&
+          [condicaoVisualizando.raridade, condicaoVisualizando.duracao]
+            .filter(Boolean)
+            .join(' · ')
+        }
+        imagem={condicaoVisualizando?.linkImagem}
+        imagemSx={{ height: 'auto', maxHeight: 220 }}
+        descricao={condicaoVisualizando?.descricao}
+        actions={
+          canWrite(condicaoVisualizando?.universo) && (
             <Button
               variant="contained"
               onClick={() => {
@@ -557,9 +310,94 @@ const Condicoes = () => {
             >
               Editar
             </Button>
-          )}
-        </DialogActions>
-      </Dialog>
+          )
+        }
+      >
+        {condicaoVisualizando?.aplicacao && (
+          <>
+            <Divider sx={{ borderColor: 'var(--border-primary)', mb: 1.5 }} />
+            <Typography
+              variant="subtitle2"
+              sx={{
+                color: 'var(--color-accent)',
+                fontWeight: 700,
+                mb: 0.5,
+                textTransform: 'uppercase',
+                letterSpacing: 1,
+                fontSize: '0.72rem',
+              }}
+            >
+              Aplicação
+            </Typography>
+            <Typography
+              variant="body2"
+              sx={{ color: 'var(--text-secondary)', mb: 2 }}
+            >
+              {condicaoVisualizando.aplicacao}
+            </Typography>
+          </>
+        )}
+
+        {condicaoVisualizando?.efeitos?.filter(Boolean).length > 0 && (
+          <>
+            <Divider sx={{ borderColor: 'var(--border-primary)', mb: 1.5 }} />
+            <Typography
+              variant="subtitle2"
+              sx={{
+                color: 'var(--color-accent)',
+                fontWeight: 700,
+                mb: 1,
+                textTransform: 'uppercase',
+                letterSpacing: 1,
+                fontSize: '0.72rem',
+              }}
+            >
+              Efeitos
+            </Typography>
+            <Box sx={{ mb: 2 }}>
+              {condicaoVisualizando.efeitos.filter(Boolean).map((e, i) => (
+                <Typography
+                  key={i}
+                  variant="body2"
+                  sx={{ color: 'var(--text-secondary)', mb: 0.5 }}
+                >
+                  • {e}
+                </Typography>
+              ))}
+            </Box>
+          </>
+        )}
+
+        {condicaoVisualizando?.interacoes?.filter(Boolean).length > 0 && (
+          <>
+            <Divider sx={{ borderColor: 'var(--border-primary)', mb: 1.5 }} />
+            <Typography
+              variant="subtitle2"
+              sx={{
+                color: 'var(--color-accent)',
+                fontWeight: 700,
+                mb: 1,
+                textTransform: 'uppercase',
+                letterSpacing: 1,
+                fontSize: '0.72rem',
+              }}
+            >
+              Interações
+            </Typography>
+            <Box>
+              {condicaoVisualizando.interacoes.filter(Boolean).map((it, i) => (
+                <Typography
+                  key={i}
+                  variant="body2"
+                  sx={{ color: 'var(--text-secondary)', mb: 0.5 }}
+                >
+                  • {it}
+                </Typography>
+              ))}
+            </Box>
+          </>
+        )}
+      </EntityViewDialog>
     </Box>
   );
 };

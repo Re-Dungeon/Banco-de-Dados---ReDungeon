@@ -1,29 +1,24 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import Button from '@mui/material/Button';
 import IconButton from '@mui/material/IconButton';
 import CircularProgress from '@mui/material/CircularProgress';
-import TextField from '@mui/material/TextField';
-import Select from '@mui/material/Select';
-import MenuItem from '@mui/material/MenuItem';
-import FormControl from '@mui/material/FormControl';
-import InputLabel from '@mui/material/InputLabel';
-import Dialog from '@mui/material/Dialog';
-import DialogActions from '@mui/material/DialogActions';
-import DialogContent from '@mui/material/DialogContent';
-import DialogTitle from '@mui/material/DialogTitle';
 import Divider from '@mui/material/Divider';
 import Tooltip from '@mui/material/Tooltip';
 import Chip from '@mui/material/Chip';
 import DeleteOutlineIcon from '@mui/icons-material/DeleteOutlined';
 import EditOutlinedIcon from '@mui/icons-material/EditOutlined';
 import VisibilityOutlinedIcon from '@mui/icons-material/VisibilityOutlined';
-import { getCardFlux, removeCardFlux, getUniversos } from 'service/storage';
+import { getCardFlux, removeCardFlux } from 'service/storage';
 import { ROUTE_PATHS } from 'common/constants/routes';
 import { useAuth } from 'context/AuthContext';
 import { TIPOS_CARDFLUX, DECKS_CARDFLUX } from 'common/constants/constants';
+import useEntityCRUD from 'hooks/useEntityCRUD';
+import useUniversos from 'hooks/useUniversos';
+import EntityFilters from 'components/EntityFilters/EntityFilters';
+import EntityViewDialog from 'components/EntityViewDialog/EntityViewDialog';
 import { CardFluxCard } from './styles';
 
 const parseTags = tags =>
@@ -59,23 +54,18 @@ const CONSEQUENCIAS_FIELDS = [
 const CardFlux = () => {
   const navigate = useNavigate();
   const { canCreate, canWrite } = useAuth();
-  const [cardFlux, setCardFlux] = useState([]);
-  const [universos, setUniversos] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const {
+    items: cardFlux,
+    loading: loadingCardFlux,
+    remove: handleRemove,
+  } = useEntityCRUD({ getAll: getCardFlux, remove: removeCardFlux });
+  const { universos, loadingUniversos } = useUniversos();
+  const loading = loadingCardFlux || loadingUniversos;
   const [filtroNome, setFiltroNome] = useState('');
   const [filtroTipo, setFiltroTipo] = useState('');
   const [filtroDeck, setFiltroDeck] = useState('');
   const [filtroUniverso, setFiltroUniverso] = useState('');
   const [cardFluxVisualizando, setCardFluxVisualizando] = useState(null);
-
-  useEffect(() => {
-    Promise.all([getCardFlux(), getUniversos()])
-      .then(([cardFluxData, universosData]) => {
-        setCardFlux(cardFluxData);
-        setUniversos(universosData);
-      })
-      .finally(() => setLoading(false));
-  }, []);
 
   const cardFluxFiltrados = useMemo(() => {
     return cardFlux.filter(carta => {
@@ -89,51 +79,6 @@ const CardFlux = () => {
       return matchNome && matchTipo && matchDeck && matchUniverso;
     });
   }, [cardFlux, filtroNome, filtroTipo, filtroDeck, filtroUniverso]);
-
-  const handleRemove = async id => {
-    await removeCardFlux(id);
-    setCardFlux(prev => prev.filter(c => c.id !== id));
-  };
-
-  const inputSx = {
-    '& .MuiOutlinedInput-root': {
-      color: 'var(--text-primary)',
-      '& fieldset': { borderColor: 'var(--border-primary)' },
-      '&:hover fieldset': { borderColor: 'var(--border-hover)' },
-      '&.Mui-focused fieldset': { borderColor: 'var(--color-accent)' },
-    },
-    '& .MuiInputLabel-root': { color: 'var(--text-secondary)' },
-    '& .MuiInputLabel-root.Mui-focused': { color: 'var(--color-accent)' },
-  };
-
-  const selectSx = {
-    color: 'var(--text-primary)',
-    '& .MuiOutlinedInput-notchedOutline': {
-      borderColor: 'var(--border-primary)',
-    },
-    '&:hover .MuiOutlinedInput-notchedOutline': {
-      borderColor: 'var(--border-hover)',
-    },
-    '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
-      borderColor: 'var(--color-accent)',
-    },
-    '& .MuiSvgIcon-root': { color: 'var(--text-secondary)' },
-  };
-
-  const menuPropsSx = {
-    PaperProps: {
-      sx: {
-        background: 'var(--bg-card)',
-        color: 'var(--text-primary)',
-        maxHeight: 320,
-      },
-    },
-  };
-
-  const labelSx = {
-    color: 'var(--text-secondary)',
-    '&.Mui-focused': { color: 'var(--color-accent)' },
-  };
 
   return (
     <Box
@@ -180,78 +125,37 @@ const CardFlux = () => {
         </Box>
       ) : (
         <>
-          <Box
+          <EntityFilters
+            nomeValue={filtroNome}
+            onNomeChange={setFiltroNome}
+            extraFilters={[
+              {
+                label: 'Tipo',
+                value: filtroTipo,
+                onChange: setFiltroTipo,
+                options: TIPOS_CARDFLUX,
+                allLabel: 'Todos',
+              },
+              {
+                label: 'Deck',
+                value: filtroDeck,
+                onChange: setFiltroDeck,
+                options: DECKS_CARDFLUX,
+                allLabel: 'Todos',
+              },
+            ]}
+            universos={universos}
+            universoValue={filtroUniverso}
+            onUniversoChange={setFiltroUniverso}
             sx={{
-              display: 'grid',
               gridTemplateColumns: {
                 xs: '1fr',
                 sm: '2fr 1fr 1fr',
                 md: '2fr 1fr 1fr 1fr',
               },
-              gap: 2,
-              mb: 3,
             }}
-          >
-            <TextField
-              label="Buscar por nome"
-              size="small"
-              value={filtroNome}
-              onChange={e => setFiltroNome(e.target.value)}
-              slotProps={{ inputLabel: { shrink: true } }}
-              sx={inputSx}
-            />
-            <FormControl size="small">
-              <InputLabel sx={labelSx}>Tipo</InputLabel>
-              <Select
-                label="Tipo"
-                value={filtroTipo}
-                onChange={e => setFiltroTipo(e.target.value)}
-                sx={selectSx}
-                MenuProps={menuPropsSx}
-              >
-                <MenuItem value="">Todos</MenuItem>
-                {TIPOS_CARDFLUX.map(t => (
-                  <MenuItem key={t} value={t}>
-                    {t}
-                  </MenuItem>
-                ))}
-              </Select>
-            </FormControl>
-            <FormControl size="small">
-              <InputLabel sx={labelSx}>Deck</InputLabel>
-              <Select
-                label="Deck"
-                value={filtroDeck}
-                onChange={e => setFiltroDeck(e.target.value)}
-                sx={selectSx}
-                MenuProps={menuPropsSx}
-              >
-                <MenuItem value="">Todos</MenuItem>
-                {DECKS_CARDFLUX.map(d => (
-                  <MenuItem key={d} value={d}>
-                    {d}
-                  </MenuItem>
-                ))}
-              </Select>
-            </FormControl>
-            <FormControl size="small">
-              <InputLabel sx={labelSx}>Universo</InputLabel>
-              <Select
-                label="Universo"
-                value={filtroUniverso}
-                onChange={e => setFiltroUniverso(e.target.value)}
-                sx={selectSx}
-                MenuProps={menuPropsSx}
-              >
-                <MenuItem value="">Todos</MenuItem>
-                {universos.map(u => (
-                  <MenuItem key={u.id} value={u.id}>
-                    {u.Nome}
-                  </MenuItem>
-                ))}
-              </Select>
-            </FormControl>
-          </Box>
+            menuMaxHeight={320}
+          />
 
           {cardFluxFiltrados.length === 0 ? (
             <Box
@@ -468,215 +372,107 @@ const CardFlux = () => {
         </>
       )}
 
-      {/* Dialog de detalhes */}
-      <Dialog
+      <EntityViewDialog
         open={Boolean(cardFluxVisualizando)}
         onClose={() => setCardFluxVisualizando(null)}
-        maxWidth="sm"
-        fullWidth
-        PaperProps={{
-          sx: {
-            background: 'var(--bg-card)',
-            border: '1px solid var(--border-primary)',
-            borderRadius: 2,
-          },
-        }}
-      >
-        <DialogTitle
-          sx={{ color: 'var(--text-primary)', fontWeight: 700, pb: 1 }}
-        >
-          {cardFluxVisualizando?.nome}
-          {(cardFluxVisualizando?.tipo || cardFluxVisualizando?.raridade) && (
-            <Typography
-              variant="caption"
+        titulo={cardFluxVisualizando?.nome}
+        subtitulo={
+          (cardFluxVisualizando?.tipo || cardFluxVisualizando?.raridade) &&
+          [cardFluxVisualizando.tipo, cardFluxVisualizando.raridade]
+            .filter(Boolean)
+            .join(' · ')
+        }
+        imagem={cardFluxVisualizando?.linkImagem}
+        imagemSx={{ height: 'auto', maxHeight: 220 }}
+        actions={
+          canWrite(cardFluxVisualizando?.universo) && (
+            <Button
+              variant="contained"
+              onClick={() => {
+                navigate(ROUTE_PATHS.NOVO_CARDFLUX, {
+                  state: { cardFlux: cardFluxVisualizando },
+                });
+                setCardFluxVisualizando(null);
+              }}
               sx={{
-                color: 'var(--color-accent)',
-                display: 'block',
-                fontWeight: 600,
+                background: 'var(--color-primary)',
+                '&:hover': { background: '#5a2090' },
               }}
             >
-              {[cardFluxVisualizando.tipo, cardFluxVisualizando.raridade]
-                .filter(Boolean)
-                .join(' · ')}
-            </Typography>
-          )}
-        </DialogTitle>
-
-        <DialogContent dividers sx={{ borderColor: 'var(--border-primary)' }}>
-          {cardFluxVisualizando?.linkImagem && (
-            <Box
-              component="img"
-              src={cardFluxVisualizando.linkImagem}
-              alt={cardFluxVisualizando.nome}
-              sx={{
-                width: '100%',
-                maxHeight: 220,
-                borderRadius: 2,
-                objectFit: 'cover',
-                border: '1px solid var(--border-primary)',
-                mb: 2,
-              }}
-              onError={e => {
-                e.currentTarget.style.display = 'none';
-              }}
-            />
-          )}
-
-          {META_FIELDS.filter(f => cardFluxVisualizando?.[f.key]).length >
-            0 && (
-            <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.75, mb: 2 }}>
-              {META_FIELDS.filter(f => cardFluxVisualizando[f.key]).map(f => (
-                <Box
-                  key={f.key}
+              Editar
+            </Button>
+          )
+        }
+      >
+        {META_FIELDS.filter(f => cardFluxVisualizando?.[f.key]).length > 0 && (
+          <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.75, mb: 2 }}>
+            {META_FIELDS.filter(f => cardFluxVisualizando[f.key]).map(f => (
+              <Box
+                key={f.key}
+                sx={{
+                  background: 'var(--bg-secondary)',
+                  borderRadius: 1,
+                  px: 1,
+                  py: 0.5,
+                }}
+              >
+                <Typography
+                  variant="caption"
                   sx={{
-                    background: 'var(--bg-secondary)',
-                    borderRadius: 1,
-                    px: 1,
-                    py: 0.5,
+                    color: 'var(--text-muted)',
+                    display: 'block',
+                    fontSize: '0.65rem',
                   }}
                 >
-                  <Typography
-                    variant="caption"
-                    sx={{
-                      color: 'var(--text-muted)',
-                      display: 'block',
-                      fontSize: '0.65rem',
-                    }}
-                  >
-                    {f.label}
-                  </Typography>
-                  <Typography
-                    variant="body2"
-                    sx={{ color: 'var(--text-primary)', fontWeight: 600 }}
-                  >
-                    {cardFluxVisualizando[f.key]}
-                  </Typography>
-                </Box>
-              ))}
-            </Box>
-          )}
+                  {f.label}
+                </Typography>
+                <Typography
+                  variant="body2"
+                  sx={{ color: 'var(--text-primary)', fontWeight: 600 }}
+                >
+                  {cardFluxVisualizando[f.key]}
+                </Typography>
+              </Box>
+            ))}
+          </Box>
+        )}
 
-          {parseTags(cardFluxVisualizando?.tags).length > 0 && (
-            <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.75, mb: 2 }}>
-              {parseTags(cardFluxVisualizando.tags).map(tag => (
-                <Chip
-                  key={tag}
-                  label={tag}
-                  size="small"
-                  sx={{
-                    background: 'var(--bg-secondary)',
-                    color: 'var(--text-secondary)',
-                    border: '1px solid var(--border-primary)',
-                  }}
-                />
-              ))}
-            </Box>
-          )}
-
-          {NARRATIVA_FIELDS.filter(f => cardFluxVisualizando?.[f.key]).length >
-            0 && (
-            <>
-              <Divider sx={{ borderColor: 'var(--border-primary)', mb: 1.5 }} />
-              <Typography
-                variant="subtitle2"
+        {parseTags(cardFluxVisualizando?.tags).length > 0 && (
+          <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.75, mb: 2 }}>
+            {parseTags(cardFluxVisualizando.tags).map(tag => (
+              <Chip
+                key={tag}
+                label={tag}
+                size="small"
                 sx={{
-                  color: 'var(--color-accent)',
-                  fontWeight: 700,
-                  mb: 1,
-                  textTransform: 'uppercase',
-                  letterSpacing: 1,
-                  fontSize: '0.72rem',
+                  background: 'var(--bg-secondary)',
+                  color: 'var(--text-secondary)',
+                  border: '1px solid var(--border-primary)',
                 }}
-              >
-                Narrativa
-              </Typography>
-              {NARRATIVA_FIELDS.filter(f => cardFluxVisualizando[f.key]).map(
-                f => (
-                  <Box key={f.key} sx={{ mb: 1.25 }}>
-                    <Typography
-                      variant="caption"
-                      sx={{
-                        color: 'var(--text-muted)',
-                        display: 'block',
-                        fontSize: '0.7rem',
-                      }}
-                    >
-                      {f.label}
-                    </Typography>
-                    <Typography
-                      variant="body2"
-                      sx={{ color: 'var(--text-secondary)' }}
-                    >
-                      {cardFluxVisualizando[f.key]}
-                    </Typography>
-                  </Box>
-                ),
-              )}
-            </>
-          )}
+              />
+            ))}
+          </Box>
+        )}
 
-          {RESULTADOS_FIELDS.filter(f => cardFluxVisualizando?.[f.key]).length >
-            0 && (
-            <>
-              <Divider sx={{ borderColor: 'var(--border-primary)', mb: 1.5 }} />
-              <Typography
-                variant="subtitle2"
-                sx={{
-                  color: 'var(--color-accent)',
-                  fontWeight: 700,
-                  mb: 1,
-                  textTransform: 'uppercase',
-                  letterSpacing: 1,
-                  fontSize: '0.72rem',
-                }}
-              >
-                Resultados
-              </Typography>
-              {RESULTADOS_FIELDS.filter(f => cardFluxVisualizando[f.key]).map(
-                f => (
-                  <Box key={f.key} sx={{ mb: 1.25 }}>
-                    <Typography
-                      variant="caption"
-                      sx={{
-                        color: 'var(--text-muted)',
-                        display: 'block',
-                        fontSize: '0.7rem',
-                      }}
-                    >
-                      {f.label}
-                    </Typography>
-                    <Typography
-                      variant="body2"
-                      sx={{ color: 'var(--text-secondary)' }}
-                    >
-                      {cardFluxVisualizando[f.key]}
-                    </Typography>
-                  </Box>
-                ),
-              )}
-            </>
-          )}
-
-          {CONSEQUENCIAS_FIELDS.filter(f => cardFluxVisualizando?.[f.key])
-            .length > 0 && (
-            <>
-              <Divider sx={{ borderColor: 'var(--border-primary)', mb: 1.5 }} />
-              <Typography
-                variant="subtitle2"
-                sx={{
-                  color: 'var(--color-accent)',
-                  fontWeight: 700,
-                  mb: 1,
-                  textTransform: 'uppercase',
-                  letterSpacing: 1,
-                  fontSize: '0.72rem',
-                }}
-              >
-                Consequências
-              </Typography>
-              {CONSEQUENCIAS_FIELDS.filter(
-                f => cardFluxVisualizando[f.key],
-              ).map(f => (
+        {NARRATIVA_FIELDS.filter(f => cardFluxVisualizando?.[f.key]).length >
+          0 && (
+          <>
+            <Divider sx={{ borderColor: 'var(--border-primary)', mb: 1.5 }} />
+            <Typography
+              variant="subtitle2"
+              sx={{
+                color: 'var(--color-accent)',
+                fontWeight: 700,
+                mb: 1,
+                textTransform: 'uppercase',
+                letterSpacing: 1,
+                fontSize: '0.72rem',
+              }}
+            >
+              Narrativa
+            </Typography>
+            {NARRATIVA_FIELDS.filter(f => cardFluxVisualizando[f.key]).map(
+              f => (
                 <Box key={f.key} sx={{ mb: 1.25 }}>
                   <Typography
                     variant="caption"
@@ -695,117 +491,31 @@ const CardFlux = () => {
                     {cardFluxVisualizando[f.key]}
                   </Typography>
                 </Box>
-              ))}
-            </>
-          )}
+              ),
+            )}
+          </>
+        )}
 
-          {cardFluxVisualizando?.encadeamentoAtivo && (
-            <>
-              <Divider sx={{ borderColor: 'var(--border-primary)', mb: 1.5 }} />
-              <Typography
-                variant="subtitle2"
-                sx={{
-                  color: 'var(--color-accent)',
-                  fontWeight: 700,
-                  mb: 1,
-                  textTransform: 'uppercase',
-                  letterSpacing: 1,
-                  fontSize: '0.72rem',
-                }}
-              >
-                Encadeamento de Eventos
-              </Typography>
-              <Box
-                sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.75, mb: 1.5 }}
-              >
-                {cardFluxVisualizando.tipoAtivacao && (
-                  <Box
-                    sx={{
-                      background: 'var(--bg-secondary)',
-                      borderRadius: 1,
-                      px: 1,
-                      py: 0.5,
-                    }}
-                  >
-                    <Typography
-                      variant="caption"
-                      sx={{
-                        color: 'var(--text-muted)',
-                        display: 'block',
-                        fontSize: '0.65rem',
-                      }}
-                    >
-                      Tipo de Ativação
-                    </Typography>
-                    <Typography
-                      variant="body2"
-                      sx={{ color: 'var(--text-primary)', fontWeight: 600 }}
-                    >
-                      {cardFluxVisualizando.tipoAtivacao}
-                    </Typography>
-                  </Box>
-                )}
-                {cardFluxVisualizando.tipoAtivacao === 'Chance' && (
-                  <Box
-                    sx={{
-                      background: 'var(--bg-secondary)',
-                      borderRadius: 1,
-                      px: 1,
-                      py: 0.5,
-                    }}
-                  >
-                    <Typography
-                      variant="caption"
-                      sx={{
-                        color: 'var(--text-muted)',
-                        display: 'block',
-                        fontSize: '0.65rem',
-                      }}
-                    >
-                      Porcentagem
-                    </Typography>
-                    <Typography
-                      variant="body2"
-                      sx={{ color: 'var(--text-primary)', fontWeight: 600 }}
-                    >
-                      {cardFluxVisualizando.porcentagem}%
-                    </Typography>
-                  </Box>
-                )}
-              </Box>
-
-              {cardFluxVisualizando.cartasVinculadas?.length > 0 && (
-                <Box sx={{ mb: 1.5 }}>
-                  <Typography
-                    variant="caption"
-                    sx={{
-                      color: 'var(--text-muted)',
-                      display: 'block',
-                      fontSize: '0.7rem',
-                      mb: 0.5,
-                    }}
-                  >
-                    Cartas Vinculadas
-                  </Typography>
-                  <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.75 }}>
-                    {cardFluxVisualizando.cartasVinculadas.map(c => (
-                      <Chip
-                        key={c.id}
-                        label={c.nome}
-                        size="small"
-                        sx={{
-                          background: 'var(--bg-secondary)',
-                          color: 'var(--text-secondary)',
-                          border: '1px solid var(--border-primary)',
-                        }}
-                      />
-                    ))}
-                  </Box>
-                </Box>
-              )}
-
-              {cardFluxVisualizando.descricaoEncadeamento && (
-                <Box>
+        {RESULTADOS_FIELDS.filter(f => cardFluxVisualizando?.[f.key]).length >
+          0 && (
+          <>
+            <Divider sx={{ borderColor: 'var(--border-primary)', mb: 1.5 }} />
+            <Typography
+              variant="subtitle2"
+              sx={{
+                color: 'var(--color-accent)',
+                fontWeight: 700,
+                mb: 1,
+                textTransform: 'uppercase',
+                letterSpacing: 1,
+                fontSize: '0.72rem',
+              }}
+            >
+              Resultados
+            </Typography>
+            {RESULTADOS_FIELDS.filter(f => cardFluxVisualizando[f.key]).map(
+              f => (
+                <Box key={f.key} sx={{ mb: 1.25 }}>
                   <Typography
                     variant="caption"
                     sx={{
@@ -814,46 +524,188 @@ const CardFlux = () => {
                       fontSize: '0.7rem',
                     }}
                   >
-                    Descrição do Encadeamento
+                    {f.label}
                   </Typography>
                   <Typography
                     variant="body2"
                     sx={{ color: 'var(--text-secondary)' }}
                   >
-                    {cardFluxVisualizando.descricaoEncadeamento}
+                    {cardFluxVisualizando[f.key]}
+                  </Typography>
+                </Box>
+              ),
+            )}
+          </>
+        )}
+
+        {CONSEQUENCIAS_FIELDS.filter(f => cardFluxVisualizando?.[f.key])
+          .length > 0 && (
+          <>
+            <Divider sx={{ borderColor: 'var(--border-primary)', mb: 1.5 }} />
+            <Typography
+              variant="subtitle2"
+              sx={{
+                color: 'var(--color-accent)',
+                fontWeight: 700,
+                mb: 1,
+                textTransform: 'uppercase',
+                letterSpacing: 1,
+                fontSize: '0.72rem',
+              }}
+            >
+              Consequências
+            </Typography>
+            {CONSEQUENCIAS_FIELDS.filter(f => cardFluxVisualizando[f.key]).map(
+              f => (
+                <Box key={f.key} sx={{ mb: 1.25 }}>
+                  <Typography
+                    variant="caption"
+                    sx={{
+                      color: 'var(--text-muted)',
+                      display: 'block',
+                      fontSize: '0.7rem',
+                    }}
+                  >
+                    {f.label}
+                  </Typography>
+                  <Typography
+                    variant="body2"
+                    sx={{ color: 'var(--text-secondary)' }}
+                  >
+                    {cardFluxVisualizando[f.key]}
+                  </Typography>
+                </Box>
+              ),
+            )}
+          </>
+        )}
+
+        {cardFluxVisualizando?.encadeamentoAtivo && (
+          <>
+            <Divider sx={{ borderColor: 'var(--border-primary)', mb: 1.5 }} />
+            <Typography
+              variant="subtitle2"
+              sx={{
+                color: 'var(--color-accent)',
+                fontWeight: 700,
+                mb: 1,
+                textTransform: 'uppercase',
+                letterSpacing: 1,
+                fontSize: '0.72rem',
+              }}
+            >
+              Encadeamento de Eventos
+            </Typography>
+            <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.75, mb: 1.5 }}>
+              {cardFluxVisualizando.tipoAtivacao && (
+                <Box
+                  sx={{
+                    background: 'var(--bg-secondary)',
+                    borderRadius: 1,
+                    px: 1,
+                    py: 0.5,
+                  }}
+                >
+                  <Typography
+                    variant="caption"
+                    sx={{
+                      color: 'var(--text-muted)',
+                      display: 'block',
+                      fontSize: '0.65rem',
+                    }}
+                  >
+                    Tipo de Ativação
+                  </Typography>
+                  <Typography
+                    variant="body2"
+                    sx={{ color: 'var(--text-primary)', fontWeight: 600 }}
+                  >
+                    {cardFluxVisualizando.tipoAtivacao}
                   </Typography>
                 </Box>
               )}
-            </>
-          )}
-        </DialogContent>
+              {cardFluxVisualizando.tipoAtivacao === 'Chance' && (
+                <Box
+                  sx={{
+                    background: 'var(--bg-secondary)',
+                    borderRadius: 1,
+                    px: 1,
+                    py: 0.5,
+                  }}
+                >
+                  <Typography
+                    variant="caption"
+                    sx={{
+                      color: 'var(--text-muted)',
+                      display: 'block',
+                      fontSize: '0.65rem',
+                    }}
+                  >
+                    Porcentagem
+                  </Typography>
+                  <Typography
+                    variant="body2"
+                    sx={{ color: 'var(--text-primary)', fontWeight: 600 }}
+                  >
+                    {cardFluxVisualizando.porcentagem}%
+                  </Typography>
+                </Box>
+              )}
+            </Box>
 
-        <DialogActions sx={{ px: 3, py: 2 }}>
-          <Button
-            onClick={() => setCardFluxVisualizando(null)}
-            sx={{ color: 'var(--text-muted)' }}
-          >
-            Fechar
-          </Button>
-          {canWrite(cardFluxVisualizando?.universo) && (
-            <Button
-              variant="contained"
-              onClick={() => {
-                navigate(ROUTE_PATHS.NOVO_CARDFLUX, {
-                  state: { cardFlux: cardFluxVisualizando },
-                });
-                setCardFluxVisualizando(null);
-              }}
-              sx={{
-                background: 'var(--color-primary)',
-                '&:hover': { background: '#5a2090' },
-              }}
-            >
-              Editar
-            </Button>
-          )}
-        </DialogActions>
-      </Dialog>
+            {cardFluxVisualizando.cartasVinculadas?.length > 0 && (
+              <Box sx={{ mb: 1.5 }}>
+                <Typography
+                  variant="caption"
+                  sx={{
+                    color: 'var(--text-muted)',
+                    display: 'block',
+                    fontSize: '0.7rem',
+                    mb: 0.5,
+                  }}
+                >
+                  Cartas Vinculadas
+                </Typography>
+                <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.75 }}>
+                  {cardFluxVisualizando.cartasVinculadas.map(c => (
+                    <Chip
+                      key={c.id}
+                      label={c.nome}
+                      size="small"
+                      sx={{
+                        background: 'var(--bg-secondary)',
+                        color: 'var(--text-secondary)',
+                        border: '1px solid var(--border-primary)',
+                      }}
+                    />
+                  ))}
+                </Box>
+              </Box>
+            )}
+
+            {cardFluxVisualizando.descricaoEncadeamento && (
+              <Box>
+                <Typography
+                  variant="caption"
+                  sx={{
+                    color: 'var(--text-muted)',
+                    display: 'block',
+                    fontSize: '0.7rem',
+                  }}
+                >
+                  Descrição do Encadeamento
+                </Typography>
+                <Typography
+                  variant="body2"
+                  sx={{ color: 'var(--text-secondary)' }}
+                >
+                  {cardFluxVisualizando.descricaoEncadeamento}
+                </Typography>
+              </Box>
+            )}
+          </>
+        )}
+      </EntityViewDialog>
     </Box>
   );
 };

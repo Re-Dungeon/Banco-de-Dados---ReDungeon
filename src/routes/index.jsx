@@ -1,31 +1,42 @@
-import React from 'react';
+import React, { lazy } from 'react';
 import { Navigate } from 'react-router-dom';
-import Recursos from 'pages/Recursos/Recursos';
-import Racas from 'pages/Recursos/Racas/Racas';
-import NovaRaca from 'pages/Recursos/Racas/NovaRaca';
-import Itens from 'pages/Recursos/Itens/Itens';
-import NovoItem from 'pages/Recursos/Itens/NovoItem';
-import Materiais from 'pages/Recursos/Materiais/Materiais';
-import NovoMaterial from 'pages/Recursos/Materiais/NovoMaterial';
-import Classes from 'pages/Recursos/Classes/Classes';
-import NovaClasse from 'pages/Recursos/Classes/NovaClasse';
-import Receitas from 'pages/Recursos/Receitas/Receitas';
-import NovaReceita from 'pages/Recursos/Receitas/NovaReceita';
-import Condicoes from 'pages/Recursos/Condicoes/Condicoes';
-import NovaCondicao from 'pages/Recursos/Condicoes/NovaCondicao';
-import Artes from 'pages/Recursos/Artes/Artes';
-import NovaArte from 'pages/Recursos/Artes/NovaArte';
-import Origens from 'pages/Recursos/Origens/Origens';
-import NovaOrigem from 'pages/Recursos/Origens/NovaOrigem';
-import CardFlux from 'pages/Recursos/CardFlux/CardFlux';
-import NovoCardFlux from 'pages/Recursos/CardFlux/NovoCardFlux';
-import Regras from 'pages/Regras/Regras';
-import NovaRegra from 'pages/Regras/NovaRegra';
-import VeiasAstrais from 'pages/Recursos/VeiasAstrais/VeiasAstrais';
-import NovaVeiaAstral from 'pages/Recursos/VeiasAstrais/NovaVeiaAstral';
-import PatchNotes from 'pages/PatchNotes/PatchNotes';
-import Sobre from 'pages/Sobre/Sobre';
 import { ROUTE_PATHS } from 'common/constants/routes';
+
+const Recursos = lazy(() => import('pages/Recursos/Recursos'));
+const Racas = lazy(() => import('pages/Recursos/Racas/Racas'));
+const NovaRaca = lazy(() => import('pages/Recursos/Racas/NovaRaca'));
+const Itens = lazy(() => import('pages/Recursos/Itens/Itens'));
+const NovoItem = lazy(() => import('pages/Recursos/Itens/NovoItem'));
+const Materiais = lazy(() => import('pages/Recursos/Materiais/Materiais'));
+const NovoMaterial = lazy(
+  () => import('pages/Recursos/Materiais/NovoMaterial'),
+);
+const Classes = lazy(() => import('pages/Recursos/Classes/Classes'));
+const NovaClasse = lazy(() => import('pages/Recursos/Classes/NovaClasse'));
+const Receitas = lazy(() => import('pages/Recursos/Receitas/Receitas'));
+const NovaReceita = lazy(() => import('pages/Recursos/Receitas/NovaReceita'));
+const Condicoes = lazy(() => import('pages/Recursos/Condicoes/Condicoes'));
+const NovaCondicao = lazy(
+  () => import('pages/Recursos/Condicoes/NovaCondicao'),
+);
+const Artes = lazy(() => import('pages/Recursos/Artes/Artes'));
+const NovaArte = lazy(() => import('pages/Recursos/Artes/NovaArte'));
+const Origens = lazy(() => import('pages/Recursos/Origens/Origens'));
+const NovaOrigem = lazy(() => import('pages/Recursos/Origens/NovaOrigem'));
+const CardFlux = lazy(() => import('pages/Recursos/CardFlux/CardFlux'));
+const NovoCardFlux = lazy(
+  () => import('pages/Recursos/CardFlux/NovoCardFlux'),
+);
+const Regras = lazy(() => import('pages/Regras/Regras'));
+const NovaRegra = lazy(() => import('pages/Regras/NovaRegra'));
+const VeiasAstrais = lazy(
+  () => import('pages/Recursos/VeiasAstrais/VeiasAstrais'),
+);
+const NovaVeiaAstral = lazy(
+  () => import('pages/Recursos/VeiasAstrais/NovaVeiaAstral'),
+);
+const PatchNotes = lazy(() => import('pages/PatchNotes/PatchNotes'));
+const Sobre = lazy(() => import('pages/Sobre/Sobre'));
 
 export const ROUTES = [
   { index: true, element: <Navigate to={ROUTE_PATHS.RACAS} replace /> },
