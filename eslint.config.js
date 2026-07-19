@@ -3,6 +3,8 @@ import globals from 'globals';
 import reactPlugin from 'eslint-plugin-react';
 import reactHooksPlugin from 'eslint-plugin-react-hooks';
 import reactRefresh from 'eslint-plugin-react-refresh';
+import jsxA11yPlugin from 'eslint-plugin-jsx-a11y';
+import eslintConfigPrettier from 'eslint-config-prettier';
 export default [
   js.configs.recommended,
   {
@@ -13,6 +15,7 @@ export default [
       react: reactPlugin,
       'react-hooks': reactHooksPlugin,
       'react-refresh': reactRefresh,
+      'jsx-a11y': jsxA11yPlugin,
     },
     settings: {
       react: {
@@ -22,10 +25,12 @@ export default [
     rules: {
       ...reactPlugin.configs.recommended.rules,
       ...reactHooksPlugin.configs.recommended.rules,
+      ...jsxA11yPlugin.flatConfigs.recommended.rules,
       'react/react-in-jsx-scope': 'off',
       'react/prop-types': 'warn',
       'no-unused-vars': 'warn',
-      'no-console': 'warn',
+      'no-console': 'error',
+      'react-hooks/exhaustive-deps': 'error',
     },
     languageOptions: {
       ecmaVersion: 'latest',
@@ -51,4 +56,5 @@ export default [
     },
     files: ['src/**/*.{js,jsx}'],
   },
+  eslintConfigPrettier,
 ];

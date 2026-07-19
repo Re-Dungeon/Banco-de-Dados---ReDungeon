@@ -16,6 +16,7 @@ import { Formik, Form, FastField, Field, FieldArray } from 'formik';
 import { addRaca, updateRaca, getUniversos } from 'service/storage';
 import { ROUTE_PATHS } from 'common/constants/routes';
 import { useAuth } from 'context/AuthContext';
+import useStableListKeys from 'hooks/useStableListKeys';
 import {
   RACA_SCHEMA,
   RACA_INITIAL_VALUES,
@@ -92,6 +93,13 @@ const NovaRaca = () => {
         },
       }
     : RACA_INITIAL_VALUES;
+
+  const habilidadesBasicasKeys = useStableListKeys(
+    editInitialValues.habilidadesRaciais.habilidadesBasicas.length,
+  );
+  const habilidadesAvancadasKeys = useStableListKeys(
+    editInitialValues.habilidadesRaciais.habilidadesAvancadas.length,
+  );
 
   const filteredUniversos = isAdmin
     ? universos
@@ -226,6 +234,10 @@ const NovaRaca = () => {
                           label="Link da Imagem da Raça"
                           fullWidth
                           placeholder="https://..."
+                          error={
+                            touched.linkImagem && Boolean(errors.linkImagem)
+                          }
+                          helperText={touched.linkImagem && errors.linkImagem}
                           onChange={e => {
                             setImgError(false);
                             field.onChange(e);
@@ -400,7 +412,7 @@ const NovaRaca = () => {
                       {values.habilidadesRaciais.habilidadesBasicas.map(
                         (hab, idx) => (
                           <Box
-                            key={idx}
+                            key={habilidadesBasicasKeys.keys[idx] ?? idx}
                             sx={{
                               border: '1px solid var(--border-primary)',
                               borderRadius: 2,
@@ -427,7 +439,10 @@ const NovaRaca = () => {
                               </Typography>
                               <IconButton
                                 size="small"
-                                onClick={() => remove(idx)}
+                                onClick={() => {
+                                  habilidadesBasicasKeys.removeKey(idx);
+                                  remove(idx);
+                                }}
                                 sx={{
                                   color: 'var(--text-muted)',
                                   '&:hover': { color: '#ef4444' },
@@ -531,7 +546,10 @@ const NovaRaca = () => {
                       )}
                       <Button
                         variant="outlined"
-                        onClick={() => push({ ...HABILIDADE_BASICA_INICIAL })}
+                        onClick={() => {
+                          habilidadesBasicasKeys.addKey();
+                          push({ ...HABILIDADE_BASICA_INICIAL });
+                        }}
                         sx={{
                           alignSelf: 'flex-start',
                           borderColor: 'var(--border-primary)',
@@ -573,7 +591,7 @@ const NovaRaca = () => {
                       {values.habilidadesRaciais.habilidadesAvancadas.map(
                         (hab, idx) => (
                           <Box
-                            key={idx}
+                            key={habilidadesAvancadasKeys.keys[idx] ?? idx}
                             sx={{
                               border: '1px solid var(--border-primary)',
                               borderRadius: 2,
@@ -600,7 +618,10 @@ const NovaRaca = () => {
                               </Typography>
                               <IconButton
                                 size="small"
-                                onClick={() => remove(idx)}
+                                onClick={() => {
+                                  habilidadesAvancadasKeys.removeKey(idx);
+                                  remove(idx);
+                                }}
                                 sx={{
                                   color: 'var(--text-muted)',
                                   '&:hover': { color: '#ef4444' },
@@ -782,7 +803,10 @@ const NovaRaca = () => {
                       )}
                       <Button
                         variant="outlined"
-                        onClick={() => push({ ...HABILIDADE_AVANCADA_INICIAL })}
+                        onClick={() => {
+                          habilidadesAvancadasKeys.addKey();
+                          push({ ...HABILIDADE_AVANCADA_INICIAL });
+                        }}
                         sx={{
                           alignSelf: 'flex-start',
                           borderColor: 'var(--border-primary)',

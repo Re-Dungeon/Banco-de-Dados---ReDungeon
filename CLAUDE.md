@@ -27,8 +27,10 @@ src/
 ├── assets/            # Imagens e recursos estáticos
 ├── common/
 │   ├── constants/     # Constantes globais (rotas, itens de nav)
-│   └── styles/        # CSS global e estilos compartilhados
+│   ├── styles/        # CSS global e estilos compartilhados
+│   └── utils/         # Utilitários compartilhados (ex.: schemas Yup reutilizáveis)
 ├── components/        # Componentes reutilizáveis (Header, Layout, Sidebar)
+├── hooks/             # Hooks reutilizáveis (ex.: usePermissions, useStableListKeys)
 ├── pages/             # Páginas da aplicação
 │   ├── PatchNotes/
 │   ├── Recursos/
@@ -230,10 +232,11 @@ Ao adicionar uma nova entidade ao sistema:
 ```jsx
 import { Formik, Form } from 'formik';
 import * as Yup from 'yup';
+import { nomeSchema, descricaoSchema } from 'common/utils/yupSchemas';
 
 const MINHA_SCHEMA = Yup.object({
-  nome: Yup.string().required('Nome é obrigatório'),
-  descricao: Yup.string(),
+  nome: nomeSchema,
+  descricao: descricaoSchema,
 });
 
 const MeuFormulario = ({ onSubmit, initialValues }) => (
@@ -251,7 +254,21 @@ const MeuFormulario = ({ onSubmit, initialValues }) => (
 );
 ```
 
-- Coloque o schema Yup no arquivo `utils.js` da página.
+- Coloque o schema Yup específico da página no arquivo `utils.js` da página.
+- Reutilize os validadores genéricos de `src/common/utils/yupSchemas.js` em vez de repetir `Yup.string()` cru em cada página:
+  - `nomeSchema` — obrigatório, `trim()`, máximo `NOME_MAX` (100) caracteres.
+  - `campoCurtoSchema` — opcional, `trim()`, máximo `CAMPO_CURTO_MAX` (300) caracteres.
+  - `descricaoSchema` — opcional, `trim()`, máximo `DESCRICAO_MAX` (2000) caracteres.
+  - `urlImagemSchema` — opcional, `trim()`, valida formato de URL (usado em todo campo `linkImagem`).
+- Ao exibir o campo `linkImagem`, mostre erro/helperText de validação (`touched.linkImagem && Boolean(errors.linkImagem)`), assim como qualquer outro campo com schema próprio.
+- Em listas dinâmicas via `FieldArray` (ex.: habilidades), **nunca use o índice do array como `key`** do React — ao remover um item do meio da lista isso faz o conteúdo dos itens seguintes "colar" na posição errada, principalmente com `FastField`. Use o hook `src/hooks/useStableListKeys.js`, que gera um id estável por item:
+  ```jsx
+  const habilidadesKeys = useStableListKeys(values.habilidades.length);
+  // no map: key={habilidadesKeys.keys[idx] ?? idx}
+  // ao adicionar: habilidadesKeys.addKey(); push({ ...ITEM_INICIAL });
+  // ao remover: habilidadesKeys.removeKey(idx); remove(idx);
+  ```
+  Para listas apenas de leitura (fora de um `FieldArray`), uma key derivada do conteúdo (ex.: `` `${item.nome}-${i}` ``) já resolve o problema sem precisar do hook.
 
 ---
 
@@ -282,13 +299,18 @@ npx prettier --write "src/path/to/modified/file.jsx"
 
 > Evite rodar `npm run prettier` em todo o projeto. Formate apenas os arquivos modificados.
 
+O ESLint (`eslint.config.js`) inclui `eslint-plugin-jsx-a11y` (regras de acessibilidade) e `eslint-config-prettier` (desativa regras de estilo que conflitam com o Prettier). `no-console` e `react-hooks/exhaustive-deps` são erros (não apenas avisos) — corrija antes de commitar em vez de suprimir.
+
 ### Comandos Principais
 ```bash
 npm run dev       # Servidor de desenvolvimento
 npm run build     # Build de produção
 npm run preview   # Pré-visualizar o build
 npm run eslint    # Verificar lint
+npm run test      # Executar testes (Vitest + Testing Library)
 ```
+
+Utilitários e hooks compartilhados (`src/common/utils/`, `src/hooks/`) devem ter um arquivo `*.test.js` correspondente (ex.: `yupSchemas.test.js`, `useStableListKeys.test.js`).
 
 ---
 
@@ -327,7 +349,8 @@ npm run eslint    # Verificar lint
 - Imports usam caminhos absolutos por padrão
 - Nenhum `console.log` em código de produção
 - Estilos seguem o sistema de variáveis CSS globais
-- Formulários usam Formik + Yup
+- Formulários usam Formik + Yup, reaproveitando os schemas de `common/utils/yupSchemas.js` quando aplicável
+- Listas renderizadas a partir de `FieldArray` usam `useStableListKeys` (ou uma key derivada do conteúdo) em vez do índice do array
 
 ### Ações Obrigatórias Antes do Merge
 1. ✅ ESLint sem erros ou avisos

@@ -455,6 +455,10 @@ const NovaArte = () => {
                             label="Link da Imagem da Arte"
                             fullWidth
                             placeholder="https://..."
+                            error={
+                              touched.linkImagem && Boolean(errors.linkImagem)
+                            }
+                            helperText={touched.linkImagem && errors.linkImagem}
                             onChange={e => {
                               setImgError(false);
                               field.onChange(e);

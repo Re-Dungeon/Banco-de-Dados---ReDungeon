@@ -15,6 +15,7 @@ import { Formik, Form, FastField, Field, FieldArray } from 'formik';
 import { addIten, updateIten, getUniversos } from 'service/storage';
 import { ROUTE_PATHS } from 'common/constants/routes';
 import { useAuth } from 'context/AuthContext';
+import useStableListKeys from 'hooks/useStableListKeys';
 import {
   ITEM_SCHEMA,
   ITEM_INITIAL_VALUES,
@@ -82,6 +83,10 @@ const NovoItem = () => {
         habilidadesEspeciais: itemParaEditar.habilidadesEspeciais || [],
       }
     : ITEM_INITIAL_VALUES;
+
+  const habilidadesEspeciaisKeys = useStableListKeys(
+    editInitialValues.habilidadesEspeciais.length,
+  );
 
   const filteredUniversos = isAdmin
     ? universos
@@ -230,6 +235,10 @@ const NovoItem = () => {
                           label="Link da Imagem do Item"
                           fullWidth
                           placeholder="https://..."
+                          error={
+                            touched.linkImagem && Boolean(errors.linkImagem)
+                          }
+                          helperText={touched.linkImagem && errors.linkImagem}
                           onChange={e => {
                             setImgError(false);
                             field.onChange(e);
@@ -387,7 +396,7 @@ const NovoItem = () => {
                     >
                       {values.habilidadesEspeciais.map((hab, idx) => (
                         <Box
-                          key={idx}
+                          key={habilidadesEspeciaisKeys.keys[idx] ?? idx}
                           sx={{
                             border: '1px solid var(--border-primary)',
                             borderRadius: 2,
@@ -414,7 +423,10 @@ const NovoItem = () => {
                             </Typography>
                             <IconButton
                               size="small"
-                              onClick={() => remove(idx)}
+                              onClick={() => {
+                                habilidadesEspeciaisKeys.removeKey(idx);
+                                remove(idx);
+                              }}
                               sx={{
                                 color: 'var(--text-muted)',
                                 '&:hover': { color: '#ef4444' },
@@ -452,7 +464,10 @@ const NovoItem = () => {
                       ))}
                       <Button
                         variant="outlined"
-                        onClick={() => push({ ...HABILIDADE_ESPECIAL_INICIAL })}
+                        onClick={() => {
+                          habilidadesEspeciaisKeys.addKey();
+                          push({ ...HABILIDADE_ESPECIAL_INICIAL });
+                        }}
                         sx={{
                           alignSelf: 'flex-start',
                           borderColor: 'var(--border-primary)',

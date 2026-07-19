@@ -24,9 +24,7 @@ const NovaArte = lazy(() => import('pages/Recursos/Artes/NovaArte'));
 const Origens = lazy(() => import('pages/Recursos/Origens/Origens'));
 const NovaOrigem = lazy(() => import('pages/Recursos/Origens/NovaOrigem'));
 const CardFlux = lazy(() => import('pages/Recursos/CardFlux/CardFlux'));
-const NovoCardFlux = lazy(
-  () => import('pages/Recursos/CardFlux/NovoCardFlux'),
-);
+const NovoCardFlux = lazy(() => import('pages/Recursos/CardFlux/NovoCardFlux'));
 const Regras = lazy(() => import('pages/Regras/Regras'));
 const NovaRegra = lazy(() => import('pages/Regras/NovaRegra'));
 const VeiasAstrais = lazy(

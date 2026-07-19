@@ -1,15 +1,21 @@
 import * as Yup from 'yup';
+import {
+  nomeSchema,
+  campoCurtoSchema,
+  descricaoSchema,
+  urlImagemSchema,
+} from 'common/utils/yupSchemas';
 
 export const CONDICAO_SCHEMA = Yup.object({
-  nome: Yup.string().required('Nome é obrigatório'),
-  descricao: Yup.string(),
-  duracao: Yup.string(),
+  nome: nomeSchema,
+  descricao: descricaoSchema,
+  duracao: campoCurtoSchema,
   raridade: Yup.string(),
   universo: Yup.string(),
-  linkImagem: Yup.string(),
-  aplicacao: Yup.string(),
-  efeitos: Yup.array().of(Yup.string()),
-  interacoes: Yup.array().of(Yup.string()),
+  linkImagem: urlImagemSchema,
+  aplicacao: campoCurtoSchema,
+  efeitos: Yup.array().of(campoCurtoSchema),
+  interacoes: Yup.array().of(campoCurtoSchema),
 });
 
 export const CONDICAO_INITIAL_VALUES = {

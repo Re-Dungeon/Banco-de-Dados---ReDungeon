@@ -357,7 +357,7 @@ const Condicoes = () => {
             <Box sx={{ mb: 2 }}>
               {condicaoVisualizando.efeitos.filter(Boolean).map((e, i) => (
                 <Typography
-                  key={i}
+                  key={`${e}-${i}`}
                   variant="body2"
                   sx={{ color: 'var(--text-secondary)', mb: 0.5 }}
                 >
@@ -387,7 +387,7 @@ const Condicoes = () => {
             <Box>
               {condicaoVisualizando.interacoes.filter(Boolean).map((it, i) => (
                 <Typography
-                  key={i}
+                  key={`${it}-${i}`}
                   variant="body2"
                   sx={{ color: 'var(--text-secondary)', mb: 0.5 }}
                 >

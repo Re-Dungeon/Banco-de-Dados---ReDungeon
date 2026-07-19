@@ -368,7 +368,7 @@ const Classes = () => {
             </Typography>
             {classeVisualizando.habilidadesBasicas.map((hab, i) => (
               <Box
-                key={i}
+                key={`${hab.nome}-${i}`}
                 sx={{
                   mb: 1,
                   p: 1.5,
@@ -503,7 +503,7 @@ const Classes = () => {
             </Typography>
             {classeVisualizando.habilidadesAvancadas.map((hab, i) => (
               <Box
-                key={i}
+                key={`${hab.nome}-${i}`}
                 sx={{
                   mb: 1,
                   p: 1.5,

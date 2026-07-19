@@ -1,4 +1,9 @@
 import * as Yup from 'yup';
+import {
+  nomeSchema,
+  descricaoSchema,
+  urlImagemSchema,
+} from 'common/utils/yupSchemas';
 
 export const CAMPOS_POR_TIPO = {
   Origem: [
@@ -28,15 +33,15 @@ export const TODOS_CAMPOS_DEPENDENTES = Object.values(CAMPOS_POR_TIPO).flatMap(
 );
 
 export const ORIGEM_SCHEMA = Yup.object({
-  nome: Yup.string().required('Nome é obrigatório'),
-  linkImagem: Yup.string(),
+  nome: nomeSchema,
+  linkImagem: urlImagemSchema,
   universo: Yup.string(),
   tipo: Yup.string(),
-  tags: Yup.string(),
+  tags: descricaoSchema,
   raridade: Yup.string(),
-  descricao: Yup.string(),
+  descricao: descricaoSchema,
   ...Object.fromEntries(
-    TODOS_CAMPOS_DEPENDENTES.map(key => [key, Yup.string()]),
+    TODOS_CAMPOS_DEPENDENTES.map(key => [key, descricaoSchema]),
   ),
 });
 

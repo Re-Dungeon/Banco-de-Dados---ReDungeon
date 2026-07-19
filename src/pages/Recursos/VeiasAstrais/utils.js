@@ -1,13 +1,19 @@
 import * as Yup from 'yup';
+import {
+  nomeSchema,
+  campoCurtoSchema,
+  descricaoSchema,
+  urlImagemSchema,
+} from 'common/utils/yupSchemas';
 
 export const VEIA_ASTRAL_SCHEMA = Yup.object({
-  nome: Yup.string().required('Nome é obrigatório'),
-  linkImagem: Yup.string(),
+  nome: nomeSchema,
+  linkImagem: urlImagemSchema,
   universo: Yup.string(),
   divindade: Yup.string(),
-  descricao: Yup.string(),
-  aprimoramento: Yup.string(),
-  custo: Yup.string(),
+  descricao: descricaoSchema,
+  aprimoramento: descricaoSchema,
+  custo: campoCurtoSchema,
   nivel: Yup.number()
     .integer('Nível deve ser um número inteiro')
     .nullable()

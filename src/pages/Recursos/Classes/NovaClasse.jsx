@@ -16,6 +16,7 @@ import { Formik, Form, FastField, Field, FieldArray } from 'formik';
 import { addClasse, updateClasse, getUniversos } from 'service/storage';
 import { ROUTE_PATHS } from 'common/constants/routes';
 import { useAuth } from 'context/AuthContext';
+import useStableListKeys from 'hooks/useStableListKeys';
 import {
   CLASSE_SCHEMA,
   CLASSE_INITIAL_VALUES,
@@ -88,6 +89,13 @@ const NovaClasse = () => {
         habilidades: classeParaEditar.habilidades || [],
       }
     : CLASSE_INITIAL_VALUES;
+
+  const habilidadesBasicasKeys = useStableListKeys(
+    editInitialValues.habilidadesBasicas.length,
+  );
+  const habilidadesAvancadasKeys = useStableListKeys(
+    editInitialValues.habilidadesAvancadas.length,
+  );
 
   const filteredUniversos = isAdmin
     ? universos
@@ -217,6 +225,10 @@ const NovaClasse = () => {
                           label="Link da Imagem da Classe"
                           fullWidth
                           placeholder="https://..."
+                          error={
+                            touched.linkImagem && Boolean(errors.linkImagem)
+                          }
+                          helperText={touched.linkImagem && errors.linkImagem}
                           onChange={e => {
                             setImgError(false);
                             field.onChange(e);
@@ -372,7 +384,7 @@ const NovaClasse = () => {
                     >
                       {values.habilidadesBasicas.map((hab, idx) => (
                         <Box
-                          key={idx}
+                          key={habilidadesBasicasKeys.keys[idx] ?? idx}
                           sx={{
                             border: '1px solid var(--border-primary)',
                             borderRadius: 2,
@@ -399,7 +411,10 @@ const NovaClasse = () => {
                             </Typography>
                             <IconButton
                               size="small"
-                              onClick={() => remove(idx)}
+                              onClick={() => {
+                                habilidadesBasicasKeys.removeKey(idx);
+                                remove(idx);
+                              }}
                               sx={{
                                 color: 'var(--text-muted)',
                                 '&:hover': { color: '#ef4444' },
@@ -580,7 +595,10 @@ const NovaClasse = () => {
                       ))}
                       <Button
                         variant="outlined"
-                        onClick={() => push({ ...HABILIDADE_INICIAL })}
+                        onClick={() => {
+                          habilidadesBasicasKeys.addKey();
+                          push({ ...HABILIDADE_INICIAL });
+                        }}
                         sx={{
                           alignSelf: 'flex-start',
                           borderColor: 'var(--border-primary)',
@@ -621,7 +639,7 @@ const NovaClasse = () => {
                     >
                       {values.habilidadesAvancadas.map((hab, idx) => (
                         <Box
-                          key={idx}
+                          key={habilidadesAvancadasKeys.keys[idx] ?? idx}
                           sx={{
                             border: '1px solid var(--border-primary)',
                             borderRadius: 2,
@@ -648,7 +666,10 @@ const NovaClasse = () => {
                             </Typography>
                             <IconButton
                               size="small"
-                              onClick={() => remove(idx)}
+                              onClick={() => {
+                                habilidadesAvancadasKeys.removeKey(idx);
+                                remove(idx);
+                              }}
                               sx={{
                                 color: 'var(--text-muted)',
                                 '&:hover': { color: '#ef4444' },
@@ -829,7 +850,10 @@ const NovaClasse = () => {
                       ))}
                       <Button
                         variant="outlined"
-                        onClick={() => push({ ...HABILIDADE_INICIAL })}
+                        onClick={() => {
+                          habilidadesAvancadasKeys.addKey();
+                          push({ ...HABILIDADE_INICIAL });
+                        }}
                         sx={{
                           alignSelf: 'flex-start',
                           borderColor: 'var(--border-primary)',

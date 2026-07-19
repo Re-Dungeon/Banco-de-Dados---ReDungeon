@@ -44,7 +44,12 @@ const Sobre = () => {
             >
               Re:Dungeon
             </Typography>
-            <Chip label="V3.1" color="primary" size="small" sx={{ mt: 0.5 }} />
+            <Chip
+              label="V3.1.1"
+              color="primary"
+              size="small"
+              sx={{ mt: 0.5 }}
+            />
           </Box>
         </Box>
 

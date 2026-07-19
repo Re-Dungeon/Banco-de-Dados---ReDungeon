@@ -1,20 +1,26 @@
 import * as Yup from 'yup';
+import {
+  nomeSchema,
+  campoCurtoSchema,
+  descricaoSchema,
+  urlImagemSchema,
+} from 'common/utils/yupSchemas';
 
 const habilidadeEspecialSchema = Yup.object({
-  nome: Yup.string().required('Nome é obrigatório'),
-  descricao: Yup.string(),
+  nome: nomeSchema,
+  descricao: descricaoSchema,
 });
 
 export const ITEM_SCHEMA = Yup.object({
-  nome: Yup.string().required('Nome é obrigatório'),
+  nome: nomeSchema,
   qualidade: Yup.string(),
   tipo: Yup.string(),
-  linkImagem: Yup.string(),
+  linkImagem: urlImagemSchema,
   nivelAtual: Yup.number().integer().min(0).nullable(),
   nivelMaximo: Yup.number().integer().min(0).nullable(),
-  dados: Yup.string(),
-  extra: Yup.string(),
-  descricao: Yup.string(),
+  dados: campoCurtoSchema,
+  extra: campoCurtoSchema,
+  descricao: descricaoSchema,
   habilidadesEspeciais: Yup.array().of(habilidadeEspecialSchema),
 });
 

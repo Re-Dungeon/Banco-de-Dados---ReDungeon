@@ -1,29 +1,34 @@
 import * as Yup from 'yup';
+import {
+  nomeSchema,
+  descricaoSchema,
+  urlImagemSchema,
+} from 'common/utils/yupSchemas';
 
 export const CARDFLUX_SCHEMA = Yup.object({
-  nome: Yup.string().required('Nome é obrigatório'),
-  linkImagem: Yup.string(),
+  nome: nomeSchema,
+  linkImagem: urlImagemSchema,
   universo: Yup.string(),
   tipo: Yup.string(),
   intensidade: Yup.number().integer().min(0).nullable(),
   raridade: Yup.string(),
-  tags: Yup.string(),
+  tags: descricaoSchema,
   deck: Yup.string(),
   peso: Yup.number().integer().min(0).nullable(),
   cd: Yup.number().integer().min(0).nullable(),
-  descricaoGeral: Yup.string(),
-  comoApresentar: Yup.string(),
-  mecanicasDesafios: Yup.string(),
-  seConseguirem: Yup.string(),
-  seFalharem: Yup.string(),
-  recompensas: Yup.string(),
-  impactoMundo: Yup.string(),
-  ganchosNarrativos: Yup.string(),
+  descricaoGeral: descricaoSchema,
+  comoApresentar: descricaoSchema,
+  mecanicasDesafios: descricaoSchema,
+  seConseguirem: descricaoSchema,
+  seFalharem: descricaoSchema,
+  recompensas: descricaoSchema,
+  impactoMundo: descricaoSchema,
+  ganchosNarrativos: descricaoSchema,
   encadeamentoAtivo: Yup.boolean(),
   tipoAtivacao: Yup.string(),
   porcentagem: Yup.number().min(0).max(100).nullable(),
   cartasVinculadas: Yup.array(),
-  descricaoEncadeamento: Yup.string(),
+  descricaoEncadeamento: descricaoSchema,
 });
 
 export const CARDFLUX_INITIAL_VALUES = {

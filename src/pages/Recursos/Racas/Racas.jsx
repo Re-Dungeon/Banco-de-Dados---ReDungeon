@@ -356,7 +356,7 @@ const Racas = () => {
             {racaVisualizando.habilidadesRaciais.habilidadesBasicas.map(
               (hab, i) => (
                 <Box
-                  key={i}
+                  key={`${hab.nome}-${i}`}
                   sx={{
                     mb: 1,
                     p: 1.5,
@@ -439,7 +439,7 @@ const Racas = () => {
             {racaVisualizando.habilidadesRaciais.habilidadesAvancadas.map(
               (hab, i) => (
                 <Box
-                  key={i}
+                  key={`${hab.nome}-${i}`}
                   sx={{
                     mb: 1,
                     p: 1.5,

@@ -15,6 +15,7 @@ import { Formik, Form, FastField, Field, FieldArray } from 'formik';
 import { addCondicao, updateCondicao, getUniversos } from 'service/storage';
 import { ROUTE_PATHS } from 'common/constants/routes';
 import { useAuth } from 'context/AuthContext';
+import useStableListKeys from 'hooks/useStableListKeys';
 import { CONDICAO_SCHEMA, CONDICAO_INITIAL_VALUES } from './utils';
 import { RARIDADES } from 'common/constants/constants';
 
@@ -80,6 +81,9 @@ const NovaCondicao = () => {
         interacoes: condicaoParaEditar.interacoes || [],
       }
     : CONDICAO_INITIAL_VALUES;
+
+  const efeitosKeys = useStableListKeys(editInitialValues.efeitos.length);
+  const interacoesKeys = useStableListKeys(editInitialValues.interacoes.length);
 
   const filteredUniversos = isAdmin
     ? universos
@@ -233,6 +237,10 @@ const NovaCondicao = () => {
                           label="Link da Imagem da Condição"
                           fullWidth
                           placeholder="https://..."
+                          error={
+                            touched.linkImagem && Boolean(errors.linkImagem)
+                          }
+                          helperText={touched.linkImagem && errors.linkImagem}
                           onChange={e => {
                             setImgError(false);
                             field.onChange(e);
@@ -324,7 +332,7 @@ const NovaCondicao = () => {
                     <Box sx={{ mt: 1.5 }}>
                       {values.efeitos.map((_, idx) => (
                         <Box
-                          key={idx}
+                          key={efeitosKeys.keys[idx] ?? idx}
                           sx={{
                             display: 'flex',
                             gap: 1,
@@ -341,7 +349,10 @@ const NovaCondicao = () => {
                           />
                           <IconButton
                             size="small"
-                            onClick={() => remove(idx)}
+                            onClick={() => {
+                              efeitosKeys.removeKey(idx);
+                              remove(idx);
+                            }}
                             sx={{
                               color: 'var(--text-muted)',
                               '&:hover': { color: '#ef4444' },
@@ -354,7 +365,10 @@ const NovaCondicao = () => {
                       ))}
                       <Button
                         variant="outlined"
-                        onClick={() => push('')}
+                        onClick={() => {
+                          efeitosKeys.addKey();
+                          push('');
+                        }}
                         sx={{
                           alignSelf: 'flex-start',
                           borderColor: 'var(--border-primary)',
@@ -388,7 +402,7 @@ const NovaCondicao = () => {
                     <Box sx={{ mt: 1.5 }}>
                       {values.interacoes.map((_, idx) => (
                         <Box
-                          key={idx}
+                          key={interacoesKeys.keys[idx] ?? idx}
                           sx={{
                             display: 'flex',
                             gap: 1,
@@ -405,7 +419,10 @@ const NovaCondicao = () => {
                           />
                           <IconButton
                             size="small"
-                            onClick={() => remove(idx)}
+                            onClick={() => {
+                              interacoesKeys.removeKey(idx);
+                              remove(idx);
+                            }}
                             sx={{
                               color: 'var(--text-muted)',
                               '&:hover': { color: '#ef4444' },
@@ -418,7 +435,10 @@ const NovaCondicao = () => {
                       ))}
                       <Button
                         variant="outlined"
-                        onClick={() => push('')}
+                        onClick={() => {
+                          interacoesKeys.addKey();
+                          push('');
+                        }}
                         sx={{
                           alignSelf: 'flex-start',
                           borderColor: 'var(--border-primary)',

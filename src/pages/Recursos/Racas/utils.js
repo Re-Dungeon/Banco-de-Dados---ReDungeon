@@ -1,38 +1,44 @@
 import * as Yup from 'yup';
+import {
+  nomeSchema,
+  campoCurtoSchema,
+  descricaoSchema,
+  urlImagemSchema,
+} from 'common/utils/yupSchemas';
 
 const habilidadeBasicaSchema = Yup.object({
-  nome: Yup.string().required('Nome é obrigatório'),
-  descricao: Yup.string(),
-  bonus: Yup.array().of(Yup.string()),
+  nome: nomeSchema,
+  descricao: descricaoSchema,
+  bonus: Yup.array().of(campoCurtoSchema),
 });
 
 const habilidadeAvancadaSchema = Yup.object({
-  nome: Yup.string().required('Nome é obrigatório'),
+  nome: nomeSchema,
   tipo: Yup.string().oneOf(['Imediata', 'Duradoura', 'Sustentada', 'Passiva']),
-  descricao: Yup.string(),
-  bonus: Yup.array().of(Yup.string()),
-  alvo: Yup.string(),
-  alcance: Yup.string(),
-  recarga: Yup.string(),
-  custo: Yup.string(),
-  duracao: Yup.string(),
-  dados: Yup.string(),
+  descricao: descricaoSchema,
+  bonus: Yup.array().of(campoCurtoSchema),
+  alvo: campoCurtoSchema,
+  alcance: campoCurtoSchema,
+  recarga: campoCurtoSchema,
+  custo: campoCurtoSchema,
+  duracao: campoCurtoSchema,
+  dados: campoCurtoSchema,
 });
 
 export const RACA_SCHEMA = Yup.object({
-  nome: Yup.string().required('Nome é obrigatório'),
+  nome: nomeSchema,
   raridade: Yup.string(),
-  linkImagem: Yup.string(),
+  linkImagem: urlImagemSchema,
   atributosBasicos: Yup.object({
-    forca: Yup.string(),
-    agilidade: Yup.string(),
-    percepcao: Yup.string(),
-    vitalidade: Yup.string(),
-    inteligencia: Yup.string(),
-    sorte: Yup.string(),
-    limiteMaximoAtributo: Yup.string(),
+    forca: campoCurtoSchema,
+    agilidade: campoCurtoSchema,
+    percepcao: campoCurtoSchema,
+    vitalidade: campoCurtoSchema,
+    inteligencia: campoCurtoSchema,
+    sorte: campoCurtoSchema,
+    limiteMaximoAtributo: campoCurtoSchema,
   }),
-  descricao: Yup.string(),
+  descricao: descricaoSchema,
   habilidadesRaciais: Yup.object({
     habilidadesBasicas: Yup.array().of(habilidadeBasicaSchema),
     habilidadesAvancadas: Yup.array().of(habilidadeAvancadaSchema),

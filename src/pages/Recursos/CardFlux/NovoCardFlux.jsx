@@ -417,6 +417,10 @@ const NovoCardFlux = () => {
                             label="Link da Imagem"
                             fullWidth
                             placeholder="https://..."
+                            error={
+                              touched.linkImagem && Boolean(errors.linkImagem)
+                            }
+                            helperText={touched.linkImagem && errors.linkImagem}
                             onChange={e => {
                               setImgError(false);
                               field.onChange(e);

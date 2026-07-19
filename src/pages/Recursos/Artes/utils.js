@@ -1,21 +1,27 @@
 import * as Yup from 'yup';
+import {
+  nomeSchema,
+  campoCurtoSchema,
+  descricaoSchema,
+  urlImagemSchema,
+} from 'common/utils/yupSchemas';
 
 export const ARTE_SCHEMA = Yup.object({
-  nome: Yup.string().required('Nome é obrigatório'),
-  linkImagem: Yup.string(),
+  nome: nomeSchema,
+  linkImagem: urlImagemSchema,
   universo: Yup.string(),
-  recarga: Yup.string(),
+  recarga: campoCurtoSchema,
   tipo: Yup.string(),
   acao: Yup.string(),
-  duracao: Yup.string(),
-  alcance: Yup.string(),
-  alvos: Yup.string(),
-  custo: Yup.string(),
-  dados: Yup.string(),
-  descricao: Yup.string(),
+  duracao: campoCurtoSchema,
+  alcance: campoCurtoSchema,
+  alvos: campoCurtoSchema,
+  custo: campoCurtoSchema,
+  dados: campoCurtoSchema,
+  descricao: descricaoSchema,
   classificacao: Yup.string(),
-  circuloMagico: Yup.string(),
-  cantico: Yup.string(),
+  circuloMagico: campoCurtoSchema,
+  cantico: descricaoSchema,
   condicoesAplicadas: Yup.array(),
 });
 

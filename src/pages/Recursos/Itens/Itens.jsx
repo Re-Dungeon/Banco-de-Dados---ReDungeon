@@ -410,7 +410,7 @@ const Itens = () => {
             </Typography>
             {itemVisualizando.habilidadesEspeciais.map((hab, i) => (
               <Box
-                key={i}
+                key={`${hab.nome}-${i}`}
                 sx={{
                   mb: 1,
                   p: 1.5,

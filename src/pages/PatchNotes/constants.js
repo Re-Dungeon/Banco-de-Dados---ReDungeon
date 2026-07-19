@@ -1,5 +1,15 @@
 export const PATCH_NOTES = [
   {
+    version: '3.1.1',
+    date: '2026-07-19',
+    changes: [
+      'Validação de formulários reforçada: limite de caracteres em nome, campos curtos e descrições, e verificação de formato de URL no link de imagem, em todos os Recursos e Regras',
+      'Correção de bug: remover um item do meio de listas de habilidades (Classes, Raças, Itens, Condições) não troca mais o conteúdo dos itens seguintes de posição',
+      'Adição do plugin de acessibilidade (jsx-a11y) e do eslint-config-prettier ao ESLint; `no-console` e `react-hooks/exhaustive-deps` agora são erros',
+      'Novos testes unitários para os schemas de validação compartilhados e para o hook de chaves estáveis de lista',
+    ],
+  },
+  {
     version: '3.1.0',
     date: '2026-07-18',
     changes: [

@@ -1,15 +1,21 @@
 import * as Yup from 'yup';
+import {
+  nomeSchema,
+  campoCurtoSchema,
+  descricaoSchema,
+  urlImagemSchema,
+} from 'common/utils/yupSchemas';
 
 export const RECEITA_SCHEMA = Yup.object({
-  nome: Yup.string().required('Nome é obrigatório'),
+  nome: nomeSchema,
   raridade: Yup.string(),
   categoria: Yup.string(),
   universo: Yup.string(),
-  linkImagem: Yup.string(),
+  linkImagem: urlImagemSchema,
   materiais: Yup.array(),
-  descricao: Yup.string(),
-  valorCompra: Yup.string(),
-  valorVenda: Yup.string(),
+  descricao: descricaoSchema,
+  valorCompra: campoCurtoSchema,
+  valorVenda: campoCurtoSchema,
 });
 
 export const RECEITA_INITIAL_VALUES = {
