@@ -1,7 +1,4 @@
 export const NAV_ITEMS = [
-  //{ path: '/mesas', icon: '⬡', label: 'Mesas' },
-  //{ path: '/mundo', icon: '◉', label: 'World' },
-  //{ path: '/npcs', icon: '👤', label: 'NPCs' },
   { path: '/recursos/racas', icon: '🧬', label: 'Raças' },
   { path: '/recursos/classes', icon: '⚔️', label: 'Classes' },
   { path: '/recursos/materiais', icon: '💎', label: 'Materiais' },
@@ -11,11 +8,10 @@ export const NAV_ITEMS = [
   { path: '/recursos/artes', icon: '🥋', label: 'Artes' },
   { path: '/recursos/origens', icon: '🗺️', label: 'Origens' },
   { path: '/recursos/cardflux', icon: '🃏', label: 'CardFlux' },
-  { path: '/regras', icon: '📋', label: 'Regras' },
   { path: '/recursos/veias-astrais', icon: '🌌', label: 'Veias Astrais' },
   { path: '/recursos/divindades', icon: '🔱', label: 'Divindades' },
   { path: '/recursos/aptidoes', icon: '🎯', label: 'Aptidões' },
-  //{ path: '/macros', icon: '⚙', label: 'Macros' },
+  { path: '/regras', icon: '📋', label: 'Regras' },
 ];
 
 export const NAV_ITEMS_SECONDARY = [
