@@ -1,5 +1,4 @@
-import React, { useState, useEffect } from 'react';
-import PropTypes from 'prop-types';
+import React from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
@@ -12,10 +11,14 @@ import FormControl from '@mui/material/FormControl';
 import InputLabel from '@mui/material/InputLabel';
 import Paper from '@mui/material/Paper';
 import { Formik, Form, FastField, Field, FieldArray } from 'formik';
-import { addIten, updateIten, getUniversos } from 'service/storage';
+import { addIten, updateIten } from 'service/storage';
 import { ROUTE_PATHS } from 'common/constants/routes';
-import { useAuth } from 'context/AuthContext';
+import useEntityFormGuard from 'hooks/useEntityFormGuard';
 import useStableListKeys from 'hooks/useStableListKeys';
+import FormPageHeader from 'components/FormPageHeader/FormPageHeader';
+import ImagePreviewPanel from 'components/ImagePreviewPanel/ImagePreviewPanel';
+import FormActions from 'components/FormActions/FormActions';
+import SectionTitle from 'components/SectionTitle/SectionTitle';
 import {
   ITEM_SCHEMA,
   ITEM_INITIAL_VALUES,
@@ -24,57 +27,16 @@ import {
 } from './utils';
 import { RARIDADES } from 'common/constants/constants';
 
-const SectionTitle = ({ children }) => (
-  <Typography
-    variant="subtitle2"
-    sx={{
-      color: 'var(--color-accent)',
-      fontWeight: 700,
-      mt: 1,
-      mb: 0.5,
-      textTransform: 'uppercase',
-      letterSpacing: 1,
-      fontSize: '0.72rem',
-    }}
-  >
-    {children}
-  </Typography>
-);
-
-SectionTitle.propTypes = {
-  children: PropTypes.node.isRequired,
-};
-
 const NovoItem = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const { canCreate, canWrite, isAdmin, allowedUniversos, loadingPermissions } =
-    useAuth();
   const itemParaEditar = location.state?.item ?? null;
-  const isEditing = Boolean(itemParaEditar);
-  const [imgError, setImgError] = useState(false);
-  const [universos, setUniversos] = useState([]);
 
-  useEffect(() => {
-    getUniversos()
-      .then(res => setUniversos(res))
-      .catch(() => {});
-  }, []);
-
-  useEffect(() => {
-    if (loadingPermissions) return;
-    const allowed = isEditing
-      ? canWrite(itemParaEditar?.universo)
-      : canCreate();
-    if (!allowed) navigate(ROUTE_PATHS.ITENS);
-  }, [
-    loadingPermissions,
-    isEditing,
-    canWrite,
-    canCreate,
+  const { universos, loadingUniversos, isEditing } = useEntityFormGuard({
     itemParaEditar,
-    navigate,
-  ]);
+    universoDoItem: itemParaEditar?.universo,
+    routeOnDeny: ROUTE_PATHS.ITENS,
+  });
 
   const editInitialValues = itemParaEditar
     ? {
@@ -88,10 +50,6 @@ const NovoItem = () => {
     editInitialValues.habilidadesEspeciais.length,
   );
 
-  const filteredUniversos = isAdmin
-    ? universos
-    : universos.filter(u => allowedUniversos.includes(u.id));
-
   const handleSubmit = async (values, { setSubmitting }) => {
     if (isEditing) {
       await updateIten(itemParaEditar.id, values);
@@ -102,42 +60,19 @@ const NovoItem = () => {
     navigate(ROUTE_PATHS.ITENS);
   };
 
+  if (loadingUniversos) return null;
+
   return (
     <Box className="page-container">
-      {/* Header */}
-      <Box
-        sx={{
-          display: 'flex',
-          alignItems: 'center',
-          gap: 2,
-          mb: 3,
-        }}
-      >
-        <Button
-          onClick={() => navigate(ROUTE_PATHS.ITENS)}
-          sx={{
-            color: 'var(--text-muted)',
-            minWidth: 'auto',
-            px: 1,
-            '&:hover': { color: 'var(--text-primary)' },
-          }}
-        >
-          ← Voltar
-        </Button>
-        <Box>
-          <Typography
-            variant="h5"
-            sx={{ color: 'var(--text-primary)', fontWeight: 700, mb: 0.5 }}
-          >
-            {isEditing ? 'Editar Item' : 'Novo Item'}
-          </Typography>
-          <Typography variant="body2" sx={{ color: 'var(--text-secondary)' }}>
-            {isEditing
-              ? `Editando os dados de ${itemParaEditar.nome}`
-              : 'Preencha os dados do novo item'}
-          </Typography>
-        </Box>
-      </Box>
+      <FormPageHeader
+        titulo={isEditing ? 'Editar Item' : 'Novo Item'}
+        subtitulo={
+          isEditing
+            ? `Editando os dados de ${itemParaEditar.nome}`
+            : 'Preencha os dados do novo item'
+        }
+        onVoltar={() => navigate(ROUTE_PATHS.ITENS)}
+      />
 
       <Formik
         initialValues={editInitialValues}
@@ -218,7 +153,7 @@ const NovoItem = () => {
                           <FormControl fullWidth>
                             <InputLabel>Universo</InputLabel>
                             <Select {...field} label="Universo">
-                              {filteredUniversos.map(universo => (
+                              {universos.map(universo => (
                                 <MenuItem key={universo.id} value={universo.id}>
                                   {universo.Nome}
                                 </MenuItem>
@@ -228,24 +163,15 @@ const NovoItem = () => {
                         )}
                       </Field>
                     </Box>
-                    <FastField name="linkImagem">
-                      {({ field }) => (
-                        <TextField
-                          {...field}
-                          label="Link da Imagem do Item"
-                          fullWidth
-                          placeholder="https://..."
-                          error={
-                            touched.linkImagem && Boolean(errors.linkImagem)
-                          }
-                          helperText={touched.linkImagem && errors.linkImagem}
-                          onChange={e => {
-                            setImgError(false);
-                            field.onChange(e);
-                          }}
-                        />
-                      )}
-                    </FastField>
+                    <FastField
+                      as={TextField}
+                      name="linkImagem"
+                      label="Link da Imagem do Item"
+                      fullWidth
+                      placeholder="https://..."
+                      error={touched.linkImagem && Boolean(errors.linkImagem)}
+                      helperText={touched.linkImagem && errors.linkImagem}
+                    />
                     <FastField
                       as={TextField}
                       name="descricao"
@@ -256,64 +182,10 @@ const NovoItem = () => {
                     />
                   </Box>
 
-                  {/* Preview da imagem */}
-                  <Box
-                    sx={{
-                      display: 'flex',
-                      flexDirection: 'column',
-                      gap: 1,
-                    }}
-                  >
-                    <Typography
-                      variant="caption"
-                      sx={{
-                        color: 'var(--text-muted)',
-                        textTransform: 'uppercase',
-                        letterSpacing: 0.5,
-                      }}
-                    >
-                      Preview
-                    </Typography>
-                    <Box
-                      sx={{
-                        width: '100%',
-                        aspectRatio: '1 / 1',
-                        borderRadius: 2,
-                        border: '1px solid var(--border-primary)',
-                        background: 'var(--bg-secondary)',
-                        overflow: 'hidden',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                      }}
-                    >
-                      {values.linkImagem && !imgError ? (
-                        <img
-                          src={values.linkImagem}
-                          alt="Preview do item"
-                          onError={() => setImgError(true)}
-                          style={{
-                            width: '100%',
-                            height: '100%',
-                            objectFit: 'cover',
-                          }}
-                        />
-                      ) : (
-                        <Typography
-                          variant="body2"
-                          sx={{
-                            color: 'var(--text-muted)',
-                            textAlign: 'center',
-                            px: 2,
-                          }}
-                        >
-                          {imgError
-                            ? 'Imagem não encontrada'
-                            : 'Insira um link para ver o preview'}
-                        </Typography>
-                      )}
-                    </Box>
-                  </Box>
+                  <ImagePreviewPanel
+                    src={values.linkImagem}
+                    alt="Preview do item"
+                  />
                 </Box>
               </Paper>
 
@@ -485,33 +357,11 @@ const NovoItem = () => {
                 </FieldArray>
               </Paper>
 
-              {/* Ações */}
-              <Box
-                sx={{
-                  display: 'flex',
-                  justifyContent: 'flex-end',
-                  gap: 2,
-                  pb: 2,
-                }}
-              >
-                <Button
-                  onClick={() => navigate(ROUTE_PATHS.ITENS)}
-                  sx={{ color: 'var(--text-muted)' }}
-                >
-                  Cancelar
-                </Button>
-                <Button
-                  type="submit"
-                  variant="contained"
-                  disabled={isSubmitting}
-                  sx={{
-                    background: 'var(--color-primary)',
-                    '&:hover': { background: '#5a2090' },
-                  }}
-                >
-                  {isEditing ? 'Salvar Alterações' : 'Salvar Item'}
-                </Button>
-              </Box>
+              <FormActions
+                onCancelar={() => navigate(ROUTE_PATHS.ITENS)}
+                isSubmitting={isSubmitting}
+                labelSalvar={isEditing ? 'Salvar Alterações' : 'Salvar Item'}
+              />
             </Box>
           </Form>
         )}

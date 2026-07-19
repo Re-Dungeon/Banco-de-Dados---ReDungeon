@@ -179,6 +179,17 @@ export const removeVeiaAstral = id =>
 export const updateVeiaAstral = (id, updates) =>
   updateFirestoreItem(VEIAS_ASTRAIS_COLLECTION, id, updates);
 
+// ── Divindades (Firestore) ───────────────────────────────────────────────────
+const DIVINDADES_COLLECTION = 'divindades';
+
+export const getDivindades = () => getFirestoreItems(DIVINDADES_COLLECTION);
+export const addDivindade = divindade =>
+  addFirestoreItem(DIVINDADES_COLLECTION, divindade);
+export const removeDivindade = id =>
+  removeFirestoreItem(DIVINDADES_COLLECTION, id);
+export const updateDivindade = (id, updates) =>
+  updateFirestoreItem(DIVINDADES_COLLECTION, id, updates);
+
 // ── Universo (Firestore) ────────────────────────────────────────────────────────
 
 const UNIVERSO_COLLECTION = 'Universo';

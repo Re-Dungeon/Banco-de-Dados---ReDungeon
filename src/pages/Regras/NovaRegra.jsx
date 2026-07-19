@@ -1,9 +1,6 @@
-import React, { useState, useEffect } from 'react';
-import PropTypes from 'prop-types';
+import React from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import Box from '@mui/material/Box';
-import Typography from '@mui/material/Typography';
-import Button from '@mui/material/Button';
 import TextField from '@mui/material/TextField';
 import Select from '@mui/material/Select';
 import MenuItem from '@mui/material/MenuItem';
@@ -11,68 +8,29 @@ import FormControl from '@mui/material/FormControl';
 import InputLabel from '@mui/material/InputLabel';
 import Paper from '@mui/material/Paper';
 import { Formik, Form, FastField, Field } from 'formik';
-import { addRegra, updateRegra, getUniversos } from 'service/storage';
+import { addRegra, updateRegra } from 'service/storage';
 import { ROUTE_PATHS } from 'common/constants/routes';
-import { useAuth } from 'context/AuthContext';
+import useEntityFormGuard from 'hooks/useEntityFormGuard';
+import FormPageHeader from 'components/FormPageHeader/FormPageHeader';
+import ImagePreviewPanel from 'components/ImagePreviewPanel/ImagePreviewPanel';
+import FormActions from 'components/FormActions/FormActions';
+import SectionTitle from 'components/SectionTitle/SectionTitle';
 import { REGRA_SCHEMA, REGRA_INITIAL_VALUES } from './utils';
 import {
   CATEGORIAS_REGRA,
   COMPLEXIDADES_REGRA,
 } from 'common/constants/constants';
 
-const SectionTitle = ({ children }) => (
-  <Typography
-    variant="subtitle2"
-    sx={{
-      color: 'var(--color-accent)',
-      fontWeight: 700,
-      mt: 1,
-      mb: 0.5,
-      textTransform: 'uppercase',
-      letterSpacing: 1,
-      fontSize: '0.72rem',
-    }}
-  >
-    {children}
-  </Typography>
-);
-
-SectionTitle.propTypes = {
-  children: PropTypes.node.isRequired,
-};
-
 const NovaRegra = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const { canCreate, canWrite, isAdmin, allowedUniversos, loadingPermissions } =
-    useAuth();
   const regraParaEditar = location.state?.regra ?? null;
-  const isEditing = Boolean(regraParaEditar);
-  const [imgError, setImgError] = useState(false);
-  const [universos, setUniversos] = useState([]);
-  const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    getUniversos()
-      .then(res => setUniversos(res))
-      .catch(() => {})
-      .finally(() => setLoading(false));
-  }, []);
-
-  useEffect(() => {
-    if (loadingPermissions) return;
-    const allowed = isEditing
-      ? canWrite(regraParaEditar?.universo)
-      : canCreate();
-    if (!allowed) navigate(ROUTE_PATHS.REGRAS);
-  }, [
-    loadingPermissions,
-    isEditing,
-    canWrite,
-    canCreate,
-    regraParaEditar,
-    navigate,
-  ]);
+  const { universos, loadingUniversos, isEditing } = useEntityFormGuard({
+    itemParaEditar: regraParaEditar,
+    universoDoItem: regraParaEditar?.universo,
+    routeOnDeny: ROUTE_PATHS.REGRAS,
+  });
 
   const editInitialValues = regraParaEditar
     ? {
@@ -80,10 +38,6 @@ const NovaRegra = () => {
         ...regraParaEditar,
       }
     : REGRA_INITIAL_VALUES;
-
-  const filteredUniversos = isAdmin
-    ? universos
-    : universos.filter(u => allowedUniversos.includes(u.id));
 
   const handleSubmit = async (values, { setSubmitting }) => {
     if (isEditing) {
@@ -132,37 +86,19 @@ const NovaRegra = () => {
     '&.Mui-focused': { color: 'var(--color-accent)' },
   };
 
-  if (loading) return null;
+  if (loadingUniversos) return null;
 
   return (
     <Box className="page-container">
-      {/* Header */}
-      <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 3 }}>
-        <Button
-          onClick={() => navigate(ROUTE_PATHS.REGRAS)}
-          sx={{
-            color: 'var(--text-muted)',
-            minWidth: 'auto',
-            px: 1,
-            '&:hover': { color: 'var(--text-primary)' },
-          }}
-        >
-          ← Voltar
-        </Button>
-        <Box>
-          <Typography
-            variant="h5"
-            sx={{ color: 'var(--text-primary)', fontWeight: 700, mb: 0.5 }}
-          >
-            {isEditing ? 'Editar Regra' : 'Nova Regra'}
-          </Typography>
-          <Typography variant="body2" sx={{ color: 'var(--text-secondary)' }}>
-            {isEditing
-              ? `Editando os dados de ${regraParaEditar.nome}`
-              : 'Preencha os dados da nova regra'}
-          </Typography>
-        </Box>
-      </Box>
+      <FormPageHeader
+        titulo={isEditing ? 'Editar Regra' : 'Nova Regra'}
+        subtitulo={
+          isEditing
+            ? `Editando os dados de ${regraParaEditar.nome}`
+            : 'Preencha os dados da nova regra'
+        }
+        onVoltar={() => navigate(ROUTE_PATHS.REGRAS)}
+      />
 
       <Formik
         initialValues={editInitialValues}
@@ -225,7 +161,7 @@ const NovaRegra = () => {
                               sx={selectSx}
                               MenuProps={menuPropsSx}
                             >
-                              {filteredUniversos.map(universo => (
+                              {universos.map(universo => (
                                 <MenuItem key={universo.id} value={universo.id}>
                                   {universo.Nome}
                                 </MenuItem>
@@ -311,70 +247,16 @@ const NovaRegra = () => {
                             touched.linkImagem && Boolean(errors.linkImagem)
                           }
                           helperText={touched.linkImagem && errors.linkImagem}
-                          onChange={e => {
-                            setImgError(false);
-                            field.onChange(e);
-                          }}
                           sx={slotInputSx}
                         />
                       )}
                     </FastField>
                   </Box>
 
-                  {/* Preview da imagem */}
-                  <Box
-                    sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}
-                  >
-                    <Typography
-                      variant="caption"
-                      sx={{
-                        color: 'var(--text-muted)',
-                        textTransform: 'uppercase',
-                        letterSpacing: 0.5,
-                      }}
-                    >
-                      Preview
-                    </Typography>
-                    <Box
-                      sx={{
-                        width: '100%',
-                        aspectRatio: '1 / 1',
-                        borderRadius: 2,
-                        border: '1px solid var(--border-primary)',
-                        background: 'var(--bg-secondary)',
-                        overflow: 'hidden',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                      }}
-                    >
-                      {values.linkImagem && !imgError ? (
-                        <img
-                          src={values.linkImagem}
-                          alt="Preview da regra"
-                          onError={() => setImgError(true)}
-                          style={{
-                            width: '100%',
-                            height: '100%',
-                            objectFit: 'cover',
-                          }}
-                        />
-                      ) : (
-                        <Typography
-                          variant="body2"
-                          sx={{
-                            color: 'var(--text-muted)',
-                            textAlign: 'center',
-                            px: 2,
-                          }}
-                        >
-                          {imgError
-                            ? 'Imagem não encontrada'
-                            : 'Insira um link para ver o preview'}
-                        </Typography>
-                      )}
-                    </Box>
-                  </Box>
+                  <ImagePreviewPanel
+                    src={values.linkImagem}
+                    alt="Preview da regra"
+                  />
                 </Box>
               </Paper>
 
@@ -570,33 +452,11 @@ const NovaRegra = () => {
                 </Box>
               </Paper>
 
-              {/* Ações */}
-              <Box
-                sx={{
-                  display: 'flex',
-                  justifyContent: 'flex-end',
-                  gap: 2,
-                  pb: 2,
-                }}
-              >
-                <Button
-                  onClick={() => navigate(ROUTE_PATHS.REGRAS)}
-                  sx={{ color: 'var(--text-muted)' }}
-                >
-                  Cancelar
-                </Button>
-                <Button
-                  type="submit"
-                  variant="contained"
-                  disabled={isSubmitting}
-                  sx={{
-                    background: 'var(--color-primary)',
-                    '&:hover': { background: '#5a2090' },
-                  }}
-                >
-                  {isEditing ? 'Salvar Alterações' : 'Salvar Regra'}
-                </Button>
-              </Box>
+              <FormActions
+                onCancelar={() => navigate(ROUTE_PATHS.REGRAS)}
+                isSubmitting={isSubmitting}
+                labelSalvar={isEditing ? 'Salvar Alterações' : 'Salvar Regra'}
+              />
             </Box>
           </Form>
         )}

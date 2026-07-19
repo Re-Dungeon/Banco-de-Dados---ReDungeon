@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
@@ -10,10 +10,13 @@ import Tooltip from '@mui/material/Tooltip';
 import DeleteOutlineIcon from '@mui/icons-material/DeleteOutlined';
 import EditOutlinedIcon from '@mui/icons-material/EditOutlined';
 import VisibilityOutlinedIcon from '@mui/icons-material/VisibilityOutlined';
-import { getVeiasAstrais, removeVeiaAstral } from 'service/storage';
+import {
+  getVeiasAstrais,
+  removeVeiaAstral,
+  getDivindades,
+} from 'service/storage';
 import { ROUTE_PATHS } from 'common/constants/routes';
 import { useAuth } from 'context/AuthContext';
-import { DIVINDADES_VEIAS_ASTRAIS } from 'common/constants/constants';
 import useEntityCRUD from 'hooks/useEntityCRUD';
 import useUniversos from 'hooks/useUniversos';
 import EntityFilters from 'components/EntityFilters/EntityFilters';
@@ -29,24 +32,54 @@ const VeiasAstrais = () => {
     remove: handleRemove,
   } = useEntityCRUD({ getAll: getVeiasAstrais, remove: removeVeiaAstral });
   const { universos, loadingUniversos } = useUniversos();
+  const [divindades, setDivindades] = useState([]);
   const loading = loadingVeiasAstrais || loadingUniversos;
   const [filtroNome, setFiltroNome] = useState('');
   const [filtroDivindade, setFiltroDivindade] = useState('');
   const [filtroUniverso, setFiltroUniverso] = useState('');
   const [veiaAstralVisualizando, setVeiaAstralVisualizando] = useState(null);
 
+  useEffect(() => {
+    let active = true;
+    getDivindades().then(data => {
+      if (active) setDivindades(data);
+    });
+    return () => {
+      active = false;
+    };
+  }, []);
+
+  const nomePorDivindadeId = useMemo(
+    () => Object.fromEntries(divindades.map(d => [d.id, d.nome])),
+    [divindades],
+  );
+  const getDivindadeNome = veiaAstral =>
+    nomePorDivindadeId[veiaAstral?.divindade] || veiaAstral?.divindade || '';
+  const opcoesDivindade = useMemo(
+    () => [...new Set(divindades.map(d => d.nome))],
+    [divindades],
+  );
+
   const veiasAstraisFiltradas = useMemo(() => {
     return veiasAstrais.filter(veiaAstral => {
+      const nomeDivindade =
+        nomePorDivindadeId[veiaAstral.divindade] || veiaAstral.divindade || '';
       const matchNome =
         !filtroNome ||
         veiaAstral.nome?.toLowerCase().includes(filtroNome.toLowerCase());
       const matchDivindade =
-        !filtroDivindade || veiaAstral.divindade === filtroDivindade;
+        !filtroDivindade || nomeDivindade === filtroDivindade;
       const matchUniverso =
         !filtroUniverso || veiaAstral.universo === filtroUniverso;
       return matchNome && matchDivindade && matchUniverso;
     });
-  }, [veiasAstrais, filtroNome, filtroDivindade, filtroUniverso]);
+  }, [
+    veiasAstrais,
+    filtroNome,
+    filtroDivindade,
+    filtroUniverso,
+    nomePorDivindadeId,
+  ]);
 
   return (
     <Box
@@ -102,7 +135,7 @@ const VeiasAstrais = () => {
                 label: 'Divindade/Constelação',
                 value: filtroDivindade,
                 onChange: setFiltroDivindade,
-                options: DIVINDADES_VEIAS_ASTRAIS,
+                options: opcoesDivindade,
                 allLabel: 'Todas',
               },
             ]}
@@ -234,7 +267,7 @@ const VeiasAstrais = () => {
                       }}
                     >
                       {[
-                        veiaAstral.divindade,
+                        getDivindadeNome(veiaAstral),
                         veiaAstral.nivel ? `Nível ${veiaAstral.nivel}` : null,
                       ]
                         .filter(Boolean)
@@ -285,7 +318,7 @@ const VeiasAstrais = () => {
           (veiaAstralVisualizando?.divindade ||
             veiaAstralVisualizando?.nivel) &&
           [
-            veiaAstralVisualizando.divindade,
+            getDivindadeNome(veiaAstralVisualizando),
             veiaAstralVisualizando.nivel
               ? `Nível ${veiaAstralVisualizando.nivel}`
               : null,

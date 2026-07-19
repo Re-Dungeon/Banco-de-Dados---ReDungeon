@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import Box from '@mui/material/Box';
 import TextField from '@mui/material/TextField';
@@ -8,57 +8,41 @@ import FormControl from '@mui/material/FormControl';
 import InputLabel from '@mui/material/InputLabel';
 import Paper from '@mui/material/Paper';
 import { Formik, Form, FastField, Field } from 'formik';
-import {
-  addVeiaAstral,
-  updateVeiaAstral,
-  getDivindades,
-} from 'service/storage';
+import { addDivindade, updateDivindade } from 'service/storage';
 import { ROUTE_PATHS } from 'common/constants/routes';
 import useEntityFormGuard from 'hooks/useEntityFormGuard';
 import FormPageHeader from 'components/FormPageHeader/FormPageHeader';
 import ImagePreviewPanel from 'components/ImagePreviewPanel/ImagePreviewPanel';
 import FormActions from 'components/FormActions/FormActions';
 import SectionTitle from 'components/SectionTitle/SectionTitle';
-import { VEIA_ASTRAL_SCHEMA, VEIA_ASTRAL_INITIAL_VALUES } from './utils';
+import { DIVINDADE_SCHEMA, DIVINDADE_INITIAL_VALUES } from './utils';
 
-const NovaVeiaAstral = () => {
+const NovaDivindade = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const veiaAstralParaEditar = location.state?.veiaAstral ?? null;
+  const divindadeParaEditar = location.state?.divindade ?? null;
 
   const { universos, loadingUniversos, isEditing } = useEntityFormGuard({
-    itemParaEditar: veiaAstralParaEditar,
-    universoDoItem: veiaAstralParaEditar?.universo,
-    routeOnDeny: ROUTE_PATHS.VEIAS_ASTRAIS,
+    itemParaEditar: divindadeParaEditar,
+    universoDoItem: divindadeParaEditar?.universo,
+    routeOnDeny: ROUTE_PATHS.DIVINDADES,
   });
 
-  const [divindades, setDivindades] = useState([]);
-
-  useEffect(() => {
-    let active = true;
-    getDivindades().then(data => {
-      if (active) setDivindades(data);
-    });
-    return () => {
-      active = false;
-    };
-  }, []);
-
-  const editInitialValues = veiaAstralParaEditar
+  const editInitialValues = divindadeParaEditar
     ? {
-        ...VEIA_ASTRAL_INITIAL_VALUES,
-        ...veiaAstralParaEditar,
+        ...DIVINDADE_INITIAL_VALUES,
+        ...divindadeParaEditar,
       }
-    : VEIA_ASTRAL_INITIAL_VALUES;
+    : DIVINDADE_INITIAL_VALUES;
 
   const handleSubmit = async (values, { setSubmitting }) => {
     if (isEditing) {
-      await updateVeiaAstral(veiaAstralParaEditar.id, values);
+      await updateDivindade(divindadeParaEditar.id, values);
     } else {
-      await addVeiaAstral(values);
+      await addDivindade(values);
     }
     setSubmitting(false);
-    navigate(ROUTE_PATHS.VEIAS_ASTRAIS);
+    navigate(ROUTE_PATHS.DIVINDADES);
   };
 
   const slotInputSx = {
@@ -103,24 +87,23 @@ const NovaVeiaAstral = () => {
   return (
     <Box className="page-container">
       <FormPageHeader
-        titulo={isEditing ? 'Editar Veia Astral' : 'Nova Veia Astral'}
+        titulo={isEditing ? 'Editar Divindade' : 'Nova Divindade'}
         subtitulo={
           isEditing
-            ? `Editando os dados de ${veiaAstralParaEditar.nome}`
-            : 'Preencha os dados da nova veia astral'
+            ? `Editando os dados de ${divindadeParaEditar.nome}`
+            : 'Preencha os dados da nova divindade'
         }
-        onVoltar={() => navigate(ROUTE_PATHS.VEIAS_ASTRAIS)}
+        onVoltar={() => navigate(ROUTE_PATHS.DIVINDADES)}
       />
 
       <Formik
         initialValues={editInitialValues}
-        validationSchema={VEIA_ASTRAL_SCHEMA}
+        validationSchema={DIVINDADE_SCHEMA}
         onSubmit={handleSubmit}
       >
         {({ values, errors, touched, isSubmitting }) => (
           <Form>
             <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
-              {/* Seção: Informações Gerais */}
               <Paper
                 elevation={0}
                 sx={{
@@ -139,7 +122,6 @@ const NovaVeiaAstral = () => {
                     mt: 1.5,
                   }}
                 >
-                  {/* Campos do lado esquerdo */}
                   <Box
                     sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}
                   >
@@ -154,7 +136,7 @@ const NovaVeiaAstral = () => {
                         {({ field }) => (
                           <TextField
                             {...field}
-                            label="Nome"
+                            label="Nome da Divindade"
                             fullWidth
                             error={touched.nome && Boolean(errors.nome)}
                             helperText={touched.nome && errors.nome}
@@ -164,7 +146,7 @@ const NovaVeiaAstral = () => {
                       </FastField>
 
                       <Field name="universo">
-                        {({ field, form }) => (
+                        {({ field }) => (
                           <FormControl fullWidth>
                             <InputLabel sx={labelSx}>Universo</InputLabel>
                             <Select
@@ -172,10 +154,6 @@ const NovaVeiaAstral = () => {
                               label="Universo"
                               sx={selectSx}
                               MenuProps={menuPropsSx}
-                              onChange={e => {
-                                field.onChange(e);
-                                form.setFieldValue('divindade', '');
-                              }}
                             >
                               {universos.map(universo => (
                                 <MenuItem key={universo.id} value={universo.id}>
@@ -188,75 +166,11 @@ const NovaVeiaAstral = () => {
                       </Field>
                     </Box>
 
-                    <Box
-                      sx={{
-                        display: 'grid',
-                        gridTemplateColumns: { xs: '1fr', sm: '2fr 1fr' },
-                        gap: 2,
-                      }}
-                    >
-                      <Field name="divindade">
-                        {({ field }) => (
-                          <FormControl fullWidth>
-                            <InputLabel sx={labelSx}>
-                              Divindade/Constelação
-                            </InputLabel>
-                            <Select
-                              {...field}
-                              label="Divindade/Constelação"
-                              sx={selectSx}
-                              MenuProps={menuPropsSx}
-                            >
-                              <MenuItem value="">Nenhuma</MenuItem>
-                              {divindades
-                                .filter(
-                                  divindade =>
-                                    divindade.universo === values.universo,
-                                )
-                                .map(divindade => (
-                                  <MenuItem
-                                    key={divindade.id}
-                                    value={divindade.id}
-                                  >
-                                    {divindade.nome}
-                                  </MenuItem>
-                                ))}
-                            </Select>
-                          </FormControl>
-                        )}
-                      </Field>
-
-                      <FastField name="nivel">
-                        {({ field }) => (
-                          <TextField
-                            {...field}
-                            label="Nível"
-                            type="number"
-                            fullWidth
-                            error={touched.nivel && Boolean(errors.nivel)}
-                            helperText={touched.nivel && errors.nivel}
-                            sx={slotInputSx}
-                          />
-                        )}
-                      </FastField>
-                    </Box>
-
-                    <FastField name="custo">
-                      {({ field }) => (
-                        <TextField
-                          {...field}
-                          label="Custo"
-                          fullWidth
-                          sx={slotInputSx}
-                        />
-                      )}
-                    </FastField>
-
                     <FastField name="linkImagem">
                       {({ field }) => (
                         <TextField
                           {...field}
-                          label="Link da Imagem"
+                          label="Link da Imagem da Divindade"
                           fullWidth
                           placeholder="https://..."
                           error={
@@ -274,17 +188,6 @@ const NovaVeiaAstral = () => {
                           {...field}
                           label="Descrição"
                           fullWidth
-                          sx={slotInputSx}
-                        />
-                      )}
-                    </FastField>
-
-                    <FastField name="aprimoramento">
-                      {({ field }) => (
-                        <TextField
-                          {...field}
-                          label="Aprimoramento"
-                          fullWidth
                           multiline
                           rows={4}
                           sx={slotInputSx}
@@ -295,16 +198,16 @@ const NovaVeiaAstral = () => {
 
                   <ImagePreviewPanel
                     src={values.linkImagem}
-                    alt="Preview da veia astral"
+                    alt="Preview da divindade"
                   />
                 </Box>
               </Paper>
 
               <FormActions
-                onCancelar={() => navigate(ROUTE_PATHS.VEIAS_ASTRAIS)}
+                onCancelar={() => navigate(ROUTE_PATHS.DIVINDADES)}
                 isSubmitting={isSubmitting}
                 labelSalvar={
-                  isEditing ? 'Salvar Alterações' : 'Salvar Veia Astral'
+                  isEditing ? 'Salvar Alterações' : 'Salvar Divindade'
                 }
               />
             </Box>
@@ -315,4 +218,4 @@ const NovaVeiaAstral = () => {
   );
 };
 
-export default NovaVeiaAstral;
+export default NovaDivindade;

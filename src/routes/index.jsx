@@ -33,6 +33,10 @@ const VeiasAstrais = lazy(
 const NovaVeiaAstral = lazy(
   () => import('pages/Recursos/VeiasAstrais/NovaVeiaAstral'),
 );
+const Divindades = lazy(() => import('pages/Recursos/Divindades/Divindades'));
+const NovaDivindade = lazy(
+  () => import('pages/Recursos/Divindades/NovaDivindade'),
+);
 const PatchNotes = lazy(() => import('pages/PatchNotes/PatchNotes'));
 const Sobre = lazy(() => import('pages/Sobre/Sobre'));
 
@@ -64,6 +68,8 @@ export const ROUTES = [
     path: ROUTE_PATHS.NOVA_VEIA_ASTRAL.slice(1),
     element: <NovaVeiaAstral />,
   },
+  { path: ROUTE_PATHS.DIVINDADES.slice(1), element: <Divindades /> },
+  { path: ROUTE_PATHS.NOVA_DIVINDADE.slice(1), element: <NovaDivindade /> },
   { path: ROUTE_PATHS.PATCH_NOTES.slice(1), element: <PatchNotes /> },
   { path: ROUTE_PATHS.SOBRE.slice(1), element: <Sobre /> },
 ];

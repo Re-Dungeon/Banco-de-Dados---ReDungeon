@@ -13,6 +13,7 @@ export const NAV_ITEMS = [
   { path: '/recursos/cardflux', icon: '🃏', label: 'CardFlux' },
   { path: '/regras', icon: '📋', label: 'Regras' },
   { path: '/recursos/veias-astrais', icon: '🌌', label: 'Veias Astrais' },
+  { path: '/recursos/divindades', icon: '🔱', label: 'Divindades' },
   //{ path: '/macros', icon: '⚙', label: 'Macros' },
 ];
 

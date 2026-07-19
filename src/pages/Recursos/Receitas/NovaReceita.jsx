@@ -1,9 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import PropTypes from 'prop-types';
 import { useNavigate, useLocation } from 'react-router-dom';
 import Box from '@mui/material/Box';
-import Typography from '@mui/material/Typography';
-import Button from '@mui/material/Button';
 import TextField from '@mui/material/TextField';
 import Select from '@mui/material/Select';
 import MenuItem from '@mui/material/MenuItem';
@@ -13,74 +10,35 @@ import Paper from '@mui/material/Paper';
 import Autocomplete from '@mui/material/Autocomplete';
 import Chip from '@mui/material/Chip';
 import { Formik, Form, FastField, Field } from 'formik';
-import {
-  addReceita,
-  updateReceita,
-  getUniversos,
-  getMateriais,
-} from 'service/storage';
+import { addReceita, updateReceita, getMateriais } from 'service/storage';
 import { ROUTE_PATHS } from 'common/constants/routes';
-import { useAuth } from 'context/AuthContext';
+import useEntityFormGuard from 'hooks/useEntityFormGuard';
+import FormPageHeader from 'components/FormPageHeader/FormPageHeader';
+import ImagePreviewPanel from 'components/ImagePreviewPanel/ImagePreviewPanel';
+import FormActions from 'components/FormActions/FormActions';
+import SectionTitle from 'components/SectionTitle/SectionTitle';
 import { RECEITA_SCHEMA, RECEITA_INITIAL_VALUES } from './utils';
 import { RARIDADES, CATEGORIAS_RECEITA } from 'common/constants/constants';
-
-const SectionTitle = ({ children }) => (
-  <Typography
-    variant="subtitle2"
-    sx={{
-      color: 'var(--color-accent)',
-      fontWeight: 700,
-      mt: 1,
-      mb: 0.5,
-      textTransform: 'uppercase',
-      letterSpacing: 1,
-      fontSize: '0.72rem',
-    }}
-  >
-    {children}
-  </Typography>
-);
-
-SectionTitle.propTypes = {
-  children: PropTypes.node.isRequired,
-};
 
 const NovaReceita = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const { canCreate, canWrite, isAdmin, allowedUniversos, loadingPermissions } =
-    useAuth();
   const receitaParaEditar = location.state?.receita ?? null;
-  const isEditing = Boolean(receitaParaEditar);
-  const [imgError, setImgError] = useState(false);
-  const [universos, setUniversos] = useState([]);
   const [materiais, setMateriais] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [loadingMateriais, setLoadingMateriais] = useState(true);
+
+  const { universos, loadingUniversos, isEditing } = useEntityFormGuard({
+    itemParaEditar: receitaParaEditar,
+    universoDoItem: receitaParaEditar?.universo,
+    routeOnDeny: ROUTE_PATHS.RECEITAS,
+  });
 
   useEffect(() => {
-    Promise.all([getUniversos(), getMateriais()])
-      .then(([universosData, materiaisData]) => {
-        setUniversos(universosData);
-        setMateriais(materiaisData);
-      })
+    getMateriais()
+      .then(res => setMateriais(res))
       .catch(() => {})
-      .finally(() => setLoading(false));
+      .finally(() => setLoadingMateriais(false));
   }, []);
-
-  useEffect(() => {
-    if (loadingPermissions) return;
-    const allowed = isEditing
-      ? canWrite(receitaParaEditar?.universo)
-      : canCreate();
-    if (!allowed) navigate(ROUTE_PATHS.RECEITAS);
-  }, [
-    loadingPermissions,
-    isEditing,
-    canWrite,
-    canCreate,
-    receitaParaEditar,
-    navigate,
-  ]);
 
   const editInitialValues = receitaParaEditar
     ? {
@@ -89,10 +47,6 @@ const NovaReceita = () => {
         materiais: receitaParaEditar.materiais || [],
       }
     : RECEITA_INITIAL_VALUES;
-
-  const filteredUniversos = isAdmin
-    ? universos
-    : universos.filter(u => allowedUniversos.includes(u.id));
 
   const handleSubmit = async (values, { setSubmitting }) => {
     if (isEditing) {
@@ -141,37 +95,19 @@ const NovaReceita = () => {
     '&.Mui-focused': { color: 'var(--color-accent)' },
   };
 
-  if (loading) return null;
+  if (loadingUniversos || loadingMateriais) return null;
 
   return (
     <Box className="page-container">
-      {/* Header */}
-      <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 3 }}>
-        <Button
-          onClick={() => navigate(ROUTE_PATHS.RECEITAS)}
-          sx={{
-            color: 'var(--text-muted)',
-            minWidth: 'auto',
-            px: 1,
-            '&:hover': { color: 'var(--text-primary)' },
-          }}
-        >
-          ← Voltar
-        </Button>
-        <Box>
-          <Typography
-            variant="h5"
-            sx={{ color: 'var(--text-primary)', fontWeight: 700, mb: 0.5 }}
-          >
-            {isEditing ? 'Editar Receita' : 'Nova Receita'}
-          </Typography>
-          <Typography variant="body2" sx={{ color: 'var(--text-secondary)' }}>
-            {isEditing
-              ? `Editando os dados de ${receitaParaEditar.nome}`
-              : 'Preencha os dados da nova receita'}
-          </Typography>
-        </Box>
-      </Box>
+      <FormPageHeader
+        titulo={isEditing ? 'Editar Receita' : 'Nova Receita'}
+        subtitulo={
+          isEditing
+            ? `Editando os dados de ${receitaParaEditar.nome}`
+            : 'Preencha os dados da nova receita'
+        }
+        onVoltar={() => navigate(ROUTE_PATHS.RECEITAS)}
+      />
 
       <Formik
         initialValues={editInitialValues}
@@ -252,7 +188,7 @@ const NovaReceita = () => {
                                   );
                                 }}
                               >
-                                {filteredUniversos.map(universo => (
+                                {universos.map(universo => (
                                   <MenuItem
                                     key={universo.id}
                                     value={universo.id}
@@ -327,10 +263,6 @@ const NovaReceita = () => {
                               touched.linkImagem && Boolean(errors.linkImagem)
                             }
                             helperText={touched.linkImagem && errors.linkImagem}
-                            onChange={e => {
-                              setImgError(false);
-                              field.onChange(e);
-                            }}
                             sx={slotInputSx}
                           />
                         )}
@@ -433,90 +365,20 @@ const NovaReceita = () => {
                       </FastField>
                     </Box>
 
-                    {/* Preview da imagem */}
-                    <Box
-                      sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}
-                    >
-                      <Typography
-                        variant="caption"
-                        sx={{
-                          color: 'var(--text-muted)',
-                          textTransform: 'uppercase',
-                          letterSpacing: 0.5,
-                        }}
-                      >
-                        Preview
-                      </Typography>
-                      <Box
-                        sx={{
-                          width: '100%',
-                          aspectRatio: '1 / 1',
-                          borderRadius: 2,
-                          border: '1px solid var(--border-primary)',
-                          background: 'var(--bg-secondary)',
-                          overflow: 'hidden',
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                        }}
-                      >
-                        {values.linkImagem && !imgError ? (
-                          <img
-                            src={values.linkImagem}
-                            alt="Preview da receita"
-                            onError={() => setImgError(true)}
-                            style={{
-                              width: '100%',
-                              height: '100%',
-                              objectFit: 'cover',
-                            }}
-                          />
-                        ) : (
-                          <Typography
-                            variant="body2"
-                            sx={{
-                              color: 'var(--text-muted)',
-                              textAlign: 'center',
-                              px: 2,
-                            }}
-                          >
-                            {imgError
-                              ? 'Imagem não encontrada'
-                              : 'Insira um link para ver o preview'}
-                          </Typography>
-                        )}
-                      </Box>
-                    </Box>
+                    <ImagePreviewPanel
+                      src={values.linkImagem}
+                      alt="Preview da receita"
+                    />
                   </Box>
                 </Paper>
 
-                {/* Ações */}
-                <Box
-                  sx={{
-                    display: 'flex',
-                    justifyContent: 'flex-end',
-                    gap: 2,
-                    pb: 2,
-                  }}
-                >
-                  <Button
-                    onClick={() => navigate(ROUTE_PATHS.RECEITAS)}
-                    sx={{ color: 'var(--text-muted)' }}
-                  >
-                    Cancelar
-                  </Button>
-                  <Button
-                    type="submit"
-                    variant="contained"
-                    disabled={isSubmitting}
-                    sx={{
-                      background: 'var(--color-primary)',
-                      '&:hover': { background: '#5a2090' },
-                    }}
-                  >
-                    {isEditing ? 'Salvar Alterações' : 'Salvar Receita'}
-                  </Button>
-                </Box>
+                <FormActions
+                  onCancelar={() => navigate(ROUTE_PATHS.RECEITAS)}
+                  isSubmitting={isSubmitting}
+                  labelSalvar={
+                    isEditing ? 'Salvar Alterações' : 'Salvar Receita'
+                  }
+                />
               </Box>
             </Form>
           );

@@ -9,6 +9,7 @@ vi.mock('service/storage', () => ({
   getVeiasAstrais: (...args) => getVeiasAstrais(...args),
   removeVeiaAstral: (...args) => removeVeiaAstral(...args),
   getUniversos: vi.fn().mockResolvedValue([]),
+  getDivindades: vi.fn().mockResolvedValue([]),
 }));
 
 const canCreate = vi.fn(() => true);
