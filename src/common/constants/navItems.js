@@ -14,6 +14,7 @@ export const NAV_ITEMS = [
   { path: '/regras', icon: '📋', label: 'Regras' },
   { path: '/recursos/veias-astrais', icon: '🌌', label: 'Veias Astrais' },
   { path: '/recursos/divindades', icon: '🔱', label: 'Divindades' },
+  { path: '/recursos/aptidoes', icon: '🎯', label: 'Aptidões' },
   //{ path: '/macros', icon: '⚙', label: 'Macros' },
 ];
 

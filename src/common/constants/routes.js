@@ -24,6 +24,8 @@ export const ROUTE_PATHS = {
   NOVA_VEIA_ASTRAL: '/recursos/veias-astrais/nova',
   DIVINDADES: '/recursos/divindades',
   NOVA_DIVINDADE: '/recursos/divindades/nova',
+  APTIDOES: '/recursos/aptidoes',
+  NOVA_APTIDAO: '/recursos/aptidoes/nova',
   PATCH_NOTES: '/patch-notes',
   SOBRE: '/sobre',
 };
@@ -54,6 +56,8 @@ export const PAGE_TITLES = {
   [ROUTE_PATHS.NOVA_VEIA_ASTRAL]: 'Nova Veia Astral',
   [ROUTE_PATHS.DIVINDADES]: 'Divindades',
   [ROUTE_PATHS.NOVA_DIVINDADE]: 'Nova Divindade',
+  [ROUTE_PATHS.APTIDOES]: 'Aptidões',
+  [ROUTE_PATHS.NOVA_APTIDAO]: 'Nova Aptidão',
   [ROUTE_PATHS.PATCH_NOTES]: 'Patch Notes',
   [ROUTE_PATHS.SOBRE]: 'Sobre',
 };

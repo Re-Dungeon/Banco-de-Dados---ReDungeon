@@ -190,6 +190,16 @@ export const removeDivindade = id =>
 export const updateDivindade = (id, updates) =>
   updateFirestoreItem(DIVINDADES_COLLECTION, id, updates);
 
+// ── Aptidões (Firestore) ─────────────────────────────────────────────────────
+const APTIDOES_COLLECTION = 'aptidoes';
+
+export const getAptidoes = () => getFirestoreItems(APTIDOES_COLLECTION);
+export const addAptidao = aptidao =>
+  addFirestoreItem(APTIDOES_COLLECTION, aptidao);
+export const removeAptidao = id => removeFirestoreItem(APTIDOES_COLLECTION, id);
+export const updateAptidao = (id, updates) =>
+  updateFirestoreItem(APTIDOES_COLLECTION, id, updates);
+
 // ── Universo (Firestore) ────────────────────────────────────────────────────────
 
 const UNIVERSO_COLLECTION = 'Universo';
