@@ -80,7 +80,7 @@ describe('Aptidoes (padrão useEntityCRUD + useUniversos + EntityFilters + Entit
     expect(getAptidoes).toHaveBeenCalledTimes(1);
   });
 
-  it('abre o dialog de visualização com a progressão de níveis', async () => {
+  it('abre o dialog de visualização com o bônus de um nível', async () => {
     getAptidoes.mockResolvedValue([
       {
         id: 'a1',
@@ -89,12 +89,11 @@ describe('Aptidoes (padrão useEntityCRUD + useUniversos + EntityFilters + Entit
         progressaoNiveis: [
           {
             nivel: 1,
-            bonus: [
-              {
-                descricaoCurta: '+2 Força',
-                descricaoCompleta: 'Ganha +2 de Força.',
-              },
-            ],
+            possuiBonus: true,
+            bonus: {
+              descricaoCurta: '+2 Força',
+              descricaoCompleta: 'Ganha +2 de Força.',
+            },
           },
         ],
       },
@@ -113,6 +112,39 @@ describe('Aptidoes (padrão useEntityCRUD + useUniversos + EntityFilters + Entit
     expect(within(dialog).getByText('Nível 1')).toBeInTheDocument();
     expect(within(dialog).getByText('• +2 Força')).toBeInTheDocument();
     expect(within(dialog).getByText('Ganha +2 de Força.')).toBeInTheDocument();
+  });
+
+  it('mostra a mensagem de +1 no dado quando o nível não tem bônus', async () => {
+    getAptidoes.mockResolvedValue([
+      {
+        id: 'a1',
+        nome: 'Fúria Ancestral',
+        nivelMaximo: 1,
+        progressaoNiveis: [
+          {
+            nivel: 1,
+            possuiBonus: false,
+            bonus: { descricaoCurta: '', descricaoCompleta: '' },
+          },
+        ],
+      },
+    ]);
+    const user = userEvent.setup();
+    renderAptidoes();
+
+    await waitFor(() =>
+      expect(screen.getByText('Fúria Ancestral')).toBeInTheDocument(),
+    );
+    await user.click(
+      screen.getByLabelText('Visualizar aptidão Fúria Ancestral'),
+    );
+
+    const dialog = await screen.findByRole('dialog');
+    expect(
+      within(dialog).getByText(
+        'Sem bônus: +1 no dado em testes desta aptidão.',
+      ),
+    ).toBeInTheDocument();
   });
 
   it('não mostra botões de editar/remover quando canWrite retorna false', async () => {

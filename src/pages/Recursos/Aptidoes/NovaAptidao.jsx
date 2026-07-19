@@ -1,21 +1,19 @@
 import React from 'react';
-import PropTypes from 'prop-types';
 import { useNavigate, useLocation } from 'react-router-dom';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
-import Button from '@mui/material/Button';
 import TextField from '@mui/material/TextField';
-import IconButton from '@mui/material/IconButton';
 import Select from '@mui/material/Select';
 import MenuItem from '@mui/material/MenuItem';
 import FormControl from '@mui/material/FormControl';
 import InputLabel from '@mui/material/InputLabel';
 import Paper from '@mui/material/Paper';
-import { Formik, Form, FastField, Field, FieldArray } from 'formik';
+import Checkbox from '@mui/material/Checkbox';
+import FormControlLabel from '@mui/material/FormControlLabel';
+import { Formik, Form, FastField, Field } from 'formik';
 import { addAptidao, updateAptidao } from 'service/storage';
 import { ROUTE_PATHS } from 'common/constants/routes';
 import useEntityFormGuard from 'hooks/useEntityFormGuard';
-import useStableListKeys from 'hooks/useStableListKeys';
 import FormPageHeader from 'components/FormPageHeader/FormPageHeader';
 import ImagePreviewPanel from 'components/ImagePreviewPanel/ImagePreviewPanel';
 import FormActions from 'components/FormActions/FormActions';
@@ -23,7 +21,7 @@ import SectionTitle from 'components/SectionTitle/SectionTitle';
 import {
   APTIDAO_SCHEMA,
   APTIDAO_INITIAL_VALUES,
-  BONUS_NIVEL_INICIAL,
+  NIVEL_PROGRESSAO_INICIAL,
 } from './utils';
 
 const slotInputSx = {
@@ -61,125 +59,6 @@ const menuPropsSx = {
 const labelSx = {
   color: 'var(--text-secondary)',
   '&.Mui-focused': { color: 'var(--color-accent)' },
-};
-
-/**
- * Um bloco por nível (1..nivelMaximo). Precisa ser um componente próprio (e
- * não um `.map` direto no corpo de `NovaAptidao`) porque `useStableListKeys`
- * é um hook: o número de níveis muda dinamicamente com `nivelMaximo`, então
- * chamá-lo dentro de um loop violaria as regras de hooks. Como componente,
- * cada bloco de nível tem sua própria instância com uma única chamada fixa.
- */
-const NivelProgressao = ({ idx, bonus }) => {
-  const bonusKeys = useStableListKeys(bonus.length);
-
-  return (
-    <Box
-      sx={{
-        border: '1px solid var(--border-primary)',
-        borderRadius: 2,
-        p: 2,
-        background: 'var(--bg-secondary)',
-      }}
-    >
-      <Typography
-        variant="body2"
-        sx={{ color: 'var(--text-secondary)', fontWeight: 600, mb: 1.5 }}
-      >
-        Nível {idx + 1}
-      </Typography>
-      <FieldArray name={`progressaoNiveis[${idx}].bonus`}>
-        {({ push, remove }) => (
-          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
-            {bonus.map((_, bIdx) => (
-              <Box
-                key={bonusKeys.keys[bIdx] ?? bIdx}
-                sx={{
-                  display: 'flex',
-                  flexDirection: 'column',
-                  gap: 1,
-                  border: '1px solid var(--border-primary)',
-                  borderRadius: 1.5,
-                  p: 1.5,
-                }}
-              >
-                <Box
-                  sx={{
-                    display: 'flex',
-                    justifyContent: 'space-between',
-                    alignItems: 'center',
-                  }}
-                >
-                  <Typography
-                    variant="caption"
-                    sx={{ color: 'var(--text-muted)' }}
-                  >
-                    Bônus #{bIdx + 1}
-                  </Typography>
-                  <IconButton
-                    size="small"
-                    onClick={() => {
-                      bonusKeys.removeKey(bIdx);
-                      remove(bIdx);
-                    }}
-                    sx={{
-                      color: 'var(--text-muted)',
-                      '&:hover': { color: '#ef4444' },
-                    }}
-                    aria-label={`Remover bônus do nível ${idx + 1}`}
-                  >
-                    ✕
-                  </IconButton>
-                </Box>
-                <FastField
-                  as={TextField}
-                  name={`progressaoNiveis[${idx}].bonus[${bIdx}].descricaoCurta`}
-                  label="Descrição Curta"
-                  fullWidth
-                  size="small"
-                  sx={slotInputSx}
-                />
-                <FastField
-                  as={TextField}
-                  name={`progressaoNiveis[${idx}].bonus[${bIdx}].descricaoCompleta`}
-                  label="Descrição Completa"
-                  fullWidth
-                  multiline
-                  rows={3}
-                  size="small"
-                  sx={slotInputSx}
-                />
-              </Box>
-            ))}
-            <Button
-              variant="outlined"
-              size="small"
-              onClick={() => {
-                bonusKeys.addKey();
-                push({ ...BONUS_NIVEL_INICIAL });
-              }}
-              sx={{
-                alignSelf: 'flex-start',
-                borderColor: 'var(--border-primary)',
-                color: 'var(--text-secondary)',
-                '&:hover': {
-                  borderColor: 'var(--color-accent)',
-                  color: 'var(--color-accent)',
-                },
-              }}
-            >
-              + Adicionar Bônus
-            </Button>
-          </Box>
-        )}
-      </FieldArray>
-    </Box>
-  );
-};
-
-NivelProgressao.propTypes = {
-  idx: PropTypes.number.isRequired,
-  bonus: PropTypes.arrayOf(PropTypes.object).isRequired,
 };
 
 const NovaAptidao = () => {
@@ -333,7 +212,8 @@ const NovaAptidao = () => {
                             const atual = form.values.progressaoNiveis;
                             const novaProgressao = Array.from(
                               { length: total },
-                              (_, i) => atual[i] ?? { nivel: i + 1, bonus: [] },
+                              (_, i) =>
+                                atual[i] ?? NIVEL_PROGRESSAO_INICIAL(i + 1),
                             );
                             form.setFieldValue(
                               'progressaoNiveis',
@@ -381,11 +261,89 @@ const NovaAptidao = () => {
                     }}
                   >
                     {values.progressaoNiveis.map((nivelItem, idx) => (
-                      <NivelProgressao
+                      <Box
                         key={idx}
-                        idx={idx}
-                        bonus={nivelItem.bonus}
-                      />
+                        sx={{
+                          border: '1px solid var(--border-primary)',
+                          borderRadius: 2,
+                          p: 2,
+                          background: 'var(--bg-secondary)',
+                        }}
+                      >
+                        <Typography
+                          variant="body2"
+                          sx={{
+                            color: 'var(--text-secondary)',
+                            fontWeight: 600,
+                            mb: 1,
+                          }}
+                        >
+                          Nível {idx + 1}
+                        </Typography>
+
+                        <Field name={`progressaoNiveis[${idx}].possuiBonus`}>
+                          {({ field }) => (
+                            <FormControlLabel
+                              control={
+                                <Checkbox
+                                  {...field}
+                                  checked={Boolean(field.value)}
+                                  sx={{
+                                    color: 'var(--text-secondary)',
+                                    '&.Mui-checked': {
+                                      color: 'var(--color-accent)',
+                                    },
+                                  }}
+                                />
+                              }
+                              label="Conceder bônus neste nível"
+                              sx={{ color: 'var(--text-secondary)' }}
+                            />
+                          )}
+                        </Field>
+
+                        {nivelItem.possuiBonus ? (
+                          <Box
+                            sx={{
+                              display: 'flex',
+                              flexDirection: 'column',
+                              gap: 1.5,
+                              mt: 1.5,
+                            }}
+                          >
+                            <FastField
+                              as={TextField}
+                              name={`progressaoNiveis[${idx}].bonus.descricaoCurta`}
+                              label="Descrição Curta"
+                              fullWidth
+                              size="small"
+                              sx={slotInputSx}
+                            />
+                            <FastField
+                              as={TextField}
+                              name={`progressaoNiveis[${idx}].bonus.descricaoCompleta`}
+                              label="Descrição Completa"
+                              fullWidth
+                              multiline
+                              rows={3}
+                              size="small"
+                              sx={slotInputSx}
+                            />
+                          </Box>
+                        ) : (
+                          <Typography
+                            variant="caption"
+                            sx={{
+                              color: 'var(--text-muted)',
+                              display: 'block',
+                              mt: 1,
+                            }}
+                          >
+                            Sem bônus definido: o jogador recebe +1 no dado em
+                            testes desta aptidão.
+                          </Typography>
+                        )}
+                      </Box>
                     ))}
                   </Box>
                 )}

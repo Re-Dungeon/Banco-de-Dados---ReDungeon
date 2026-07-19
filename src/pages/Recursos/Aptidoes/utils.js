@@ -13,7 +13,8 @@ const bonusNivelSchema = Yup.object({
 
 const nivelProgressaoSchema = Yup.object({
   nivel: Yup.number().integer(),
-  bonus: Yup.array().of(bonusNivelSchema),
+  possuiBonus: Yup.boolean(),
+  bonus: bonusNivelSchema,
 });
 
 export const APTIDAO_SCHEMA = Yup.object({
@@ -32,6 +33,12 @@ export const BONUS_NIVEL_INICIAL = {
   descricaoCurta: '',
   descricaoCompleta: '',
 };
+
+export const NIVEL_PROGRESSAO_INICIAL = nivel => ({
+  nivel,
+  possuiBonus: false,
+  bonus: { ...BONUS_NIVEL_INICIAL },
+});
 
 export const APTIDAO_INITIAL_VALUES = {
   nome: '',

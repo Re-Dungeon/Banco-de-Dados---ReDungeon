@@ -255,62 +255,63 @@ const Aptidoes = () => {
             >
               Progressão de Níveis
             </Typography>
-            {aptidaoVisualizando.progressaoNiveis.map((nivelItem, i) => {
-              const bonusPreenchidos = (nivelItem.bonus || []).filter(
-                b => b.descricaoCurta || b.descricaoCompleta,
-              );
-              if (bonusPreenchidos.length === 0) return null;
-              return (
-                <Box
-                  key={i}
+            {aptidaoVisualizando.progressaoNiveis.map((nivelItem, i) => (
+              <Box
+                key={i}
+                sx={{
+                  mb: 1,
+                  p: 1.5,
+                  background: 'var(--bg-secondary)',
+                  borderRadius: 1,
+                  border: '1px solid var(--border-primary)',
+                }}
+              >
+                <Typography
+                  variant="body2"
                   sx={{
-                    mb: 1,
-                    p: 1.5,
-                    background: 'var(--bg-secondary)',
-                    borderRadius: 1,
-                    border: '1px solid var(--border-primary)',
+                    color: 'var(--text-primary)',
+                    fontWeight: 600,
+                    mb: 0.5,
                   }}
                 >
+                  Nível {nivelItem.nivel ?? i + 1}
+                </Typography>
+                {nivelItem.possuiBonus ? (
+                  <>
+                    {nivelItem.bonus?.descricaoCurta && (
+                      <Typography
+                        variant="caption"
+                        sx={{
+                          color: 'var(--color-accent)',
+                          fontWeight: 600,
+                          display: 'block',
+                        }}
+                      >
+                        • {nivelItem.bonus.descricaoCurta}
+                      </Typography>
+                    )}
+                    {nivelItem.bonus?.descricaoCompleta && (
+                      <Typography
+                        variant="caption"
+                        sx={{
+                          color: 'var(--text-secondary)',
+                          display: 'block',
+                        }}
+                      >
+                        {nivelItem.bonus.descricaoCompleta}
+                      </Typography>
+                    )}
+                  </>
+                ) : (
                   <Typography
-                    variant="body2"
-                    sx={{
-                      color: 'var(--text-primary)',
-                      fontWeight: 600,
-                      mb: 0.5,
-                    }}
+                    variant="caption"
+                    sx={{ color: 'var(--text-muted)', display: 'block' }}
                   >
-                    Nível {nivelItem.nivel ?? i + 1}
+                    Sem bônus: +1 no dado em testes desta aptidão.
                   </Typography>
-                  {bonusPreenchidos.map((b, bi) => (
-                    <Box key={bi} sx={{ mb: 0.75 }}>
-                      {b.descricaoCurta && (
-                        <Typography
-                          variant="caption"
-                          sx={{
-                            color: 'var(--color-accent)',
-                            fontWeight: 600,
-                            display: 'block',
-                          }}
-                        >
-                          • {b.descricaoCurta}
-                        </Typography>
-                      )}
-                      {b.descricaoCompleta && (
-                        <Typography
-                          variant="caption"
-                          sx={{
-                            color: 'var(--text-secondary)',
-                            display: 'block',
-                          }}
-                        >
-                          {b.descricaoCompleta}
-                        </Typography>
-                      )}
-                    </Box>
-                  ))}
-                </Box>
-              );
-            })}
+                )}
+              </Box>
+            ))}
           </>
         )}
       </EntityViewDialog>

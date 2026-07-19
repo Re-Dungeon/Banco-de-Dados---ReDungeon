@@ -97,7 +97,7 @@ describe('NovaAptidao (useEntityFormGuard/FormPageHeader/ImagePreviewPanel/FormA
     expect(addAptidao).not.toHaveBeenCalled();
   });
 
-  it('gera os blocos de nível ao definir o Nível Máximo e permite adicionar/remover bônus', async () => {
+  it('gera um bloco por nível ao definir o Nível Máximo, cada um sem bônus por padrão', async () => {
     const user = userEvent.setup();
     renderNova(undefined);
 
@@ -109,17 +109,38 @@ describe('NovaAptidao (useEntityFormGuard/FormPageHeader/ImagePreviewPanel/FormA
 
     expect(screen.getByText('Nível 1')).toBeInTheDocument();
     expect(screen.getByText('Nível 2')).toBeInTheDocument();
+    expect(
+      screen.getAllByText(
+        'Sem bônus definido: o jogador recebe +1 no dado em testes desta aptidão.',
+      ),
+    ).toHaveLength(2);
+    expect(screen.queryByLabelText('Descrição Curta')).not.toBeInTheDocument();
+  });
 
-    const [adicionarNivel1] = screen.getAllByRole('button', {
-      name: '+ Adicionar Bônus',
-    });
-    await user.click(adicionarNivel1);
+  it('marca "Conceder bônus neste nível" e mostra/some os campos de descrição', async () => {
+    const user = userEvent.setup();
+    renderNova(undefined);
+
+    await waitFor(() =>
+      expect(screen.getByText('Nova Aptidão')).toBeInTheDocument(),
+    );
+
+    await user.type(screen.getByLabelText('Nível Máximo'), '1');
+
+    await user.click(
+      screen.getByRole('checkbox', { name: 'Conceder bônus neste nível' }),
+    );
 
     expect(screen.getByLabelText('Descrição Curta')).toBeInTheDocument();
     expect(screen.getByLabelText('Descrição Completa')).toBeInTheDocument();
+    expect(
+      screen.queryByText(
+        'Sem bônus definido: o jogador recebe +1 no dado em testes desta aptidão.',
+      ),
+    ).not.toBeInTheDocument();
 
     await user.click(
-      screen.getByRole('button', { name: 'Remover bônus do nível 1' }),
+      screen.getByRole('checkbox', { name: 'Conceder bônus neste nível' }),
     );
     expect(screen.queryByLabelText('Descrição Curta')).not.toBeInTheDocument();
   });
