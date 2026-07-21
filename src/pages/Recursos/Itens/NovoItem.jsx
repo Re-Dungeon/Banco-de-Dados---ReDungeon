@@ -246,6 +246,14 @@ const NovoItem = () => {
                   />
                   <FastField
                     as={TextField}
+                    name="bonusEspaco"
+                    label="Bônus de Espaço"
+                    type="number"
+                    fullWidth
+                    size="small"
+                  />
+                  <FastField
+                    as={TextField}
                     name="extra"
                     label="Extra"
                     fullWidth
