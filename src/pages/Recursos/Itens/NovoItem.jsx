@@ -237,6 +237,15 @@ const NovoItem = () => {
                   />
                   <FastField
                     as={TextField}
+                    name="pesoUnitario"
+                    label="Peso Unitário"
+                    type="number"
+                    fullWidth
+                    size="small"
+                    inputProps={{ min: 0, step: 'any' }}
+                  />
+                  <FastField
+                    as={TextField}
                     name="extra"
                     label="Extra"
                     fullWidth

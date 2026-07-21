@@ -157,5 +157,23 @@ service cloud.firestore {
                     && canWriteUniverso(request.resource.data.universo);
       allow delete: if canWriteUniverso(resource.data.universo);
     }
+
+    // ── personagens ──────────────────────────────────────────────────────
+    // Cada usuário só lê/escreve os próprios personagens (uid == request.auth.uid).
+    match /personagens/{personagemId} {
+      allow read: if isAuth() && resource.data.uid == request.auth.uid;
+      allow create: if isAuth() && request.resource.data.uid == request.auth.uid;
+      allow update: if isAuth() && resource.data.uid == request.auth.uid
+                    && request.resource.data.uid == request.auth.uid;
+      allow delete: if isAuth() && resource.data.uid == request.auth.uid;
+
+      // Subcoleções (aptidoesAdquiridas, arts, historicoSorte — Fases futuras)
+      // herdam a mesma checagem, validando o uid do documento pai.
+      match /{subcolecao}/{docId} {
+        allow read, write: if isAuth()
+          && get(/databases/$(database)/documents/personagens/$(personagemId)).data.uid
+             == request.auth.uid;
+      }
+    }
   }
 }

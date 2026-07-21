@@ -299,6 +299,7 @@ const Itens = () => {
         {[
           { label: 'Nível Atual', value: itemVisualizando?.nivelAtual },
           { label: 'Nível Máximo', value: itemVisualizando?.nivelMaximo },
+          { label: 'Peso Unitário', value: itemVisualizando?.pesoUnitario },
           { label: 'Dados', value: itemVisualizando?.dados },
           { label: 'Extra', value: itemVisualizando?.extra },
         ].some(
@@ -331,6 +332,10 @@ const Itens = () => {
                 {
                   label: 'Nível Máximo',
                   value: itemVisualizando?.nivelMaximo,
+                },
+                {
+                  label: 'Peso Unitário',
+                  value: itemVisualizando?.pesoUnitario,
                 },
                 { label: 'Dados', value: itemVisualizando?.dados },
                 { label: 'Extra', value: itemVisualizando?.extra },
