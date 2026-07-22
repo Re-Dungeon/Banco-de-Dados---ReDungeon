@@ -254,6 +254,15 @@ const NovoItem = () => {
                   />
                   <FastField
                     as={TextField}
+                    name="precoCompra"
+                    label="Preço de Compra"
+                    type="number"
+                    fullWidth
+                    size="small"
+                    inputProps={{ min: 0, step: 'any' }}
+                  />
+                  <FastField
+                    as={TextField}
                     name="precoVenda"
                     label="Preço de Venda"
                     type="number"

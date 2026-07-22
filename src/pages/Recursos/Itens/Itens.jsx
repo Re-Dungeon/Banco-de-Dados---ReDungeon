@@ -301,6 +301,7 @@ const Itens = () => {
           { label: 'Nível Máximo', value: itemVisualizando?.nivelMaximo },
           { label: 'Peso Unitário', value: itemVisualizando?.pesoUnitario },
           { label: 'Bônus de Espaço', value: itemVisualizando?.bonusEspaco },
+          { label: 'Preço de Compra', value: itemVisualizando?.precoCompra },
           { label: 'Preço de Venda', value: itemVisualizando?.precoVenda },
           { label: 'Dados', value: itemVisualizando?.dados },
           { label: 'Extra', value: itemVisualizando?.extra },
@@ -342,6 +343,10 @@ const Itens = () => {
                 {
                   label: 'Bônus de Espaço',
                   value: itemVisualizando?.bonusEspaco,
+                },
+                {
+                  label: 'Preço de Compra',
+                  value: itemVisualizando?.precoCompra,
                 },
                 {
                   label: 'Preço de Venda',
