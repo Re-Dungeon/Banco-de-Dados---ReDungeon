@@ -166,6 +166,84 @@ const NovaDivindade = () => {
                       </Field>
                     </Box>
 
+                    <Field name="cor">
+                      {({ field, form }) => (
+                        <Box
+                          sx={{
+                            display: 'flex',
+                            flexDirection: 'column',
+                            gap: 0.75,
+                          }}
+                        >
+                          <Box
+                            component="span"
+                            sx={{
+                              fontSize: '0.75rem',
+                              color: 'var(--text-secondary)',
+                            }}
+                          >
+                            Cor da Divindade
+                          </Box>
+                          <Box
+                            sx={{
+                              display: 'flex',
+                              alignItems: 'center',
+                              gap: 1.5,
+                            }}
+                          >
+                            <Box
+                              sx={{
+                                position: 'relative',
+                                width: 44,
+                                height: 44,
+                                flexShrink: 0,
+                              }}
+                            >
+                              <Box
+                                sx={{
+                                  width: '100%',
+                                  height: '100%',
+                                  borderRadius: 1.5,
+                                  border: '1px solid var(--border-primary)',
+                                  background: field.value || '#ffffff',
+                                }}
+                              />
+                              <Box
+                                component="input"
+                                type="color"
+                                value={field.value || '#ffffff'}
+                                onChange={e =>
+                                  form.setFieldValue('cor', e.target.value)
+                                }
+                                aria-label="Selecionar cor da divindade"
+                                sx={{
+                                  position: 'absolute',
+                                  inset: 0,
+                                  width: '100%',
+                                  height: '100%',
+                                  padding: 0,
+                                  border: 'none',
+                                  opacity: 0,
+                                  cursor: 'pointer',
+                                }}
+                              />
+                            </Box>
+                            <TextField
+                              value={field.value || ''}
+                              placeholder="#ffffff"
+                              onChange={e =>
+                                form.setFieldValue('cor', e.target.value)
+                              }
+                              onBlur={() => form.setFieldTouched('cor', true)}
+                              error={touched.cor && Boolean(errors.cor)}
+                              helperText={touched.cor && errors.cor}
+                              sx={slotInputSx}
+                            />
+                          </Box>
+                        </Box>
+                      )}
+                    </Field>
+
                     <FastField name="linkImagem">
                       {({ field }) => (
                         <TextField

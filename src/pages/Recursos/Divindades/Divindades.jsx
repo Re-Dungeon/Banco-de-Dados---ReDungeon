@@ -213,6 +213,33 @@ const Divindades = () => {
                     {divindade.nome}
                   </Typography>
 
+                  {divindade.cor && (
+                    <Typography
+                      variant="caption"
+                      sx={{
+                        color: 'var(--color-accent)',
+                        fontWeight: 600,
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: 0.75,
+                        mb: 1,
+                      }}
+                    >
+                      <Box
+                        component="span"
+                        sx={{
+                          width: 10,
+                          height: 10,
+                          borderRadius: '50%',
+                          background: divindade.cor,
+                          border: '1px solid var(--border-primary)',
+                          flexShrink: 0,
+                        }}
+                      />
+                      {divindade.cor}
+                    </Typography>
+                  )}
+
                   {divindade.descricao && (
                     <Typography
                       variant="body2"
@@ -239,6 +266,7 @@ const Divindades = () => {
         open={Boolean(divindadeVisualizando)}
         onClose={() => setDivindadeVisualizando(null)}
         titulo={divindadeVisualizando?.nome}
+        subtitulo={divindadeVisualizando?.cor}
         imagem={divindadeVisualizando?.linkImagem}
         imagemSx={{ height: 'auto', maxHeight: 220 }}
         descricao={divindadeVisualizando?.descricao}
