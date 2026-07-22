@@ -32,6 +32,17 @@ export const TODOS_CAMPOS_DEPENDENTES = Object.values(CAMPOS_POR_TIPO).flatMap(
   campos => campos.map(c => c.key),
 );
 
+const reputacaoItemSchema = Yup.object({
+  quantidade: Yup.number()
+    .integer('Quantidade deve ser um número inteiro')
+    .min(0, 'Quantidade não pode ser negativa')
+    .nullable()
+    .transform((value, originalValue) => (originalValue === '' ? null : value)),
+  efeito: descricaoSchema,
+});
+
+export const REPUTACAO_ITEM_INICIAL = { quantidade: '', efeito: '' };
+
 export const ORIGEM_SCHEMA = Yup.object({
   nome: nomeSchema,
   linkImagem: urlImagemSchema,
@@ -40,6 +51,10 @@ export const ORIGEM_SCHEMA = Yup.object({
   tags: descricaoSchema,
   raridade: Yup.string(),
   descricao: descricaoSchema,
+  reputacao: Yup.object({
+    fama: Yup.array().of(reputacaoItemSchema),
+    terror: Yup.array().of(reputacaoItemSchema),
+  }),
   ...Object.fromEntries(
     TODOS_CAMPOS_DEPENDENTES.map(key => [key, descricaoSchema]),
   ),
@@ -53,5 +68,9 @@ export const ORIGEM_INITIAL_VALUES = {
   tags: '',
   raridade: '',
   descricao: '',
+  reputacao: {
+    fama: [],
+    terror: [],
+  },
   ...Object.fromEntries(TODOS_CAMPOS_DEPENDENTES.map(key => [key, ''])),
 };

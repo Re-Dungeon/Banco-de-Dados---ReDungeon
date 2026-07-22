@@ -417,6 +417,77 @@ const Origens = () => {
               ))}
           </>
         )}
+
+        {((origemVisualizando?.reputacao?.fama?.length || 0) > 0 ||
+          (origemVisualizando?.reputacao?.terror?.length || 0) > 0) && (
+          <>
+            <Divider sx={{ borderColor: 'var(--border-primary)', mb: 1.5 }} />
+            <Typography
+              variant="caption"
+              sx={{
+                color: 'var(--text-muted)',
+                textTransform: 'uppercase',
+                letterSpacing: 0.5,
+                display: 'block',
+                mb: 1,
+              }}
+            >
+              Reputação
+            </Typography>
+            <Box
+              sx={{
+                display: 'grid',
+                gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr' },
+                gap: 2,
+                mb: 1,
+              }}
+            >
+              {['fama', 'terror'].map(tipoReputacao => (
+                <Box key={tipoReputacao}>
+                  <Typography
+                    variant="body2"
+                    sx={{
+                      color: 'var(--text-primary)',
+                      fontWeight: 600,
+                      mb: 0.5,
+                      textTransform: 'capitalize',
+                    }}
+                  >
+                    {tipoReputacao}
+                  </Typography>
+                  {(origemVisualizando.reputacao?.[tipoReputacao] || [])
+                    .length === 0 ? (
+                    <Typography
+                      variant="body2"
+                      sx={{ color: 'var(--text-muted)' }}
+                    >
+                      Nenhuma entrada
+                    </Typography>
+                  ) : (
+                    origemVisualizando.reputacao[tipoReputacao].map(
+                      (item, idx) => (
+                        <Box key={idx} sx={{ mb: 1 }}>
+                          <Typography
+                            variant="body2"
+                            sx={{ color: 'var(--color-accent)' }}
+                          >
+                            {item.quantidade}
+                          </Typography>
+                          <Typography
+                            variant="body2"
+                            sx={{ color: 'var(--text-secondary)' }}
+                          >
+                            {item.efeito}
+                          </Typography>
+                        </Box>
+                      ),
+                    )
+                  )}
+                </Box>
+              ))}
+            </Box>
+          </>
+        )}
       </EntityViewDialog>
     </Box>
   );

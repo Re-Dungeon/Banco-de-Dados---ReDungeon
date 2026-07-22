@@ -1,16 +1,20 @@
 import React from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import Box from '@mui/material/Box';
+import Typography from '@mui/material/Typography';
+import Button from '@mui/material/Button';
 import TextField from '@mui/material/TextField';
+import IconButton from '@mui/material/IconButton';
 import Select from '@mui/material/Select';
 import MenuItem from '@mui/material/MenuItem';
 import FormControl from '@mui/material/FormControl';
 import InputLabel from '@mui/material/InputLabel';
 import Paper from '@mui/material/Paper';
-import { Formik, Form, FastField, Field } from 'formik';
+import { Formik, Form, FastField, Field, FieldArray } from 'formik';
 import { addOrigem, updateOrigem } from 'service/storage';
 import { ROUTE_PATHS } from 'common/constants/routes';
 import useEntityFormGuard from 'hooks/useEntityFormGuard';
+import useStableListKeys from 'hooks/useStableListKeys';
 import FormPageHeader from 'components/FormPageHeader/FormPageHeader';
 import ImagePreviewPanel from 'components/ImagePreviewPanel/ImagePreviewPanel';
 import FormActions from 'components/FormActions/FormActions';
@@ -20,6 +24,7 @@ import {
   ORIGEM_INITIAL_VALUES,
   CAMPOS_POR_TIPO,
   TODOS_CAMPOS_DEPENDENTES,
+  REPUTACAO_ITEM_INICIAL,
 } from './utils';
 import {
   RARIDADES,
@@ -42,8 +47,17 @@ const NovaOrigem = () => {
     ? {
         ...ORIGEM_INITIAL_VALUES,
         ...origemParaEditar,
+        reputacao: {
+          fama: origemParaEditar.reputacao?.fama || [],
+          terror: origemParaEditar.reputacao?.terror || [],
+        },
       }
     : ORIGEM_INITIAL_VALUES;
+
+  const famaKeys = useStableListKeys(editInitialValues.reputacao.fama.length);
+  const terrorKeys = useStableListKeys(
+    editInitialValues.reputacao.terror.length,
+  );
 
   const handleSubmit = async (values, { setSubmitting }) => {
     if (isEditing) {
@@ -347,6 +361,201 @@ const NovaOrigem = () => {
                   </Box>
                 </Paper>
               )}
+
+              {/* Seção: Reputação */}
+              <Paper
+                elevation={0}
+                sx={{
+                  p: 3,
+                  background: 'var(--bg-card)',
+                  border: '1px solid var(--border-primary)',
+                  borderRadius: 2,
+                }}
+              >
+                <SectionTitle>Reputação</SectionTitle>
+                <Box
+                  sx={{
+                    display: 'grid',
+                    gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr' },
+                    gap: 3,
+                    mt: 1.5,
+                  }}
+                >
+                  <FieldArray name="reputacao.fama">
+                    {({ push, remove }) => (
+                      <Box>
+                        <Box
+                          sx={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'space-between',
+                            mb: 1,
+                          }}
+                        >
+                          <Typography
+                            variant="body2"
+                            sx={{
+                              color: 'var(--text-secondary)',
+                              fontWeight: 600,
+                            }}
+                          >
+                            Fama
+                          </Typography>
+                          <Button
+                            size="small"
+                            onClick={() => {
+                              famaKeys.addKey();
+                              push({ ...REPUTACAO_ITEM_INICIAL });
+                            }}
+                            sx={{
+                              color: 'var(--color-accent)',
+                              minWidth: 'auto',
+                              fontSize: '0.7rem',
+                              py: 0,
+                            }}
+                          >
+                            + Adicionar
+                          </Button>
+                        </Box>
+                        {values.reputacao.fama.map((_, idx) => (
+                          <Box
+                            key={famaKeys.keys[idx] ?? idx}
+                            sx={{
+                              display: 'flex',
+                              gap: 1,
+                              alignItems: 'flex-start',
+                              mb: 1.5,
+                              border: '1px solid var(--border-primary)',
+                              borderRadius: 2,
+                              p: 1.5,
+                              background: 'var(--bg-secondary)',
+                            }}
+                          >
+                            <FastField
+                              as={TextField}
+                              name={`reputacao.fama[${idx}].quantidade`}
+                              label="Quantidade"
+                              type="number"
+                              size="small"
+                              sx={{ width: 110, ...slotInputSx }}
+                            />
+                            <FastField
+                              as={TextField}
+                              name={`reputacao.fama[${idx}].efeito`}
+                              label="Efeito"
+                              fullWidth
+                              multiline
+                              size="small"
+                              sx={slotInputSx}
+                            />
+                            <IconButton
+                              size="small"
+                              onClick={() => {
+                                famaKeys.removeKey(idx);
+                                remove(idx);
+                              }}
+                              sx={{
+                                color: 'var(--text-muted)',
+                                '&:hover': { color: '#ef4444' },
+                              }}
+                              aria-label="Remover reputação de fama"
+                            >
+                              ✕
+                            </IconButton>
+                          </Box>
+                        ))}
+                      </Box>
+                    )}
+                  </FieldArray>
+
+                  <FieldArray name="reputacao.terror">
+                    {({ push, remove }) => (
+                      <Box>
+                        <Box
+                          sx={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'space-between',
+                            mb: 1,
+                          }}
+                        >
+                          <Typography
+                            variant="body2"
+                            sx={{
+                              color: 'var(--text-secondary)',
+                              fontWeight: 600,
+                            }}
+                          >
+                            Terror
+                          </Typography>
+                          <Button
+                            size="small"
+                            onClick={() => {
+                              terrorKeys.addKey();
+                              push({ ...REPUTACAO_ITEM_INICIAL });
+                            }}
+                            sx={{
+                              color: 'var(--color-accent)',
+                              minWidth: 'auto',
+                              fontSize: '0.7rem',
+                              py: 0,
+                            }}
+                          >
+                            + Adicionar
+                          </Button>
+                        </Box>
+                        {values.reputacao.terror.map((_, idx) => (
+                          <Box
+                            key={terrorKeys.keys[idx] ?? idx}
+                            sx={{
+                              display: 'flex',
+                              gap: 1,
+                              alignItems: 'flex-start',
+                              mb: 1.5,
+                              border: '1px solid var(--border-primary)',
+                              borderRadius: 2,
+                              p: 1.5,
+                              background: 'var(--bg-secondary)',
+                            }}
+                          >
+                            <FastField
+                              as={TextField}
+                              name={`reputacao.terror[${idx}].quantidade`}
+                              label="Quantidade"
+                              type="number"
+                              size="small"
+                              sx={{ width: 110, ...slotInputSx }}
+                            />
+                            <FastField
+                              as={TextField}
+                              name={`reputacao.terror[${idx}].efeito`}
+                              label="Efeito"
+                              fullWidth
+                              multiline
+                              size="small"
+                              sx={slotInputSx}
+                            />
+                            <IconButton
+                              size="small"
+                              onClick={() => {
+                                terrorKeys.removeKey(idx);
+                                remove(idx);
+                              }}
+                              sx={{
+                                color: 'var(--text-muted)',
+                                '&:hover': { color: '#ef4444' },
+                              }}
+                              aria-label="Remover reputação de terror"
+                            >
+                              ✕
+                            </IconButton>
+                          </Box>
+                        ))}
+                      </Box>
+                    )}
+                  </FieldArray>
+                </Box>
+              </Paper>
 
               <FormActions
                 onCancelar={() => navigate(ROUTE_PATHS.ORIGENS)}
