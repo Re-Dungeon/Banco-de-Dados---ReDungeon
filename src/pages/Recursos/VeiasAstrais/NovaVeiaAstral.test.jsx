@@ -10,6 +10,7 @@ vi.mock('service/storage', () => ({
   updateVeiaAstral: (...args) => updateVeiaAstral(...args),
   getUniversos: vi.fn().mockResolvedValue([{ id: 'u1', Nome: 'Prime' }]),
   getDivindades: vi.fn().mockResolvedValue([]),
+  getVeiasAstrais: vi.fn().mockResolvedValue([]),
 }));
 
 const canCreate = vi.fn(() => true);

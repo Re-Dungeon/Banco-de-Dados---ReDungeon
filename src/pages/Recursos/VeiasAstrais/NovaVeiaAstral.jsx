@@ -12,6 +12,7 @@ import {
   addVeiaAstral,
   updateVeiaAstral,
   getDivindades,
+  getVeiasAstrais,
 } from 'service/storage';
 import { ROUTE_PATHS } from 'common/constants/routes';
 import useEntityFormGuard from 'hooks/useEntityFormGuard';
@@ -33,11 +34,22 @@ const NovaVeiaAstral = () => {
   });
 
   const [divindades, setDivindades] = useState([]);
+  const [veiasAstrais, setVeiasAstrais] = useState([]);
 
   useEffect(() => {
     let active = true;
     getDivindades().then(data => {
       if (active) setDivindades(data);
+    });
+    return () => {
+      active = false;
+    };
+  }, []);
+
+  useEffect(() => {
+    let active = true;
+    getVeiasAstrais().then(data => {
+      if (active) setVeiasAstrais(data);
     });
     return () => {
       active = false;
@@ -196,7 +208,7 @@ const NovaVeiaAstral = () => {
                       }}
                     >
                       <Field name="divindade">
-                        {({ field }) => (
+                        {({ field, form }) => (
                           <FormControl fullWidth>
                             <InputLabel sx={labelSx}>
                               Divindade/Constelação
@@ -206,6 +218,10 @@ const NovaVeiaAstral = () => {
                               label="Divindade/Constelação"
                               sx={selectSx}
                               MenuProps={menuPropsSx}
+                              onChange={e => {
+                                field.onChange(e);
+                                form.setFieldValue('requisito', '');
+                              }}
                             >
                               <MenuItem value="">Nenhuma</MenuItem>
                               {divindades
@@ -240,6 +256,41 @@ const NovaVeiaAstral = () => {
                         )}
                       </FastField>
                     </Box>
+
+                    {Number(values.nivel) > 1 && (
+                      <Field name="requisito">
+                        {({ field }) => (
+                          <FormControl fullWidth>
+                            <InputLabel sx={labelSx}>
+                              Requisito (Veia Astral)
+                            </InputLabel>
+                            <Select
+                              {...field}
+                              label="Requisito (Veia Astral)"
+                              sx={selectSx}
+                              MenuProps={menuPropsSx}
+                            >
+                              <MenuItem value="">Nenhum</MenuItem>
+                              {veiasAstrais
+                                .filter(
+                                  veiaAstral =>
+                                    veiaAstral.id !==
+                                      veiaAstralParaEditar?.id &&
+                                    veiaAstral.divindade === values.divindade,
+                                )
+                                .map(veiaAstral => (
+                                  <MenuItem
+                                    key={veiaAstral.id}
+                                    value={veiaAstral.id}
+                                  >
+                                    {veiaAstral.nome}
+                                  </MenuItem>
+                                ))}
+                            </Select>
+                          </FormControl>
+                        )}
+                      </Field>
+                    )}
 
                     <FastField name="custo">
                       {({ field }) => (

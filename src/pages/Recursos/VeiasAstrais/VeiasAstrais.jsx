@@ -61,6 +61,12 @@ const VeiasAstrais = () => {
     () => [...new Set(divindades.map(d => d.nome))],
     [divindades],
   );
+  const nomePorVeiaAstralId = useMemo(
+    () => Object.fromEntries(veiasAstrais.map(v => [v.id, v.nome])),
+    [veiasAstrais],
+  );
+  const getRequisitoNome = veiaAstral =>
+    nomePorVeiaAstralId[veiaAstral?.requisito] || '';
 
   const veiasAstraisFiltradas = useMemo(() => {
     const filtradas = veiasAstrais.filter(veiaAstral => {
@@ -294,6 +300,19 @@ const VeiasAstrais = () => {
                     </Typography>
                   )}
 
+                  {veiaAstral.requisito && (
+                    <Typography
+                      variant="caption"
+                      sx={{
+                        color: 'var(--text-secondary)',
+                        display: 'block',
+                        mb: 1,
+                      }}
+                    >
+                      🔗 Requer: {getRequisitoNome(veiaAstral)}
+                    </Typography>
+                  )}
+
                   {veiaAstral.descricao && (
                     <Typography
                       variant="body2"
@@ -371,6 +390,27 @@ const VeiasAstrais = () => {
               sx={{ color: 'var(--text-primary)', fontWeight: 600 }}
             >
               {veiaAstralVisualizando.custo}
+            </Typography>
+          </Box>
+        )}
+
+        {veiaAstralVisualizando?.requisito && (
+          <Box sx={{ mb: 2 }}>
+            <Typography
+              variant="caption"
+              sx={{
+                color: 'var(--text-muted)',
+                display: 'block',
+                mb: 0.3,
+              }}
+            >
+              Requisito
+            </Typography>
+            <Typography
+              variant="body2"
+              sx={{ color: 'var(--text-primary)', fontWeight: 600 }}
+            >
+              {getRequisitoNome(veiaAstralVisualizando)}
             </Typography>
           </Box>
         )}
