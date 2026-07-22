@@ -192,6 +192,21 @@ const NovaAptidao = () => {
                       )}
                     </FastField>
 
+                    <FastField name="descricao">
+                      {({ field }) => (
+                        <TextField
+                          {...field}
+                          label="Descrição"
+                          fullWidth
+                          multiline
+                          rows={4}
+                          error={touched.descricao && Boolean(errors.descricao)}
+                          helperText={touched.descricao && errors.descricao}
+                          sx={slotInputSx}
+                        />
+                      )}
+                    </FastField>
+
                     <Field name="nivelMaximo">
                       {({ field, form }) => (
                         <TextField

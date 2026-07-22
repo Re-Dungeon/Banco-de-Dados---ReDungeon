@@ -21,6 +21,7 @@ export const APTIDAO_SCHEMA = Yup.object({
   nome: nomeSchema,
   universo: Yup.string(),
   linkImagem: urlImagemSchema,
+  descricao: descricaoSchema,
   nivelMaximo: Yup.number()
     .integer('Nível Máximo deve ser um número inteiro')
     .min(1, 'Nível Máximo deve ser no mínimo 1')
@@ -44,6 +45,7 @@ export const APTIDAO_INITIAL_VALUES = {
   nome: '',
   universo: '',
   linkImagem: '',
+  descricao: '',
   nivelMaximo: '',
   progressaoNiveis: [],
 };

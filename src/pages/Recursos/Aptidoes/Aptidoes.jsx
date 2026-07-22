@@ -222,6 +222,22 @@ const Aptidoes = () => {
                       {`${universos.find(u => u.id === aptidao.universo)?.Nome || 'Universo Desconhecido'} — Nível Máx. ${aptidao.nivelMaximo}`}
                     </Typography>
                   )}
+
+                  {aptidao.descricao && (
+                    <Typography
+                      variant="body2"
+                      sx={{
+                        color: 'var(--text-secondary)',
+                        mt: 0.5,
+                        display: '-webkit-box',
+                        WebkitLineClamp: 3,
+                        WebkitBoxOrient: 'vertical',
+                        overflow: 'hidden',
+                      }}
+                    >
+                      {aptidao.descricao}
+                    </Typography>
+                  )}
                 </AptidaoCard>
               ))}
             </Box>
@@ -239,6 +255,15 @@ const Aptidoes = () => {
         }
         imagem={aptidaoVisualizando?.linkImagem}
       >
+        {aptidaoVisualizando?.descricao && (
+          <Typography
+            variant="body2"
+            sx={{ color: 'var(--text-secondary)', mb: 2 }}
+          >
+            {aptidaoVisualizando.descricao}
+          </Typography>
+        )}
+
         {aptidaoVisualizando?.progressaoNiveis?.length > 0 && (
           <>
             <Divider sx={{ borderColor: 'var(--border-primary)', mb: 1.5 }} />
