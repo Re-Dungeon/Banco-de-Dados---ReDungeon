@@ -16,6 +16,7 @@ import { useAuth } from 'context/AuthContext';
 import { RARIDADES } from 'common/constants/constants';
 import useEntityCRUD from 'hooks/useEntityCRUD';
 import useUniversos from 'hooks/useUniversos';
+import { ordenarPorNome, ORDEM_ASC } from 'common/utils/ordenacao';
 import EntityFilters from 'components/EntityFilters/EntityFilters';
 import EntityViewDialog from 'components/EntityViewDialog/EntityViewDialog';
 import { ClasseCard } from './styles';
@@ -50,10 +51,11 @@ const Classes = () => {
   const [filtroNome, setFiltroNome] = useState('');
   const [filtroRaridade, setFiltroRaridade] = useState('');
   const [filtroUniverso, setFiltroUniverso] = useState('');
+  const [ordenacao, setOrdenacao] = useState(ORDEM_ASC);
   const [classeVisualizando, setClasseVisualizando] = useState(null);
 
   const classesFiltradas = useMemo(() => {
-    return classes.filter(classe => {
+    const filtradas = classes.filter(classe => {
       const matchNome =
         !filtroNome ||
         classe.nome?.toLowerCase().includes(filtroNome.toLowerCase());
@@ -63,7 +65,8 @@ const Classes = () => {
         !filtroUniverso || classe.universo === filtroUniverso;
       return matchNome && matchRaridade && matchUniverso;
     });
-  }, [classes, filtroNome, filtroRaridade, filtroUniverso]);
+    return ordenarPorNome(filtradas, ordenacao);
+  }, [classes, filtroNome, filtroRaridade, filtroUniverso, ordenacao]);
 
   return (
     <Box className="page-container" id="redungeon-classes" data-page="classes">
@@ -121,6 +124,8 @@ const Classes = () => {
             universos={universos}
             universoValue={filtroUniverso}
             onUniversoChange={setFiltroUniverso}
+            sortValue={ordenacao}
+            onSortChange={setOrdenacao}
           />
 
           {classesFiltradas.length === 0 ? (

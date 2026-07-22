@@ -16,6 +16,7 @@ import { useAuth } from 'context/AuthContext';
 import { RARIDADES } from 'common/constants/constants';
 import useEntityCRUD from 'hooks/useEntityCRUD';
 import useUniversos from 'hooks/useUniversos';
+import { ordenarPorNome, ORDEM_ASC } from 'common/utils/ordenacao';
 import EntityFilters from 'components/EntityFilters/EntityFilters';
 import EntityViewDialog from 'components/EntityViewDialog/EntityViewDialog';
 import { TIPOS_ITEM } from './utils';
@@ -35,10 +36,11 @@ const Itens = () => {
   const [filtroQualidade, setFiltroQualidade] = useState('');
   const [filtroTipo, setFiltroTipo] = useState('');
   const [filtroUniverso, setFiltroUniverso] = useState('');
+  const [ordenacao, setOrdenacao] = useState(ORDEM_ASC);
   const [itemVisualizando, setItemVisualizando] = useState(null);
 
   const itensFiltrados = useMemo(() => {
-    return itens.filter(item => {
+    const filtrados = itens.filter(item => {
       const matchNome =
         !filtroNome ||
         item.nome?.toLowerCase().includes(filtroNome.toLowerCase());
@@ -48,7 +50,15 @@ const Itens = () => {
       const matchUniverso = !filtroUniverso || item.universo === filtroUniverso;
       return matchNome && matchQualidade && matchTipo && matchUniverso;
     });
-  }, [itens, filtroNome, filtroQualidade, filtroTipo, filtroUniverso]);
+    return ordenarPorNome(filtrados, ordenacao);
+  }, [
+    itens,
+    filtroNome,
+    filtroQualidade,
+    filtroTipo,
+    filtroUniverso,
+    ordenacao,
+  ]);
 
   return (
     <Box className="page-container" id="redungeon-itens" data-page="itens">
@@ -113,6 +123,8 @@ const Itens = () => {
             universos={universos}
             universoValue={filtroUniverso}
             onUniversoChange={setFiltroUniverso}
+            sortValue={ordenacao}
+            onSortChange={setOrdenacao}
           />
 
           {itensFiltrados.length === 0 ? (

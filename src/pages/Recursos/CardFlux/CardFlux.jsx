@@ -17,6 +17,7 @@ import { useAuth } from 'context/AuthContext';
 import { TIPOS_CARDFLUX, DECKS_CARDFLUX } from 'common/constants/constants';
 import useEntityCRUD from 'hooks/useEntityCRUD';
 import useUniversos from 'hooks/useUniversos';
+import { ordenarPorNome, ORDEM_ASC } from 'common/utils/ordenacao';
 import EntityFilters from 'components/EntityFilters/EntityFilters';
 import EntityViewDialog from 'components/EntityViewDialog/EntityViewDialog';
 import { CardFluxCard } from './styles';
@@ -65,10 +66,11 @@ const CardFlux = () => {
   const [filtroTipo, setFiltroTipo] = useState('');
   const [filtroDeck, setFiltroDeck] = useState('');
   const [filtroUniverso, setFiltroUniverso] = useState('');
+  const [ordenacao, setOrdenacao] = useState(ORDEM_ASC);
   const [cardFluxVisualizando, setCardFluxVisualizando] = useState(null);
 
   const cardFluxFiltrados = useMemo(() => {
-    return cardFlux.filter(carta => {
+    const filtrados = cardFlux.filter(carta => {
       const matchNome =
         !filtroNome ||
         carta.nome?.toLowerCase().includes(filtroNome.toLowerCase());
@@ -78,7 +80,8 @@ const CardFlux = () => {
         !filtroUniverso || carta.universo === filtroUniverso;
       return matchNome && matchTipo && matchDeck && matchUniverso;
     });
-  }, [cardFlux, filtroNome, filtroTipo, filtroDeck, filtroUniverso]);
+    return ordenarPorNome(filtrados, ordenacao);
+  }, [cardFlux, filtroNome, filtroTipo, filtroDeck, filtroUniverso, ordenacao]);
 
   return (
     <Box
@@ -147,11 +150,13 @@ const CardFlux = () => {
             universos={universos}
             universoValue={filtroUniverso}
             onUniversoChange={setFiltroUniverso}
+            sortValue={ordenacao}
+            onSortChange={setOrdenacao}
             sx={{
               gridTemplateColumns: {
                 xs: '1fr',
-                sm: '2fr 1fr 1fr',
-                md: '2fr 1fr 1fr 1fr',
+                sm: '2fr 1fr 1fr 1fr',
+                md: '2fr 1fr 1fr 1fr 1fr',
               },
             }}
             menuMaxHeight={320}

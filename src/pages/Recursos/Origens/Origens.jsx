@@ -17,6 +17,7 @@ import { useAuth } from 'context/AuthContext';
 import { RARIDADES, TIPOS_ORIGEM } from 'common/constants/constants';
 import useEntityCRUD from 'hooks/useEntityCRUD';
 import useUniversos from 'hooks/useUniversos';
+import { ordenarPorNome, ORDEM_ASC } from 'common/utils/ordenacao';
 import EntityFilters from 'components/EntityFilters/EntityFilters';
 import EntityViewDialog from 'components/EntityViewDialog/EntityViewDialog';
 import { CAMPOS_POR_TIPO } from './utils';
@@ -42,10 +43,11 @@ const Origens = () => {
   const [filtroTipo, setFiltroTipo] = useState('');
   const [filtroRaridade, setFiltroRaridade] = useState('');
   const [filtroUniverso, setFiltroUniverso] = useState('');
+  const [ordenacao, setOrdenacao] = useState(ORDEM_ASC);
   const [origemVisualizando, setOrigemVisualizando] = useState(null);
 
   const origensFiltradas = useMemo(() => {
-    return origens.filter(origem => {
+    const filtradas = origens.filter(origem => {
       const matchNome =
         !filtroNome ||
         origem.nome?.toLowerCase().includes(filtroNome.toLowerCase());
@@ -56,7 +58,15 @@ const Origens = () => {
         !filtroUniverso || origem.universo === filtroUniverso;
       return matchNome && matchTipo && matchRaridade && matchUniverso;
     });
-  }, [origens, filtroNome, filtroTipo, filtroRaridade, filtroUniverso]);
+    return ordenarPorNome(filtradas, ordenacao);
+  }, [
+    origens,
+    filtroNome,
+    filtroTipo,
+    filtroRaridade,
+    filtroUniverso,
+    ordenacao,
+  ]);
 
   return (
     <Box className="page-container" id="redungeon-origens" data-page="origens">
@@ -121,11 +131,13 @@ const Origens = () => {
             universos={universos}
             universoValue={filtroUniverso}
             onUniversoChange={setFiltroUniverso}
+            sortValue={ordenacao}
+            onSortChange={setOrdenacao}
             sx={{
               gridTemplateColumns: {
                 xs: '1fr',
-                sm: '2fr 1fr 1fr',
-                md: '2fr 1fr 1fr 1fr',
+                sm: '2fr 1fr 1fr 1fr',
+                md: '2fr 1fr 1fr 1fr 1fr',
               },
             }}
           />

@@ -14,6 +14,7 @@ import { ROUTE_PATHS } from 'common/constants/routes';
 import { useAuth } from 'context/AuthContext';
 import useEntityCRUD from 'hooks/useEntityCRUD';
 import useUniversos from 'hooks/useUniversos';
+import { ordenarPorNome, ORDEM_ASC } from 'common/utils/ordenacao';
 import EntityFilters from 'components/EntityFilters/EntityFilters';
 import EntityViewDialog from 'components/EntityViewDialog/EntityViewDialog';
 import { DivindadeCard } from './styles';
@@ -30,10 +31,11 @@ const Divindades = () => {
   const loading = loadingDivindades || loadingUniversos;
   const [filtroNome, setFiltroNome] = useState('');
   const [filtroUniverso, setFiltroUniverso] = useState('');
+  const [ordenacao, setOrdenacao] = useState(ORDEM_ASC);
   const [divindadeVisualizando, setDivindadeVisualizando] = useState(null);
 
   const divindadesFiltradas = useMemo(() => {
-    return divindades.filter(divindade => {
+    const filtradas = divindades.filter(divindade => {
       const matchNome =
         !filtroNome ||
         divindade.nome?.toLowerCase().includes(filtroNome.toLowerCase());
@@ -41,7 +43,8 @@ const Divindades = () => {
         !filtroUniverso || divindade.universo === filtroUniverso;
       return matchNome && matchUniverso;
     });
-  }, [divindades, filtroNome, filtroUniverso]);
+    return ordenarPorNome(filtradas, ordenacao);
+  }, [divindades, filtroNome, filtroUniverso, ordenacao]);
 
   return (
     <Box
@@ -94,6 +97,8 @@ const Divindades = () => {
             universos={universos}
             universoValue={filtroUniverso}
             onUniversoChange={setFiltroUniverso}
+            sortValue={ordenacao}
+            onSortChange={setOrdenacao}
           />
 
           {divindadesFiltradas.length === 0 ? (

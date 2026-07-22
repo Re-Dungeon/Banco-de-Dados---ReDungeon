@@ -6,6 +6,7 @@ import Select from '@mui/material/Select';
 import MenuItem from '@mui/material/MenuItem';
 import FormControl from '@mui/material/FormControl';
 import InputLabel from '@mui/material/InputLabel';
+import { OPCOES_ORDENACAO_NOME, ORDEM_ASC } from 'common/utils/ordenacao';
 
 const textFieldSx = {
   '& .MuiOutlinedInput-root': {
@@ -55,6 +56,8 @@ const EntityFilters = ({
   universos = [],
   universoValue,
   onUniversoChange,
+  sortValue = ORDEM_ASC,
+  onSortChange,
   sx = {},
   menuMaxHeight,
 }) => {
@@ -65,6 +68,7 @@ const EntityFilters = ({
         },
       }
     : selectMenuProps;
+  const totalColunas = extraFilters.length + 1 + (onSortChange ? 1 : 0);
 
   return (
     <Box
@@ -72,7 +76,7 @@ const EntityFilters = ({
         display: 'grid',
         gridTemplateColumns: {
           xs: '1fr',
-          sm: `2fr repeat(${extraFilters.length + 1}, 1fr)`,
+          sm: `2fr repeat(${totalColunas}, 1fr)`,
         },
         gap: 2,
         mb: 3,
@@ -132,6 +136,27 @@ const EntityFilters = ({
           ))}
         </Select>
       </FormControl>
+      {onSortChange && (
+        <FormControl size="small">
+          <InputLabel id="entity-filters-ordenar" sx={inputLabelSx}>
+            Ordenar
+          </InputLabel>
+          <Select
+            labelId="entity-filters-ordenar"
+            label="Ordenar"
+            value={sortValue}
+            onChange={e => onSortChange(e.target.value)}
+            sx={selectSx}
+            MenuProps={menuProps}
+          >
+            {OPCOES_ORDENACAO_NOME.map(opcao => (
+              <MenuItem key={opcao.value} value={opcao.value}>
+                {opcao.label}
+              </MenuItem>
+            ))}
+          </Select>
+        </FormControl>
+      )}
     </Box>
   );
 };
@@ -153,6 +178,8 @@ EntityFilters.propTypes = {
   ),
   universoValue: PropTypes.string.isRequired,
   onUniversoChange: PropTypes.func.isRequired,
+  sortValue: PropTypes.oneOf(['asc', 'desc']),
+  onSortChange: PropTypes.func,
   sx: PropTypes.object,
   menuMaxHeight: PropTypes.number,
 };

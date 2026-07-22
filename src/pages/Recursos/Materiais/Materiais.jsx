@@ -17,6 +17,7 @@ import { useAuth } from 'context/AuthContext';
 import { RARIDADES } from 'common/constants/constants';
 import useEntityCRUD from 'hooks/useEntityCRUD';
 import useUniversos from 'hooks/useUniversos';
+import { ordenarPorNome, ORDEM_ASC } from 'common/utils/ordenacao';
 import EntityFilters from 'components/EntityFilters/EntityFilters';
 import EntityViewDialog from 'components/EntityViewDialog/EntityViewDialog';
 import { MaterialCard } from './styles';
@@ -34,10 +35,11 @@ const Materiais = () => {
   const [filtroNome, setFiltroNome] = useState('');
   const [filtroRaridade, setFiltroRaridade] = useState('');
   const [filtroUniverso, setFiltroUniverso] = useState('');
+  const [ordenacao, setOrdenacao] = useState(ORDEM_ASC);
   const [materialVisualizando, setMaterialVisualizando] = useState(null);
 
   const materiaisFiltrados = useMemo(() => {
-    return materiais.filter(material => {
+    const filtrados = materiais.filter(material => {
       const matchNome =
         !filtroNome ||
         material.nome?.toLowerCase().includes(filtroNome.toLowerCase());
@@ -47,7 +49,8 @@ const Materiais = () => {
         !filtroUniverso || material.universo === filtroUniverso;
       return matchNome && matchRaridade && matchUniverso;
     });
-  }, [materiais, filtroNome, filtroRaridade, filtroUniverso]);
+    return ordenarPorNome(filtrados, ordenacao);
+  }, [materiais, filtroNome, filtroRaridade, filtroUniverso, ordenacao]);
 
   return (
     <Box
@@ -109,6 +112,8 @@ const Materiais = () => {
             universos={universos}
             universoValue={filtroUniverso}
             onUniversoChange={setFiltroUniverso}
+            sortValue={ordenacao}
+            onSortChange={setOrdenacao}
           />
 
           {materiaisFiltrados.length === 0 ? (

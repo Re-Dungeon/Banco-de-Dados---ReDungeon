@@ -17,6 +17,7 @@ import { useAuth } from 'context/AuthContext';
 import { TIPOS_ARTE, CLASSIFICACOES_ARTE } from 'common/constants/constants';
 import useEntityCRUD from 'hooks/useEntityCRUD';
 import useUniversos from 'hooks/useUniversos';
+import { ordenarPorNome, ORDEM_ASC } from 'common/utils/ordenacao';
 import EntityFilters from 'components/EntityFilters/EntityFilters';
 import EntityViewDialog from 'components/EntityViewDialog/EntityViewDialog';
 import { ArteCard } from './styles';
@@ -46,10 +47,11 @@ const Artes = () => {
   const [filtroTipo, setFiltroTipo] = useState('');
   const [filtroClassificacao, setFiltroClassificacao] = useState('');
   const [filtroUniverso, setFiltroUniverso] = useState('');
+  const [ordenacao, setOrdenacao] = useState(ORDEM_ASC);
   const [arteVisualizando, setArteVisualizando] = useState(null);
 
   const artesFiltradas = useMemo(() => {
-    return artes.filter(arte => {
+    const filtradas = artes.filter(arte => {
       const matchNome =
         !filtroNome ||
         arte.nome?.toLowerCase().includes(filtroNome.toLowerCase());
@@ -59,7 +61,15 @@ const Artes = () => {
       const matchUniverso = !filtroUniverso || arte.universo === filtroUniverso;
       return matchNome && matchTipo && matchClassificacao && matchUniverso;
     });
-  }, [artes, filtroNome, filtroTipo, filtroClassificacao, filtroUniverso]);
+    return ordenarPorNome(filtradas, ordenacao);
+  }, [
+    artes,
+    filtroNome,
+    filtroTipo,
+    filtroClassificacao,
+    filtroUniverso,
+    ordenacao,
+  ]);
 
   return (
     <Box className="page-container" id="redungeon-artes" data-page="artes">
@@ -124,11 +134,13 @@ const Artes = () => {
             universos={universos}
             universoValue={filtroUniverso}
             onUniversoChange={setFiltroUniverso}
+            sortValue={ordenacao}
+            onSortChange={setOrdenacao}
             sx={{
               gridTemplateColumns: {
                 xs: '1fr',
-                sm: '2fr 1fr 1fr',
-                md: '2fr 1fr 1fr 1fr',
+                sm: '2fr 1fr 1fr 1fr',
+                md: '2fr 1fr 1fr 1fr 1fr',
               },
             }}
           />

@@ -16,6 +16,7 @@ import { useAuth } from 'context/AuthContext';
 import { RARIDADES } from 'common/constants/constants';
 import useEntityCRUD from 'hooks/useEntityCRUD';
 import useUniversos from 'hooks/useUniversos';
+import { ordenarPorNome, ORDEM_ASC } from 'common/utils/ordenacao';
 import EntityFilters from 'components/EntityFilters/EntityFilters';
 import EntityViewDialog from 'components/EntityViewDialog/EntityViewDialog';
 import { CondicaoCard } from './styles';
@@ -33,10 +34,11 @@ const Condicoes = () => {
   const [filtroNome, setFiltroNome] = useState('');
   const [filtroRaridade, setFiltroRaridade] = useState('');
   const [filtroUniverso, setFiltroUniverso] = useState('');
+  const [ordenacao, setOrdenacao] = useState(ORDEM_ASC);
   const [condicaoVisualizando, setCondicaoVisualizando] = useState(null);
 
   const condicoesFiltradas = useMemo(() => {
-    return condicoes.filter(condicao => {
+    const filtradas = condicoes.filter(condicao => {
       const matchNome =
         !filtroNome ||
         condicao.nome?.toLowerCase().includes(filtroNome.toLowerCase());
@@ -46,7 +48,8 @@ const Condicoes = () => {
         !filtroUniverso || condicao.universo === filtroUniverso;
       return matchNome && matchRaridade && matchUniverso;
     });
-  }, [condicoes, filtroNome, filtroRaridade, filtroUniverso]);
+    return ordenarPorNome(filtradas, ordenacao);
+  }, [condicoes, filtroNome, filtroRaridade, filtroUniverso, ordenacao]);
 
   return (
     <Box
@@ -108,6 +111,8 @@ const Condicoes = () => {
             universos={universos}
             universoValue={filtroUniverso}
             onUniversoChange={setFiltroUniverso}
+            sortValue={ordenacao}
+            onSortChange={setOrdenacao}
           />
 
           {condicoesFiltradas.length === 0 ? (

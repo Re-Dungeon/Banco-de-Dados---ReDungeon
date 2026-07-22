@@ -15,6 +15,7 @@ import { ROUTE_PATHS } from 'common/constants/routes';
 import { useAuth } from 'context/AuthContext';
 import useEntityCRUD from 'hooks/useEntityCRUD';
 import useUniversos from 'hooks/useUniversos';
+import { ordenarPorNome, ORDEM_ASC } from 'common/utils/ordenacao';
 import EntityFilters from 'components/EntityFilters/EntityFilters';
 import EntityViewDialog from 'components/EntityViewDialog/EntityViewDialog';
 import { AptidaoCard } from './styles';
@@ -31,10 +32,11 @@ const Aptidoes = () => {
   const loading = loadingAptidoes || loadingUniversos;
   const [filtroNome, setFiltroNome] = useState('');
   const [filtroUniverso, setFiltroUniverso] = useState('');
+  const [ordenacao, setOrdenacao] = useState(ORDEM_ASC);
   const [aptidaoVisualizando, setAptidaoVisualizando] = useState(null);
 
   const aptidoesFiltradas = useMemo(() => {
-    return aptidoes.filter(aptidao => {
+    const filtradas = aptidoes.filter(aptidao => {
       const matchNome =
         !filtroNome ||
         aptidao.nome?.toLowerCase().includes(filtroNome.toLowerCase());
@@ -42,7 +44,8 @@ const Aptidoes = () => {
         !filtroUniverso || aptidao.universo === filtroUniverso;
       return matchNome && matchUniverso;
     });
-  }, [aptidoes, filtroNome, filtroUniverso]);
+    return ordenarPorNome(filtradas, ordenacao);
+  }, [aptidoes, filtroNome, filtroUniverso, ordenacao]);
 
   return (
     <Box
@@ -95,6 +98,8 @@ const Aptidoes = () => {
             universos={universos}
             universoValue={filtroUniverso}
             onUniversoChange={setFiltroUniverso}
+            sortValue={ordenacao}
+            onSortChange={setOrdenacao}
           />
 
           {aptidoesFiltradas.length === 0 ? (

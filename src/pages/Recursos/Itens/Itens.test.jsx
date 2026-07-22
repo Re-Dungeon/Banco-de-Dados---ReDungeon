@@ -102,6 +102,27 @@ describe('Itens (padrão useEntityCRUD + useUniversos + EntityFilters + EntityVi
     expect(within(dialog).getByText('Uma lâmina afiada.')).toBeInTheDocument();
   });
 
+  it('ordena os itens por nome (A a Z por padrão) e permite alternar para Z a A', async () => {
+    const user = userEvent.setup();
+    renderItens();
+
+    await waitFor(() =>
+      expect(screen.getByText('Espada Longa')).toBeInTheDocument(),
+    );
+
+    const nomesNaOrdem = () =>
+      screen.getAllByRole('heading', { level: 6 }).map(h => h.textContent);
+
+    expect(nomesNaOrdem()).toEqual(['Espada Longa', 'Poção de Cura']);
+
+    await user.click(screen.getByLabelText('Ordenar'));
+    await user.click(
+      await screen.findByRole('option', { name: 'Nome (Z a A)' }),
+    );
+
+    expect(nomesNaOrdem()).toEqual(['Poção de Cura', 'Espada Longa']);
+  });
+
   it('não mostra botões de editar/remover quando canWrite retorna false', async () => {
     canWrite.mockReturnValue(false);
     renderItens();

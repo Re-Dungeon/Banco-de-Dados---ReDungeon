@@ -19,6 +19,7 @@ import {
 } from 'common/constants/constants';
 import useEntityCRUD from 'hooks/useEntityCRUD';
 import useUniversos from 'hooks/useUniversos';
+import { ordenarPorNome, ORDEM_ASC } from 'common/utils/ordenacao';
 import EntityFilters from 'components/EntityFilters/EntityFilters';
 import EntityViewDialog from 'components/EntityViewDialog/EntityViewDialog';
 import { RegraCard } from './styles';
@@ -50,10 +51,11 @@ const Regras = () => {
   const [filtroCategoria, setFiltroCategoria] = useState('');
   const [filtroComplexidade, setFiltroComplexidade] = useState('');
   const [filtroUniverso, setFiltroUniverso] = useState('');
+  const [ordenacao, setOrdenacao] = useState(ORDEM_ASC);
   const [regraVisualizando, setRegraVisualizando] = useState(null);
 
   const regrasFiltradas = useMemo(() => {
-    return regras.filter(regra => {
+    const filtradas = regras.filter(regra => {
       const matchNome =
         !filtroNome ||
         regra.nome?.toLowerCase().includes(filtroNome.toLowerCase());
@@ -65,7 +67,15 @@ const Regras = () => {
         !filtroUniverso || regra.universo === filtroUniverso;
       return matchNome && matchCategoria && matchComplexidade && matchUniverso;
     });
-  }, [regras, filtroNome, filtroCategoria, filtroComplexidade, filtroUniverso]);
+    return ordenarPorNome(filtradas, ordenacao);
+  }, [
+    regras,
+    filtroNome,
+    filtroCategoria,
+    filtroComplexidade,
+    filtroUniverso,
+    ordenacao,
+  ]);
 
   return (
     <Box className="page-container" id="redungeon-regras" data-page="regras">
@@ -130,11 +140,13 @@ const Regras = () => {
             universos={universos}
             universoValue={filtroUniverso}
             onUniversoChange={setFiltroUniverso}
+            sortValue={ordenacao}
+            onSortChange={setOrdenacao}
             sx={{
               gridTemplateColumns: {
                 xs: '1fr',
-                sm: '2fr 1fr 1fr',
-                md: '2fr 1fr 1fr 1fr',
+                sm: '2fr 1fr 1fr 1fr',
+                md: '2fr 1fr 1fr 1fr 1fr',
               },
             }}
           />

@@ -17,6 +17,7 @@ import { useAuth } from 'context/AuthContext';
 import { RARIDADES, CATEGORIAS_RECEITA } from 'common/constants/constants';
 import useEntityCRUD from 'hooks/useEntityCRUD';
 import useUniversos from 'hooks/useUniversos';
+import { ordenarPorNome, ORDEM_ASC } from 'common/utils/ordenacao';
 import EntityFilters from 'components/EntityFilters/EntityFilters';
 import EntityViewDialog from 'components/EntityViewDialog/EntityViewDialog';
 import { ReceitaCard } from './styles';
@@ -35,10 +36,11 @@ const Receitas = () => {
   const [filtroRaridade, setFiltroRaridade] = useState('');
   const [filtroCategoria, setFiltroCategoria] = useState('');
   const [filtroUniverso, setFiltroUniverso] = useState('');
+  const [ordenacao, setOrdenacao] = useState(ORDEM_ASC);
   const [receitaVisualizando, setReceitaVisualizando] = useState(null);
 
   const receitasFiltradas = useMemo(() => {
-    return receitas.filter(receita => {
+    const filtradas = receitas.filter(receita => {
       const matchNome =
         !filtroNome ||
         receita.nome?.toLowerCase().includes(filtroNome.toLowerCase());
@@ -50,7 +52,15 @@ const Receitas = () => {
         !filtroUniverso || receita.universo === filtroUniverso;
       return matchNome && matchRaridade && matchCategoria && matchUniverso;
     });
-  }, [receitas, filtroNome, filtroRaridade, filtroCategoria, filtroUniverso]);
+    return ordenarPorNome(filtradas, ordenacao);
+  }, [
+    receitas,
+    filtroNome,
+    filtroRaridade,
+    filtroCategoria,
+    filtroUniverso,
+    ordenacao,
+  ]);
 
   return (
     <Box
@@ -119,11 +129,13 @@ const Receitas = () => {
             universos={universos}
             universoValue={filtroUniverso}
             onUniversoChange={setFiltroUniverso}
+            sortValue={ordenacao}
+            onSortChange={setOrdenacao}
             sx={{
               gridTemplateColumns: {
                 xs: '1fr',
-                sm: '2fr 1fr 1fr',
-                md: '2fr 1fr 1fr 1fr',
+                sm: '2fr 1fr 1fr 1fr',
+                md: '2fr 1fr 1fr 1fr 1fr',
               },
             }}
           />

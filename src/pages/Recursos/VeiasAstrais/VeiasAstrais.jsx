@@ -19,6 +19,7 @@ import { ROUTE_PATHS } from 'common/constants/routes';
 import { useAuth } from 'context/AuthContext';
 import useEntityCRUD from 'hooks/useEntityCRUD';
 import useUniversos from 'hooks/useUniversos';
+import { ordenarPorNome, ORDEM_ASC } from 'common/utils/ordenacao';
 import EntityFilters from 'components/EntityFilters/EntityFilters';
 import EntityViewDialog from 'components/EntityViewDialog/EntityViewDialog';
 import { VeiaAstralCard } from './styles';
@@ -37,6 +38,7 @@ const VeiasAstrais = () => {
   const [filtroNome, setFiltroNome] = useState('');
   const [filtroDivindade, setFiltroDivindade] = useState('');
   const [filtroUniverso, setFiltroUniverso] = useState('');
+  const [ordenacao, setOrdenacao] = useState(ORDEM_ASC);
   const [veiaAstralVisualizando, setVeiaAstralVisualizando] = useState(null);
 
   useEffect(() => {
@@ -61,7 +63,7 @@ const VeiasAstrais = () => {
   );
 
   const veiasAstraisFiltradas = useMemo(() => {
-    return veiasAstrais.filter(veiaAstral => {
+    const filtradas = veiasAstrais.filter(veiaAstral => {
       const nomeDivindade =
         nomePorDivindadeId[veiaAstral.divindade] || veiaAstral.divindade || '';
       const matchNome =
@@ -73,12 +75,14 @@ const VeiasAstrais = () => {
         !filtroUniverso || veiaAstral.universo === filtroUniverso;
       return matchNome && matchDivindade && matchUniverso;
     });
+    return ordenarPorNome(filtradas, ordenacao);
   }, [
     veiasAstrais,
     filtroNome,
     filtroDivindade,
     filtroUniverso,
     nomePorDivindadeId,
+    ordenacao,
   ]);
 
   return (
@@ -142,6 +146,8 @@ const VeiasAstrais = () => {
             universos={universos}
             universoValue={filtroUniverso}
             onUniversoChange={setFiltroUniverso}
+            sortValue={ordenacao}
+            onSortChange={setOrdenacao}
           />
 
           {veiasAstraisFiltradas.length === 0 ? (

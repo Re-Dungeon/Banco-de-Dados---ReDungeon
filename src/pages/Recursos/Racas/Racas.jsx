@@ -16,6 +16,7 @@ import { useAuth } from 'context/AuthContext';
 import { RARIDADES } from 'common/constants/constants';
 import useEntityCRUD from 'hooks/useEntityCRUD';
 import useUniversos from 'hooks/useUniversos';
+import { ordenarPorNome, ORDEM_ASC } from 'common/utils/ordenacao';
 import EntityFilters from 'components/EntityFilters/EntityFilters';
 import EntityViewDialog from 'components/EntityViewDialog/EntityViewDialog';
 import { RacaCard } from './styles';
@@ -52,10 +53,11 @@ const Racas = () => {
   const [filtroNome, setFiltroNome] = useState('');
   const [filtroRaridade, setFiltroRaridade] = useState('');
   const [filtroUniverso, setFiltroUniverso] = useState('');
+  const [ordenacao, setOrdenacao] = useState(ORDEM_ASC);
   const [racaVisualizando, setRacaVisualizando] = useState(null);
 
   const racasFiltradas = useMemo(() => {
-    return racas.filter(raca => {
+    const filtradas = racas.filter(raca => {
       const matchNome =
         !filtroNome ||
         raca.nome?.toLowerCase().includes(filtroNome.toLowerCase());
@@ -63,7 +65,8 @@ const Racas = () => {
       const matchUniverso = !filtroUniverso || raca.universo === filtroUniverso;
       return matchNome && matchRaridade && matchUniverso;
     });
-  }, [racas, filtroNome, filtroRaridade, filtroUniverso]);
+    return ordenarPorNome(filtradas, ordenacao);
+  }, [racas, filtroNome, filtroRaridade, filtroUniverso, ordenacao]);
 
   return (
     <Box className="page-container" id="redungeon-racas" data-page="racas">
@@ -121,6 +124,8 @@ const Racas = () => {
             universos={universos}
             universoValue={filtroUniverso}
             onUniversoChange={setFiltroUniverso}
+            sortValue={ordenacao}
+            onSortChange={setOrdenacao}
           />
 
           {racasFiltradas.length === 0 ? (
