@@ -41,11 +41,19 @@ const usePermissions = currentUser => {
   );
 
   /**
-   * Retorna true se o usuário pode escrever em um universo específico.
-   * @param {string} universoId - ID do documento na coleção Universo
+   * Retorna true se o usuário pode escrever em um universo específico, ou,
+   * caso um array seja passado (entidades que pertencem a mais de um
+   * universo, ex.: Aptidões), se pode escrever em pelo menos um deles.
+   * @param {string|string[]} universoId - ID (ou lista de ids) de documento(s) na coleção Universo
    */
   const canWrite = useCallback(
-    universoId => isAdmin || allowedUniversos.includes(universoId),
+    universoId => {
+      if (isAdmin) return true;
+      if (Array.isArray(universoId)) {
+        return universoId.some(id => allowedUniversos.includes(id));
+      }
+      return allowedUniversos.includes(universoId);
+    },
     [isAdmin, allowedUniversos],
   );
 

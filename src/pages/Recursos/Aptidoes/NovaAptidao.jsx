@@ -9,6 +9,7 @@ import FormControl from '@mui/material/FormControl';
 import InputLabel from '@mui/material/InputLabel';
 import Paper from '@mui/material/Paper';
 import Checkbox from '@mui/material/Checkbox';
+import ListItemText from '@mui/material/ListItemText';
 import FormControlLabel from '@mui/material/FormControlLabel';
 import { Formik, Form, FastField, Field } from 'formik';
 import { addAptidao, updateAptidao } from 'service/storage';
@@ -22,6 +23,8 @@ import {
   APTIDAO_SCHEMA,
   APTIDAO_INITIAL_VALUES,
   NIVEL_PROGRESSAO_INICIAL,
+  getAptidaoUniversos,
+  formatNomesUniversos,
 } from './utils';
 
 const slotInputSx = {
@@ -68,7 +71,7 @@ const NovaAptidao = () => {
 
   const { universos, loadingUniversos, isEditing } = useEntityFormGuard({
     itemParaEditar: aptidaoParaEditar,
-    universoDoItem: aptidaoParaEditar?.universo,
+    universoDoItem: getAptidaoUniversos(aptidaoParaEditar),
     routeOnDeny: ROUTE_PATHS.APTIDOES,
   });
 
@@ -76,6 +79,7 @@ const NovaAptidao = () => {
     ? {
         ...APTIDAO_INITIAL_VALUES,
         ...aptidaoParaEditar,
+        universos: getAptidaoUniversos(aptidaoParaEditar),
         progressaoNiveis: aptidaoParaEditar.progressaoNiveis || [],
       }
     : APTIDAO_INITIAL_VALUES;
@@ -155,19 +159,36 @@ const NovaAptidao = () => {
                         )}
                       </FastField>
 
-                      <Field name="universo">
-                        {({ field }) => (
+                      <Field name="universos">
+                        {({ field, form }) => (
                           <FormControl fullWidth>
-                            <InputLabel sx={labelSx}>Universo</InputLabel>
+                            <InputLabel sx={labelSx}>Universos</InputLabel>
                             <Select
                               {...field}
-                              label="Universo"
+                              multiple
+                              label="Universos"
+                              value={field.value || []}
+                              onChange={e =>
+                                form.setFieldValue('universos', e.target.value)
+                              }
+                              renderValue={selecionados =>
+                                formatNomesUniversos(selecionados, universos)
+                              }
                               sx={selectSx}
                               MenuProps={menuPropsSx}
                             >
                               {universos.map(universo => (
                                 <MenuItem key={universo.id} value={universo.id}>
-                                  {universo.Nome}
+                                  <Checkbox
+                                    checked={field.value?.includes(universo.id)}
+                                    sx={{
+                                      color: 'var(--text-secondary)',
+                                      '&.Mui-checked': {
+                                        color: 'var(--color-accent)',
+                                      },
+                                    }}
+                                  />
+                                  <ListItemText primary={universo.Nome} />
                                 </MenuItem>
                               ))}
                             </Select>

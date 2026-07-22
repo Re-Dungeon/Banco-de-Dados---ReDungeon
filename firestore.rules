@@ -21,6 +21,21 @@ service cloud.firestore {
              (isAuth() && universoId in perms().universos);
     }
 
+    // Aptidões podem pertencer a mais de um universo (`universos`, lista de
+    // ids); docs antigos ainda podem ter apenas o campo singular `universo`.
+    function canWriteUniversos(universoIds) {
+      return isAdmin() ||
+             (isAuth() && universoIds.hasOnly(perms().universos));
+    }
+
+    function canWriteAptidaoData(data) {
+      return isAdmin() ||
+        (isAuth() && (
+          (data.universos is list && data.universos.hasOnly(perms().universos)) ||
+          (data.universo is string && data.universo in perms().universos)
+        ));
+    }
+
     // ── userPermissions ────────────────────────────────────────────────────────
     // Cada usuário só lê o próprio documento; apenas admins podem escrever.
     match /userPermissions/{userId} {
@@ -150,12 +165,14 @@ service cloud.firestore {
     }
 
     // ── aptidoes ───────────────────────────────────────────────────────────────
+    // Escrita baseada no campo `universos` (lista de ids) do documento —
+    // aptidões podem pertencer a mais de um universo.
     match /aptidoes/{aptidaoId} {
       allow read: if isAuth();
-      allow create: if canWriteUniverso(request.resource.data.universo);
-      allow update: if canWriteUniverso(resource.data.universo)
-                    && canWriteUniverso(request.resource.data.universo);
-      allow delete: if canWriteUniverso(resource.data.universo);
+      allow create: if canWriteUniversos(request.resource.data.universos);
+      allow update: if canWriteAptidaoData(resource.data)
+                    && canWriteUniversos(request.resource.data.universos);
+      allow delete: if canWriteAptidaoData(resource.data);
     }
 
     // ── personagens ──────────────────────────────────────────────────────

@@ -9,7 +9,7 @@ import useUniversos from './useUniversos';
  * `allowedUniversos`/`isAdmin` e redirecionar para `routeOnDeny` caso o
  * usuário não tenha permissão de criar (item novo) ou editar (item
  * existente, avaliado contra `universoDoItem`).
- * @param {{ itemParaEditar: object|null, universoDoItem?: string, routeOnDeny: string }} params
+ * @param {{ itemParaEditar: object|null, universoDoItem?: string|string[], routeOnDeny: string }} params
  */
 const useEntityFormGuard = ({
   itemParaEditar,

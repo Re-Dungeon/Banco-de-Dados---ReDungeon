@@ -19,7 +19,7 @@ const nivelProgressaoSchema = Yup.object({
 
 export const APTIDAO_SCHEMA = Yup.object({
   nome: nomeSchema,
-  universo: Yup.string(),
+  universos: Yup.array().of(Yup.string()),
   linkImagem: urlImagemSchema,
   descricao: descricaoSchema,
   nivelMaximo: Yup.number()
@@ -43,9 +43,23 @@ export const NIVEL_PROGRESSAO_INICIAL = nivel => ({
 
 export const APTIDAO_INITIAL_VALUES = {
   nome: '',
-  universo: '',
+  universos: [],
   linkImagem: '',
   descricao: '',
   nivelMaximo: '',
   progressaoNiveis: [],
 };
+
+/**
+ * Aptidões antigas ainda podem ter o campo singular `universo` gravado no
+ * Firestore (antes do suporte a múltiplos universos). Este helper unifica
+ * a leitura para sempre retornar uma lista de ids.
+ */
+export const getAptidaoUniversos = aptidao =>
+  aptidao?.universos ?? (aptidao?.universo ? [aptidao.universo] : []);
+
+export const formatNomesUniversos = (universoIds, universos) =>
+  universos
+    .filter(u => universoIds.includes(u.id))
+    .map(u => u.Nome)
+    .join(', ');

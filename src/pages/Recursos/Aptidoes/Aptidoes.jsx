@@ -19,6 +19,7 @@ import { ordenarPorNome, ORDEM_ASC } from 'common/utils/ordenacao';
 import EntityFilters from 'components/EntityFilters/EntityFilters';
 import EntityViewDialog from 'components/EntityViewDialog/EntityViewDialog';
 import { AptidaoCard } from './styles';
+import { getAptidaoUniversos, formatNomesUniversos } from './utils';
 
 const Aptidoes = () => {
   const navigate = useNavigate();
@@ -41,7 +42,8 @@ const Aptidoes = () => {
         !filtroNome ||
         aptidao.nome?.toLowerCase().includes(filtroNome.toLowerCase());
       const matchUniverso =
-        !filtroUniverso || aptidao.universo === filtroUniverso;
+        !filtroUniverso ||
+        getAptidaoUniversos(aptidao).includes(filtroUniverso);
       return matchNome && matchUniverso;
     });
     return ordenarPorNome(filtradas, ordenacao);
@@ -148,7 +150,7 @@ const Aptidoes = () => {
                         <VisibilityOutlinedIcon fontSize="small" />
                       </IconButton>
                     </Tooltip>
-                    {canWrite(aptidao.universo) && (
+                    {canWrite(getAptidaoUniversos(aptidao)) && (
                       <>
                         <IconButton
                           size="small"
@@ -224,7 +226,7 @@ const Aptidoes = () => {
                         mb: 1,
                       }}
                     >
-                      {`${universos.find(u => u.id === aptidao.universo)?.Nome || 'Universo Desconhecido'} — Nível Máx. ${aptidao.nivelMaximo}`}
+                      {`${formatNomesUniversos(getAptidaoUniversos(aptidao), universos) || 'Universo Desconhecido'} — Nível Máx. ${aptidao.nivelMaximo}`}
                     </Typography>
                   )}
 
@@ -256,7 +258,7 @@ const Aptidoes = () => {
         titulo={aptidaoVisualizando?.nome}
         subtitulo={
           aptidaoVisualizando?.nivelMaximo &&
-          `${universos.find(u => u.id === aptidaoVisualizando?.universo)?.Nome || 'Universo Desconhecido'} — Nível Máx. ${aptidaoVisualizando.nivelMaximo}`
+          `${formatNomesUniversos(getAptidaoUniversos(aptidaoVisualizando), universos) || 'Universo Desconhecido'} — Nível Máx. ${aptidaoVisualizando.nivelMaximo}`
         }
         imagem={aptidaoVisualizando?.linkImagem}
       >
