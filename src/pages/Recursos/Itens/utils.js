@@ -25,6 +25,7 @@ export const ITEM_SCHEMA = Yup.object({
   dados: campoCurtoSchema,
   extra: campoCurtoSchema,
   descricao: descricaoSchema,
+  mostrarNaLoja: Yup.boolean(),
   habilidadesEspeciais: Yup.array().of(habilidadeEspecialSchema),
 });
 
@@ -45,6 +46,7 @@ export const ITEM_INITIAL_VALUES = {
   extra: '',
   descricao: '',
   universo: '',
+  mostrarNaLoja: false,
   habilidadesEspeciais: [],
 };
 

@@ -21,14 +21,15 @@ service cloud.firestore {
              (isAuth() && universoId in perms().universos);
     }
 
-    // Aptidões podem pertencer a mais de um universo (`universos`, lista de
-    // ids); docs antigos ainda podem ter apenas o campo singular `universo`.
+    // Aptidões, Regras e Condições podem pertencer a mais de um universo
+    // (`universos`, lista de ids); docs antigos ainda podem ter apenas o
+    // campo singular `universo`.
     function canWriteUniversos(universoIds) {
       return isAdmin() ||
              (isAuth() && universoIds.hasOnly(perms().universos));
     }
 
-    function canWriteAptidaoData(data) {
+    function canWriteMultiUniversoData(data) {
       return isAdmin() ||
         (isAuth() && (
           (data.universos is list && data.universos.hasOnly(perms().universos)) ||
@@ -102,12 +103,14 @@ service cloud.firestore {
     }
 
     // ── condicoes ──────────────────────────────────────────────────────────────
+    // Escrita baseada no campo `universos` (lista de ids) do documento —
+    // condições podem pertencer a mais de um universo.
     match /condicoes/{condicaoId} {
       allow read: if isAuth();
-      allow create: if canWriteUniverso(request.resource.data.universo);
-      allow update: if canWriteUniverso(resource.data.universo)
-                    && canWriteUniverso(request.resource.data.universo);
-      allow delete: if canWriteUniverso(resource.data.universo);
+      allow create: if canWriteUniversos(request.resource.data.universos);
+      allow update: if canWriteMultiUniversoData(resource.data)
+                    && canWriteUniversos(request.resource.data.universos);
+      allow delete: if canWriteMultiUniversoData(resource.data);
     }
 
     // ── artes ──────────────────────────────────────────────────────────────────
@@ -129,12 +132,14 @@ service cloud.firestore {
     }
 
     // ── regras ─────────────────────────────────────────────────────────────────
+    // Escrita baseada no campo `universos` (lista de ids) do documento —
+    // regras podem pertencer a mais de um universo.
     match /regras/{regraId} {
       allow read: if isAuth();
-      allow create: if canWriteUniverso(request.resource.data.universo);
-      allow update: if canWriteUniverso(resource.data.universo)
-                    && canWriteUniverso(request.resource.data.universo);
-      allow delete: if canWriteUniverso(resource.data.universo);
+      allow create: if canWriteUniversos(request.resource.data.universos);
+      allow update: if canWriteMultiUniversoData(resource.data)
+                    && canWriteUniversos(request.resource.data.universos);
+      allow delete: if canWriteMultiUniversoData(resource.data);
     }
 
     // ── cardflux ───────────────────────────────────────────────────────────────
@@ -170,9 +175,9 @@ service cloud.firestore {
     match /aptidoes/{aptidaoId} {
       allow read: if isAuth();
       allow create: if canWriteUniversos(request.resource.data.universos);
-      allow update: if canWriteAptidaoData(resource.data)
+      allow update: if canWriteMultiUniversoData(resource.data)
                     && canWriteUniversos(request.resource.data.universos);
-      allow delete: if canWriteAptidaoData(resource.data);
+      allow delete: if canWriteMultiUniversoData(resource.data);
     }
 
     // ── personagens ──────────────────────────────────────────────────────

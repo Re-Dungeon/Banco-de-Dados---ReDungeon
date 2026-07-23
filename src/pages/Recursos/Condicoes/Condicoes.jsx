@@ -20,6 +20,7 @@ import { ordenarPorNome, ORDEM_ASC } from 'common/utils/ordenacao';
 import EntityFilters from 'components/EntityFilters/EntityFilters';
 import EntityViewDialog from 'components/EntityViewDialog/EntityViewDialog';
 import { CondicaoCard } from './styles';
+import { getCondicaoUniversos } from './utils';
 
 const Condicoes = () => {
   const navigate = useNavigate();
@@ -45,7 +46,8 @@ const Condicoes = () => {
       const matchRaridade =
         !filtroRaridade || condicao.raridade === filtroRaridade;
       const matchUniverso =
-        !filtroUniverso || condicao.universo === filtroUniverso;
+        !filtroUniverso ||
+        getCondicaoUniversos(condicao).includes(filtroUniverso);
       return matchNome && matchRaridade && matchUniverso;
     });
     return ordenarPorNome(filtradas, ordenacao);
@@ -161,7 +163,7 @@ const Condicoes = () => {
                         <VisibilityOutlinedIcon fontSize="small" />
                       </IconButton>
                     </Tooltip>
-                    {canWrite(condicao.universo) && (
+                    {canWrite(getCondicaoUniversos(condicao)) && (
                       <>
                         <IconButton
                           size="small"
@@ -299,7 +301,7 @@ const Condicoes = () => {
         imagemSx={{ height: 'auto', maxHeight: 220 }}
         descricao={condicaoVisualizando?.descricao}
         actions={
-          canWrite(condicaoVisualizando?.universo) && (
+          canWrite(getCondicaoUniversos(condicaoVisualizando)) && (
             <Button
               variant="contained"
               onClick={() => {

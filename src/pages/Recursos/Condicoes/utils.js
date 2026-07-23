@@ -11,7 +11,7 @@ export const CONDICAO_SCHEMA = Yup.object({
   descricao: descricaoSchema,
   duracao: campoCurtoSchema,
   raridade: Yup.string(),
-  universo: Yup.string(),
+  universos: Yup.array().of(Yup.string()),
   linkImagem: urlImagemSchema,
   aplicacao: campoCurtoSchema,
   efeitos: Yup.array().of(campoCurtoSchema),
@@ -23,9 +23,23 @@ export const CONDICAO_INITIAL_VALUES = {
   descricao: '',
   duracao: '',
   raridade: '',
-  universo: '',
+  universos: [],
   linkImagem: '',
   aplicacao: '',
   efeitos: [],
   interacoes: [],
 };
+
+/**
+ * Condições antigas ainda podem ter o campo singular `universo` gravado no
+ * Firestore (antes do suporte a múltiplos universos). Este helper unifica
+ * a leitura para sempre retornar uma lista de ids.
+ */
+export const getCondicaoUniversos = condicao =>
+  condicao?.universos ?? (condicao?.universo ? [condicao.universo] : []);
+
+export const formatNomesUniversos = (universoIds, universos) =>
+  universos
+    .filter(u => universoIds.includes(u.id))
+    .map(u => u.Nome)
+    .join(', ');

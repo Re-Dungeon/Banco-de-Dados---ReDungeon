@@ -9,7 +9,7 @@ import {
 export const REGRA_SCHEMA = Yup.object({
   nome: nomeSchema,
   linkImagem: urlImagemSchema,
-  universo: Yup.string(),
+  universos: Yup.array().of(Yup.string()),
   categoria: Yup.string(),
   tipo: Yup.string(),
   complexidade: Yup.string(),
@@ -28,7 +28,7 @@ export const REGRA_SCHEMA = Yup.object({
 export const REGRA_INITIAL_VALUES = {
   nome: '',
   linkImagem: '',
-  universo: '',
+  universos: [],
   categoria: '',
   tipo: '',
   complexidade: '',
@@ -43,3 +43,17 @@ export const REGRA_INITIAL_VALUES = {
   requisitos: '',
   exemplo: '',
 };
+
+/**
+ * Regras antigas ainda podem ter o campo singular `universo` gravado no
+ * Firestore (antes do suporte a múltiplos universos). Este helper unifica
+ * a leitura para sempre retornar uma lista de ids.
+ */
+export const getRegraUniversos = regra =>
+  regra?.universos ?? (regra?.universo ? [regra.universo] : []);
+
+export const formatNomesUniversos = (universoIds, universos) =>
+  universos
+    .filter(u => universoIds.includes(u.id))
+    .map(u => u.Nome)
+    .join(', ');

@@ -10,6 +10,8 @@ import MenuItem from '@mui/material/MenuItem';
 import FormControl from '@mui/material/FormControl';
 import InputLabel from '@mui/material/InputLabel';
 import Paper from '@mui/material/Paper';
+import Checkbox from '@mui/material/Checkbox';
+import FormControlLabel from '@mui/material/FormControlLabel';
 import { Formik, Form, FastField, Field, FieldArray } from 'formik';
 import { addIten, updateIten } from 'service/storage';
 import { ROUTE_PATHS } from 'common/constants/routes';
@@ -180,6 +182,26 @@ const NovoItem = () => {
                       multiline
                       rows={4}
                     />
+                    <Field name="mostrarNaLoja">
+                      {({ field }) => (
+                        <FormControlLabel
+                          control={
+                            <Checkbox
+                              {...field}
+                              checked={Boolean(field.value)}
+                              sx={{
+                                color: 'var(--text-secondary)',
+                                '&.Mui-checked': {
+                                  color: 'var(--color-accent)',
+                                },
+                              }}
+                            />
+                          }
+                          label="Mostrar na Loja"
+                          sx={{ color: 'var(--text-secondary)' }}
+                        />
+                      )}
+                    </Field>
                   </Box>
 
                   <ImagePreviewPanel

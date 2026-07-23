@@ -23,6 +23,7 @@ import { ordenarPorNome, ORDEM_ASC } from 'common/utils/ordenacao';
 import EntityFilters from 'components/EntityFilters/EntityFilters';
 import EntityViewDialog from 'components/EntityViewDialog/EntityViewDialog';
 import { RegraCard } from './styles';
+import { getRegraUniversos } from './utils';
 
 const CAMPOS_FUNCIONAMENTO = [
   { key: 'comoFunciona', label: 'Como Funciona' },
@@ -64,7 +65,7 @@ const Regras = () => {
       const matchComplexidade =
         !filtroComplexidade || regra.complexidade === filtroComplexidade;
       const matchUniverso =
-        !filtroUniverso || regra.universo === filtroUniverso;
+        !filtroUniverso || getRegraUniversos(regra).includes(filtroUniverso);
       return matchNome && matchCategoria && matchComplexidade && matchUniverso;
     });
     return ordenarPorNome(filtradas, ordenacao);
@@ -195,7 +196,7 @@ const Regras = () => {
                         <VisibilityOutlinedIcon fontSize="small" />
                       </IconButton>
                     </Tooltip>
-                    {canWrite(regra.universo) && (
+                    {canWrite(getRegraUniversos(regra)) && (
                       <>
                         <IconButton
                           size="small"
@@ -325,7 +326,7 @@ const Regras = () => {
         imagem={regraVisualizando?.linkImagem}
         imagemSx={{ height: 'auto', maxHeight: 220 }}
         actions={
-          canWrite(regraVisualizando?.universo) && (
+          canWrite(getRegraUniversos(regraVisualizando)) && (
             <Button
               variant="contained"
               onClick={() => {

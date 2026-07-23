@@ -9,6 +9,8 @@ import MenuItem from '@mui/material/MenuItem';
 import FormControl from '@mui/material/FormControl';
 import InputLabel from '@mui/material/InputLabel';
 import Paper from '@mui/material/Paper';
+import Checkbox from '@mui/material/Checkbox';
+import ListItemText from '@mui/material/ListItemText';
 import { Formik, Form, FastField, Field, FieldArray } from 'formik';
 import { addCondicao, updateCondicao } from 'service/storage';
 import { ROUTE_PATHS } from 'common/constants/routes';
@@ -18,7 +20,11 @@ import FormPageHeader from 'components/FormPageHeader/FormPageHeader';
 import ImagePreviewPanel from 'components/ImagePreviewPanel/ImagePreviewPanel';
 import FormActions from 'components/FormActions/FormActions';
 import SectionTitle from 'components/SectionTitle/SectionTitle';
-import { CONDICAO_SCHEMA, CONDICAO_INITIAL_VALUES } from './utils';
+import {
+  CONDICAO_SCHEMA,
+  CONDICAO_INITIAL_VALUES,
+  getCondicaoUniversos,
+} from './utils';
 import { RARIDADES } from 'common/constants/constants';
 
 const NovaCondicao = () => {
@@ -28,7 +34,7 @@ const NovaCondicao = () => {
 
   const { universos, loadingUniversos, isEditing } = useEntityFormGuard({
     itemParaEditar: condicaoParaEditar,
-    universoDoItem: condicaoParaEditar?.universo,
+    universoDoItem: getCondicaoUniversos(condicaoParaEditar),
     routeOnDeny: ROUTE_PATHS.CONDICOES,
   });
 
@@ -36,6 +42,7 @@ const NovaCondicao = () => {
     ? {
         ...CONDICAO_INITIAL_VALUES,
         ...condicaoParaEditar,
+        universos: getCondicaoUniversos(condicaoParaEditar),
         efeitos: condicaoParaEditar.efeitos || [],
         interacoes: condicaoParaEditar.interacoes || [],
       }
@@ -128,14 +135,31 @@ const NovaCondicao = () => {
                           </FormControl>
                         )}
                       </FastField>
-                      <Field name="universo">
-                        {({ field }) => (
+                      <Field name="universos">
+                        {({ field, form }) => (
                           <FormControl fullWidth>
-                            <InputLabel>Universo</InputLabel>
-                            <Select {...field} label="Universo">
+                            <InputLabel>Universos</InputLabel>
+                            <Select
+                              {...field}
+                              multiple
+                              label="Universos"
+                              value={field.value || []}
+                              onChange={e =>
+                                form.setFieldValue('universos', e.target.value)
+                              }
+                              renderValue={selecionados =>
+                                universos
+                                  .filter(u => selecionados.includes(u.id))
+                                  .map(u => u.Nome)
+                                  .join(', ')
+                              }
+                            >
                               {universos.map(universo => (
                                 <MenuItem key={universo.id} value={universo.id}>
-                                  {universo.Nome}
+                                  <Checkbox
+                                    checked={field.value?.includes(universo.id)}
+                                  />
+                                  <ListItemText primary={universo.Nome} />
                                 </MenuItem>
                               ))}
                             </Select>

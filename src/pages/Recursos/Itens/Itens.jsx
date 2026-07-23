@@ -7,6 +7,7 @@ import IconButton from '@mui/material/IconButton';
 import CircularProgress from '@mui/material/CircularProgress';
 import Divider from '@mui/material/Divider';
 import Tooltip from '@mui/material/Tooltip';
+import Chip from '@mui/material/Chip';
 import DeleteOutlineIcon from '@mui/icons-material/DeleteOutlined';
 import EditOutlinedIcon from '@mui/icons-material/EditOutlined';
 import VisibilityOutlinedIcon from '@mui/icons-material/VisibilityOutlined';
@@ -225,16 +226,36 @@ const Itens = () => {
                       }}
                     />
                   )}
-                  <Typography
-                    variant="h6"
+                  <Box
                     sx={{
-                      color: 'var(--text-primary)',
-                      fontWeight: 600,
-                      lineHeight: 1.2,
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: 1,
+                      flexWrap: 'wrap',
                     }}
                   >
-                    {item.nome}
-                  </Typography>
+                    <Typography
+                      variant="h6"
+                      sx={{
+                        color: 'var(--text-primary)',
+                        fontWeight: 600,
+                        lineHeight: 1.2,
+                      }}
+                    >
+                      {item.nome}
+                    </Typography>
+                    {item.mostrarNaLoja && (
+                      <Chip
+                        label="Na Loja"
+                        size="small"
+                        sx={{
+                          background: 'var(--color-accent)',
+                          color: 'var(--bg-primary)',
+                          fontWeight: 600,
+                        }}
+                      />
+                    )}
+                  </Box>
                   {(item.qualidade || item.tipo) && (
                     <Typography
                       variant="caption"
