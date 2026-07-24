@@ -39,6 +39,18 @@ const NovaDivindade = lazy(
 );
 const Aptidoes = lazy(() => import('pages/Recursos/Aptidoes/Aptidoes'));
 const NovaAptidao = lazy(() => import('pages/Recursos/Aptidoes/NovaAptidao'));
+const CorposEspeciais = lazy(
+  () => import('pages/Recursos/CorposEspeciais/CorposEspeciais'),
+);
+const NovoCorpoEspecial = lazy(
+  () => import('pages/Recursos/CorposEspeciais/NovoCorpoEspecial'),
+);
+const ReinosCultivo = lazy(
+  () => import('pages/Recursos/ReinosCultivo/ReinosCultivo'),
+);
+const NovoReinoCultivo = lazy(
+  () => import('pages/Recursos/ReinosCultivo/NovoReinoCultivo'),
+);
 const PatchNotes = lazy(() => import('pages/PatchNotes/PatchNotes'));
 const Sobre = lazy(() => import('pages/Sobre/Sobre'));
 
@@ -74,6 +86,19 @@ export const ROUTES = [
   { path: ROUTE_PATHS.NOVA_DIVINDADE.slice(1), element: <NovaDivindade /> },
   { path: ROUTE_PATHS.APTIDOES.slice(1), element: <Aptidoes /> },
   { path: ROUTE_PATHS.NOVA_APTIDAO.slice(1), element: <NovaAptidao /> },
+  {
+    path: ROUTE_PATHS.CORPOS_ESPECIAIS.slice(1),
+    element: <CorposEspeciais />,
+  },
+  {
+    path: ROUTE_PATHS.NOVO_CORPO_ESPECIAL.slice(1),
+    element: <NovoCorpoEspecial />,
+  },
+  { path: ROUTE_PATHS.REINOS_CULTIVO.slice(1), element: <ReinosCultivo /> },
+  {
+    path: ROUTE_PATHS.NOVO_REINO_CULTIVO.slice(1),
+    element: <NovoReinoCultivo />,
+  },
   { path: ROUTE_PATHS.PATCH_NOTES.slice(1), element: <PatchNotes /> },
   { path: ROUTE_PATHS.SOBRE.slice(1), element: <Sobre /> },
 ];

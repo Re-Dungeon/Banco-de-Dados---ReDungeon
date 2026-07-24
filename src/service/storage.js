@@ -200,6 +200,30 @@ export const removeAptidao = id => removeFirestoreItem(APTIDOES_COLLECTION, id);
 export const updateAptidao = (id, updates) =>
   updateFirestoreItem(APTIDOES_COLLECTION, id, updates);
 
+// ── Corpos Especiais (Firestore) ────────────────────────────────────────────
+const CORPOS_ESPECIAIS_COLLECTION = 'corposEspeciais';
+
+export const getCorposEspeciais = () =>
+  getFirestoreItems(CORPOS_ESPECIAIS_COLLECTION);
+export const addCorpoEspecial = corpoEspecial =>
+  addFirestoreItem(CORPOS_ESPECIAIS_COLLECTION, corpoEspecial);
+export const removeCorpoEspecial = id =>
+  removeFirestoreItem(CORPOS_ESPECIAIS_COLLECTION, id);
+export const updateCorpoEspecial = (id, updates) =>
+  updateFirestoreItem(CORPOS_ESPECIAIS_COLLECTION, id, updates);
+
+// ── Reinos de Cultivo (Firestore) ───────────────────────────────────────────
+const REINOS_CULTIVO_COLLECTION = 'reinosCultivo';
+
+export const getReinosCultivo = () =>
+  getFirestoreItems(REINOS_CULTIVO_COLLECTION);
+export const addReinoCultivo = reinoCultivo =>
+  addFirestoreItem(REINOS_CULTIVO_COLLECTION, reinoCultivo);
+export const removeReinoCultivo = id =>
+  removeFirestoreItem(REINOS_CULTIVO_COLLECTION, id);
+export const updateReinoCultivo = (id, updates) =>
+  updateFirestoreItem(REINOS_CULTIVO_COLLECTION, id, updates);
+
 // ── Universo (Firestore) ────────────────────────────────────────────────────────
 
 const UNIVERSO_COLLECTION = 'Universo';

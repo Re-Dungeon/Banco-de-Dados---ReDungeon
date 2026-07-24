@@ -26,6 +26,10 @@ export const ROUTE_PATHS = {
   NOVA_DIVINDADE: '/recursos/divindades/nova',
   APTIDOES: '/recursos/aptidoes',
   NOVA_APTIDAO: '/recursos/aptidoes/nova',
+  CORPOS_ESPECIAIS: '/recursos/corpos-especiais',
+  NOVO_CORPO_ESPECIAL: '/recursos/corpos-especiais/novo',
+  REINOS_CULTIVO: '/recursos/reinos-cultivo',
+  NOVO_REINO_CULTIVO: '/recursos/reinos-cultivo/novo',
   PATCH_NOTES: '/patch-notes',
   SOBRE: '/sobre',
 };
@@ -58,6 +62,10 @@ export const PAGE_TITLES = {
   [ROUTE_PATHS.NOVA_DIVINDADE]: 'Nova Divindade',
   [ROUTE_PATHS.APTIDOES]: 'Aptidões',
   [ROUTE_PATHS.NOVA_APTIDAO]: 'Nova Aptidão',
+  [ROUTE_PATHS.CORPOS_ESPECIAIS]: 'Corpos Especiais',
+  [ROUTE_PATHS.NOVO_CORPO_ESPECIAL]: 'Novo Corpo Especial',
+  [ROUTE_PATHS.REINOS_CULTIVO]: 'Reinos de Cultivo',
+  [ROUTE_PATHS.NOVO_REINO_CULTIVO]: 'Novo Reino de Cultivo',
   [ROUTE_PATHS.PATCH_NOTES]: 'Patch Notes',
   [ROUTE_PATHS.SOBRE]: 'Sobre',
 };
