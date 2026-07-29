@@ -37,6 +37,20 @@ service cloud.firestore {
         ));
     }
 
+    // Permite atualizar só o campo `universos` (add/remove) de um doc
+    // multi-universo sem exigir acesso a todos os universos já presentes —
+    // basta ter acesso aos universos que estão sendo adicionados/removidos.
+    // Usado para permitir que um usuário associe/desassocie um doc (ex.:
+    // Aptidões) do(s) universo(s) que ele administra, mesmo que o doc já
+    // pertença a outros universos que ele não administra.
+    function canTogglePartialUniverso(antes, depois) {
+      return isAuth() &&
+        antes.universos is list && depois.universos is list &&
+        depois.diff(antes).affectedKeys().hasOnly(['universos', 'updatedAt']) &&
+        depois.universos.removeAll(antes.universos).hasOnly(perms().universos) &&
+        antes.universos.removeAll(depois.universos).hasOnly(perms().universos);
+    }
+
     // ── userPermissions ────────────────────────────────────────────────────────
     // Cada usuário só lê o próprio documento; apenas admins podem escrever.
     match /userPermissions/{userId} {
@@ -175,8 +189,9 @@ service cloud.firestore {
     match /aptidoes/{aptidaoId} {
       allow read: if isAuth();
       allow create: if canWriteUniversos(request.resource.data.universos);
-      allow update: if canWriteMultiUniversoData(resource.data)
-                    && canWriteUniversos(request.resource.data.universos);
+      allow update: if (canWriteMultiUniversoData(resource.data)
+                    && canWriteUniversos(request.resource.data.universos))
+                    || canTogglePartialUniverso(resource.data, request.resource.data);
       allow delete: if canWriteMultiUniversoData(resource.data);
     }
 
