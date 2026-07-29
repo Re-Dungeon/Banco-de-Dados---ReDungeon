@@ -14,6 +14,27 @@ export const SidebarWrapper = styled.aside`
   position: relative;
   z-index: 100;
   flex-shrink: 0;
+
+  @media (max-width: 768px) {
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 1200;
+    transform: translateX(${({ $open }) => ($open ? '0' : '-100%')});
+    transition: transform var(--transition-normal);
+  }
+`;
+
+export const SidebarOverlay = styled.div`
+  display: none;
+
+  @media (max-width: 768px) {
+    display: ${({ $open }) => ($open ? 'block' : 'none')};
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 1100;
+  }
 `;
 
 export const LogoSection = styled(Box)`
