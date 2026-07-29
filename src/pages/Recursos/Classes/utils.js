@@ -36,6 +36,7 @@ export const CLASSE_SCHEMA = Yup.object({
   nome: nomeSchema,
   raridade: Yup.string(),
   linkImagem: urlImagemSchema,
+  tiposDisponiveis: Yup.array().of(Yup.string()),
   descricao: descricaoSchema,
   atributosBasicos: Yup.object({
     forca: campoCurtoSchema,
@@ -65,6 +66,7 @@ export const CLASSE_INITIAL_VALUES = {
   nome: '',
   raridade: '',
   linkImagem: '',
+  tiposDisponiveis: [],
   descricao: '',
   atributosBasicos: {
     forca: '',

@@ -11,6 +11,8 @@ import FormControl from '@mui/material/FormControl';
 import InputLabel from '@mui/material/InputLabel';
 import Divider from '@mui/material/Divider';
 import Paper from '@mui/material/Paper';
+import Checkbox from '@mui/material/Checkbox';
+import ListItemText from '@mui/material/ListItemText';
 import { Formik, Form, FastField, Field, FieldArray } from 'formik';
 import { addClasse, updateClasse } from 'service/storage';
 import { ROUTE_PATHS } from 'common/constants/routes';
@@ -25,7 +27,11 @@ import {
   CLASSE_INITIAL_VALUES,
   HABILIDADE_INICIAL,
 } from './utils';
-import { RARIDADES, ACAO_HABILIDADE } from 'common/constants/constants';
+import {
+  RARIDADES,
+  ACAO_HABILIDADE,
+  TIPOS_PERSONAGEM,
+} from 'common/constants/constants';
 
 const NovaClasse = () => {
   const navigate = useNavigate();
@@ -165,6 +171,37 @@ const NovaClasse = () => {
                       error={touched.linkImagem && Boolean(errors.linkImagem)}
                       helperText={touched.linkImagem && errors.linkImagem}
                     />
+                    <Field name="tiposDisponiveis">
+                      {({ field, form }) => (
+                        <FormControl fullWidth>
+                          <InputLabel>Disponível Para os Tipos</InputLabel>
+                          <Select
+                            {...field}
+                            multiple
+                            label="Disponível Para os Tipos"
+                            value={field.value || []}
+                            onChange={e =>
+                              form.setFieldValue(
+                                'tiposDisponiveis',
+                                e.target.value,
+                              )
+                            }
+                            renderValue={selecionados =>
+                              selecionados.join(', ')
+                            }
+                          >
+                            {TIPOS_PERSONAGEM.map(tipo => (
+                              <MenuItem key={tipo} value={tipo}>
+                                <Checkbox
+                                  checked={field.value?.includes(tipo)}
+                                />
+                                <ListItemText primary={tipo} />
+                              </MenuItem>
+                            ))}
+                          </Select>
+                        </FormControl>
+                      )}
+                    </Field>
                     <FastField
                       as={TextField}
                       name="descricao"

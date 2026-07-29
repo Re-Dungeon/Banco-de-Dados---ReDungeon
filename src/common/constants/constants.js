@@ -183,3 +183,5 @@ export const DECKS_CARDFLUX = [
 ];
 
 export const TIPOS_ATIVACAO_CARDFLUX = ['Automático', 'Opcional', 'Chance'];
+
+export const TIPOS_PERSONAGEM = ['Personagem Jogável', 'NPC', 'Criatura'];

@@ -29,6 +29,7 @@ export const RACA_SCHEMA = Yup.object({
   nome: nomeSchema,
   raridade: Yup.string(),
   linkImagem: urlImagemSchema,
+  tiposDisponiveis: Yup.array().of(Yup.string()),
   atributosBasicos: Yup.object({
     forca: campoCurtoSchema,
     agilidade: campoCurtoSchema,
@@ -64,6 +65,7 @@ export const RACA_INITIAL_VALUES = {
   nome: '',
   raridade: '',
   linkImagem: '',
+  tiposDisponiveis: [],
   atributosBasicos: {
     forca: '',
     agilidade: '',
