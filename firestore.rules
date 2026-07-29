@@ -24,16 +24,26 @@ service cloud.firestore {
     // Aptidões, Regras e Condições podem pertencer a mais de um universo
     // (`universos`, lista de ids); docs antigos ainda podem ter apenas o
     // campo singular `universo`.
+    // Lista vazia é tratada como "sem universo" (não editável por não-admin):
+    // `[].hasOnly(x)` é vacuamente verdadeiro em CEL, então sem o check de
+    // `size() > 0` qualquer usuário autenticado — mesmo sem nenhum universo
+    // liberado — passaria nesta checagem.
     function canWriteUniversos(universoIds) {
       return isAdmin() ||
-             (isAuth() && universoIds.hasOnly(perms().universos));
+             (isAuth() && universoIds.size() > 0 && universoIds.hasOnly(perms().universos));
     }
 
+    // O fallback do campo singular `universo` só se aplica quando o doc não
+    // tem `universos` como lista — se `universos` existe (mesmo vazia), ela é
+    // a fonte da verdade. Sem essa exclusão, um doc migrado que ainda carrega
+    // os dois campos (`universos: [A,B,C]` e o antigo `universo: "A"`) seria
+    // liberado para quem só tem acesso a A, ignorando que B e C exigem
+    // permissão própria.
     function canWriteMultiUniversoData(data) {
       return isAdmin() ||
         (isAuth() && (
-          (data.universos is list && data.universos.hasOnly(perms().universos)) ||
-          (data.universo is string && data.universo in perms().universos)
+          (data.universos is list && data.universos.size() > 0 && data.universos.hasOnly(perms().universos)) ||
+          (!(data.universos is list) && data.universo is string && data.universo in perms().universos)
         ));
     }
 
