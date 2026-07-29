@@ -13,7 +13,7 @@ import VisibilityOutlinedIcon from '@mui/icons-material/VisibilityOutlined';
 import { getRacas, removeRaca } from 'service/storage';
 import { ROUTE_PATHS } from 'common/constants/routes';
 import { useAuth } from 'context/AuthContext';
-import { RARIDADES } from 'common/constants/constants';
+import { RARIDADES, TIPOS_PERSONAGEM } from 'common/constants/constants';
 import useEntityCRUD from 'hooks/useEntityCRUD';
 import useUniversos from 'hooks/useUniversos';
 import { ordenarPorNome, ORDEM_ASC } from 'common/utils/ordenacao';
@@ -52,6 +52,7 @@ const Racas = () => {
   const loading = loadingRacas || loadingUniversos;
   const [filtroNome, setFiltroNome] = useState('');
   const [filtroRaridade, setFiltroRaridade] = useState('');
+  const [filtroTipo, setFiltroTipo] = useState('');
   const [filtroUniverso, setFiltroUniverso] = useState('');
   const [ordenacao, setOrdenacao] = useState(ORDEM_ASC);
   const [racaVisualizando, setRacaVisualizando] = useState(null);
@@ -62,11 +63,20 @@ const Racas = () => {
         !filtroNome ||
         raca.nome?.toLowerCase().includes(filtroNome.toLowerCase());
       const matchRaridade = !filtroRaridade || raca.raridade === filtroRaridade;
+      const matchTipo =
+        !filtroTipo || raca.tiposDisponiveis?.includes(filtroTipo);
       const matchUniverso = !filtroUniverso || raca.universo === filtroUniverso;
-      return matchNome && matchRaridade && matchUniverso;
+      return matchNome && matchRaridade && matchTipo && matchUniverso;
     });
     return ordenarPorNome(filtradas, ordenacao);
-  }, [racas, filtroNome, filtroRaridade, filtroUniverso, ordenacao]);
+  }, [
+    racas,
+    filtroNome,
+    filtroRaridade,
+    filtroTipo,
+    filtroUniverso,
+    ordenacao,
+  ]);
 
   return (
     <Box className="page-container" id="redungeon-racas" data-page="racas">
@@ -119,6 +129,13 @@ const Racas = () => {
                 onChange: setFiltroRaridade,
                 options: RARIDADES,
                 allLabel: 'Todas',
+              },
+              {
+                label: 'Tipo',
+                value: filtroTipo,
+                onChange: setFiltroTipo,
+                options: TIPOS_PERSONAGEM,
+                allLabel: 'Todos',
               },
             ]}
             universos={universos}

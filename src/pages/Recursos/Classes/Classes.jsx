@@ -13,7 +13,7 @@ import VisibilityOutlinedIcon from '@mui/icons-material/VisibilityOutlined';
 import { getClasses, removeClasse } from 'service/storage';
 import { ROUTE_PATHS } from 'common/constants/routes';
 import { useAuth } from 'context/AuthContext';
-import { RARIDADES } from 'common/constants/constants';
+import { RARIDADES, TIPOS_PERSONAGEM } from 'common/constants/constants';
 import useEntityCRUD from 'hooks/useEntityCRUD';
 import useUniversos from 'hooks/useUniversos';
 import { ordenarPorNome, ORDEM_ASC } from 'common/utils/ordenacao';
@@ -50,6 +50,7 @@ const Classes = () => {
   const loading = loadingClasses || loadingUniversos;
   const [filtroNome, setFiltroNome] = useState('');
   const [filtroRaridade, setFiltroRaridade] = useState('');
+  const [filtroTipo, setFiltroTipo] = useState('');
   const [filtroUniverso, setFiltroUniverso] = useState('');
   const [ordenacao, setOrdenacao] = useState(ORDEM_ASC);
   const [classeVisualizando, setClasseVisualizando] = useState(null);
@@ -61,12 +62,21 @@ const Classes = () => {
         classe.nome?.toLowerCase().includes(filtroNome.toLowerCase());
       const matchRaridade =
         !filtroRaridade || classe.raridade === filtroRaridade;
+      const matchTipo =
+        !filtroTipo || classe.tiposDisponiveis?.includes(filtroTipo);
       const matchUniverso =
         !filtroUniverso || classe.universo === filtroUniverso;
-      return matchNome && matchRaridade && matchUniverso;
+      return matchNome && matchRaridade && matchTipo && matchUniverso;
     });
     return ordenarPorNome(filtradas, ordenacao);
-  }, [classes, filtroNome, filtroRaridade, filtroUniverso, ordenacao]);
+  }, [
+    classes,
+    filtroNome,
+    filtroRaridade,
+    filtroTipo,
+    filtroUniverso,
+    ordenacao,
+  ]);
 
   return (
     <Box className="page-container" id="redungeon-classes" data-page="classes">
@@ -119,6 +129,13 @@ const Classes = () => {
                 onChange: setFiltroRaridade,
                 options: RARIDADES,
                 allLabel: 'Todas',
+              },
+              {
+                label: 'Tipo',
+                value: filtroTipo,
+                onChange: setFiltroTipo,
+                options: TIPOS_PERSONAGEM,
+                allLabel: 'Todos',
               },
             ]}
             universos={universos}
