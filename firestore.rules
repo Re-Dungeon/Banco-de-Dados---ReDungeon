@@ -240,5 +240,154 @@ service cloud.firestore {
              == request.auth.uid;
       }
     }
+
+    // ═══════════════════════════════════════════════════════════════════════
+    // Re:Master — coleções novas (prefixo `rm`), acrescentadas sem alterar
+    // nenhuma linha acima. Diferente das coleções do Re-Dungeon (públicas
+    // para qualquer autenticado), o conteúdo do Re:Master é privado do
+    // mestre — sem visão de jogador em nenhum dos módulos atuais — então
+    // leitura E escrita ficam restritas ao mestre dono da campanha.
+    // ═══════════════════════════════════════════════════════════════════════
+
+    // Cada Campanha (e tudo vinculado a ela) é privada ao mestre que a criou,
+    // mesmo que outro colaborador tenha acesso de escrita ao mesmo Universo —
+    // evita que dois mestres rodando campanhas diferentes no mesmo mundo
+    // vejam segredos de NPC/consequências um do outro.
+    function isCampanhaOwner(mestreId) {
+      return isAuth() && mestreId == request.auth.uid;
+    }
+
+    // Todo documento das coleções abaixo denormaliza `universoId` e
+    // `mestreId` (evita `get()` extra por regra), então a checagem é sempre a
+    // mesma — só muda o nome da coleção.
+    match /rmCampanhas/{docId} {
+      allow read: if isAdmin() ||
+        (canWriteUniverso(resource.data.universoId) && isCampanhaOwner(resource.data.mestreId));
+      allow create: if canWriteUniverso(request.resource.data.universoId)
+                    && isCampanhaOwner(request.resource.data.mestreId);
+      allow update: if isAdmin() ||
+        (canWriteUniverso(resource.data.universoId) && isCampanhaOwner(resource.data.mestreId)
+         && canWriteUniverso(request.resource.data.universoId)
+         && isCampanhaOwner(request.resource.data.mestreId));
+      allow delete: if isAdmin() ||
+        (canWriteUniverso(resource.data.universoId) && isCampanhaOwner(resource.data.mestreId));
+    }
+
+    match /rmCenas/{docId} {
+      allow read: if isAdmin() ||
+        (canWriteUniverso(resource.data.universoId) && isCampanhaOwner(resource.data.mestreId));
+      allow create: if canWriteUniverso(request.resource.data.universoId)
+                    && isCampanhaOwner(request.resource.data.mestreId);
+      allow update: if isAdmin() ||
+        (canWriteUniverso(resource.data.universoId) && isCampanhaOwner(resource.data.mestreId)
+         && canWriteUniverso(request.resource.data.universoId)
+         && isCampanhaOwner(request.resource.data.mestreId));
+      allow delete: if isAdmin() ||
+        (canWriteUniverso(resource.data.universoId) && isCampanhaOwner(resource.data.mestreId));
+    }
+
+    match /rmCenaConexoes/{docId} {
+      allow read: if isAdmin() ||
+        (canWriteUniverso(resource.data.universoId) && isCampanhaOwner(resource.data.mestreId));
+      allow create: if canWriteUniverso(request.resource.data.universoId)
+                    && isCampanhaOwner(request.resource.data.mestreId);
+      allow update: if isAdmin() ||
+        (canWriteUniverso(resource.data.universoId) && isCampanhaOwner(resource.data.mestreId)
+         && canWriteUniverso(request.resource.data.universoId)
+         && isCampanhaOwner(request.resource.data.mestreId));
+      allow delete: if isAdmin() ||
+        (canWriteUniverso(resource.data.universoId) && isCampanhaOwner(resource.data.mestreId));
+    }
+
+    match /rmNpcs/{docId} {
+      allow read: if isAdmin() ||
+        (canWriteUniverso(resource.data.universoId) && isCampanhaOwner(resource.data.mestreId));
+      allow create: if canWriteUniverso(request.resource.data.universoId)
+                    && isCampanhaOwner(request.resource.data.mestreId);
+      allow update: if isAdmin() ||
+        (canWriteUniverso(resource.data.universoId) && isCampanhaOwner(resource.data.mestreId)
+         && canWriteUniverso(request.resource.data.universoId)
+         && isCampanhaOwner(request.resource.data.mestreId));
+      allow delete: if isAdmin() ||
+        (canWriteUniverso(resource.data.universoId) && isCampanhaOwner(resource.data.mestreId));
+    }
+
+    match /rmCriaturas/{docId} {
+      allow read: if isAdmin() ||
+        (canWriteUniverso(resource.data.universoId) && isCampanhaOwner(resource.data.mestreId));
+      allow create: if canWriteUniverso(request.resource.data.universoId)
+                    && isCampanhaOwner(request.resource.data.mestreId);
+      allow update: if isAdmin() ||
+        (canWriteUniverso(resource.data.universoId) && isCampanhaOwner(resource.data.mestreId)
+         && canWriteUniverso(request.resource.data.universoId)
+         && isCampanhaOwner(request.resource.data.mestreId));
+      allow delete: if isAdmin() ||
+        (canWriteUniverso(resource.data.universoId) && isCampanhaOwner(resource.data.mestreId));
+    }
+
+    match /rmMapas/{docId} {
+      allow read: if isAdmin() ||
+        (canWriteUniverso(resource.data.universoId) && isCampanhaOwner(resource.data.mestreId));
+      allow create: if canWriteUniverso(request.resource.data.universoId)
+                    && isCampanhaOwner(request.resource.data.mestreId);
+      allow update: if isAdmin() ||
+        (canWriteUniverso(resource.data.universoId) && isCampanhaOwner(resource.data.mestreId)
+         && canWriteUniverso(request.resource.data.universoId)
+         && isCampanhaOwner(request.resource.data.mestreId));
+      allow delete: if isAdmin() ||
+        (canWriteUniverso(resource.data.universoId) && isCampanhaOwner(resource.data.mestreId));
+    }
+
+    match /rmMissoes/{docId} {
+      allow read: if isAdmin() ||
+        (canWriteUniverso(resource.data.universoId) && isCampanhaOwner(resource.data.mestreId));
+      allow create: if canWriteUniverso(request.resource.data.universoId)
+                    && isCampanhaOwner(request.resource.data.mestreId);
+      allow update: if isAdmin() ||
+        (canWriteUniverso(resource.data.universoId) && isCampanhaOwner(resource.data.mestreId)
+         && canWriteUniverso(request.resource.data.universoId)
+         && isCampanhaOwner(request.resource.data.mestreId));
+      allow delete: if isAdmin() ||
+        (canWriteUniverso(resource.data.universoId) && isCampanhaOwner(resource.data.mestreId));
+    }
+
+    match /rmCardfluxBaralhos/{docId} {
+      allow read: if isAdmin() ||
+        (canWriteUniverso(resource.data.universoId) && isCampanhaOwner(resource.data.mestreId));
+      allow create: if canWriteUniverso(request.resource.data.universoId)
+                    && isCampanhaOwner(request.resource.data.mestreId);
+      allow update: if isAdmin() ||
+        (canWriteUniverso(resource.data.universoId) && isCampanhaOwner(resource.data.mestreId)
+         && canWriteUniverso(request.resource.data.universoId)
+         && isCampanhaOwner(request.resource.data.mestreId));
+      allow delete: if isAdmin() ||
+        (canWriteUniverso(resource.data.universoId) && isCampanhaOwner(resource.data.mestreId));
+    }
+
+    match /rmCardfluxCartas/{docId} {
+      allow read: if isAdmin() ||
+        (canWriteUniverso(resource.data.universoId) && isCampanhaOwner(resource.data.mestreId));
+      allow create: if canWriteUniverso(request.resource.data.universoId)
+                    && isCampanhaOwner(request.resource.data.mestreId);
+      allow update: if isAdmin() ||
+        (canWriteUniverso(resource.data.universoId) && isCampanhaOwner(resource.data.mestreId)
+         && canWriteUniverso(request.resource.data.universoId)
+         && isCampanhaOwner(request.resource.data.mestreId));
+      allow delete: if isAdmin() ||
+        (canWriteUniverso(resource.data.universoId) && isCampanhaOwner(resource.data.mestreId));
+    }
+
+    match /rmNotas/{docId} {
+      allow read: if isAdmin() ||
+        (canWriteUniverso(resource.data.universoId) && isCampanhaOwner(resource.data.mestreId));
+      allow create: if canWriteUniverso(request.resource.data.universoId)
+                    && isCampanhaOwner(request.resource.data.mestreId);
+      allow update: if isAdmin() ||
+        (canWriteUniverso(resource.data.universoId) && isCampanhaOwner(resource.data.mestreId)
+         && canWriteUniverso(request.resource.data.universoId)
+         && isCampanhaOwner(request.resource.data.mestreId));
+      allow delete: if isAdmin() ||
+        (canWriteUniverso(resource.data.universoId) && isCampanhaOwner(resource.data.mestreId));
+    }
   }
 }
