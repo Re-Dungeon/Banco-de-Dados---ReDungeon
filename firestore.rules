@@ -224,9 +224,16 @@ service cloud.firestore {
     }
 
     // ── personagens ──────────────────────────────────────────────────────
-    // Cada usuário só lê/escreve os próprios personagens (uid == request.auth.uid).
+    // Cada usuário só escreve os próprios personagens (uid == request.auth.uid).
+    // Leitura: ficha de "Personagem Jogável" continua privada ao dono; NPC e
+    // Criatura são legíveis por qualquer autenticado, pois servem de conteúdo
+    // de referência para o Re:Master importar (get(...,'tipo', default) trata
+    // documentos antigos sem o campo `tipo` como Personagem Jogável).
     match /personagens/{personagemId} {
-      allow read: if isAuth() && resource.data.uid == request.auth.uid;
+      allow read: if isAuth() && (
+        resource.data.uid == request.auth.uid ||
+        resource.data.get('tipo', 'Personagem Jogável') != 'Personagem Jogável'
+      );
       allow create: if isAuth() && request.resource.data.uid == request.auth.uid;
       allow update: if isAuth() && resource.data.uid == request.auth.uid
                     && request.resource.data.uid == request.auth.uid;
@@ -260,9 +267,8 @@ service cloud.firestore {
     // Todo documento das coleções abaixo denormaliza `universoId` e
     // `mestreId` (evita `get()` extra por regra), então a checagem é sempre a
     // mesma — só muda o nome da coleção.
-    match /rmCampanhas/{docId} {
-      allow read: if isAdmin() ||
-        (canWriteUniverso(resource.data.universoId) && isCampanhaOwner(resource.data.mestreId));
+    match /rmCampanhas/{campanhaId} {
+      allow read: if isAuth();
       allow create: if canWriteUniverso(request.resource.data.universoId)
                     && isCampanhaOwner(request.resource.data.mestreId);
       allow update: if isAdmin() ||
@@ -271,6 +277,24 @@ service cloud.firestore {
          && isCampanhaOwner(request.resource.data.mestreId));
       allow delete: if isAdmin() ||
         (canWriteUniverso(resource.data.universoId) && isCampanhaOwner(resource.data.mestreId));
+
+      // Clones de NPC específicos desta campanha (feitos a partir de um
+      // personagem tipo NPC do Universo). Subcoleção — não coleção `rm`
+      // top-level — porque o clone só existe no escopo de uma Campanha; os
+      // docs denormalizam universoId/mestreId como as demais, então a
+      // checagem é idêntica à do documento pai.
+      match /npcs/{npcId} {
+        allow read: if isAdmin() ||
+          (canWriteUniverso(resource.data.universoId) && isCampanhaOwner(resource.data.mestreId));
+        allow create: if canWriteUniverso(request.resource.data.universoId)
+                      && isCampanhaOwner(request.resource.data.mestreId);
+        allow update: if isAdmin() ||
+          (canWriteUniverso(resource.data.universoId) && isCampanhaOwner(resource.data.mestreId)
+           && canWriteUniverso(request.resource.data.universoId)
+           && isCampanhaOwner(request.resource.data.mestreId));
+        allow delete: if isAdmin() ||
+          (canWriteUniverso(resource.data.universoId) && isCampanhaOwner(resource.data.mestreId));
+      }
     }
 
     match /rmCenas/{docId} {
@@ -287,19 +311,6 @@ service cloud.firestore {
     }
 
     match /rmCenaConexoes/{docId} {
-      allow read: if isAdmin() ||
-        (canWriteUniverso(resource.data.universoId) && isCampanhaOwner(resource.data.mestreId));
-      allow create: if canWriteUniverso(request.resource.data.universoId)
-                    && isCampanhaOwner(request.resource.data.mestreId);
-      allow update: if isAdmin() ||
-        (canWriteUniverso(resource.data.universoId) && isCampanhaOwner(resource.data.mestreId)
-         && canWriteUniverso(request.resource.data.universoId)
-         && isCampanhaOwner(request.resource.data.mestreId));
-      allow delete: if isAdmin() ||
-        (canWriteUniverso(resource.data.universoId) && isCampanhaOwner(resource.data.mestreId));
-    }
-
-    match /rmNpcs/{docId} {
       allow read: if isAdmin() ||
         (canWriteUniverso(resource.data.universoId) && isCampanhaOwner(resource.data.mestreId));
       allow create: if canWriteUniverso(request.resource.data.universoId)
