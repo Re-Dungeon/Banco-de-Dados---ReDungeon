@@ -21,7 +21,19 @@ import { ordenarPorNome, ORDEM_ASC } from 'common/utils/ordenacao';
 import EntityFilters from 'components/EntityFilters/EntityFilters';
 import EntityViewDialog from 'components/EntityViewDialog/EntityViewDialog';
 import { TIPOS_ITEM } from './utils';
-import { ItemCard } from './styles';
+import {
+  RacaCard,
+  RacaImageFrame,
+  RacaImageOverlay,
+  RacaActionBar,
+  RacaContent,
+  RacaTitle,
+  RacaSubtitle,
+  RacaDescription,
+  RacaFooter,
+  RacaMeta,
+  RacaBadge,
+} from '../Racas/styles';
 
 const Itens = () => {
   const navigate = useNavigate();
@@ -37,275 +49,46 @@ const Itens = () => {
   const [filtroQualidade, setFiltroQualidade] = useState('');
   const [filtroTipo, setFiltroTipo] = useState('');
   const [filtroUniverso, setFiltroUniverso] = useState('');
-  const [ordenacao, setOrdenacao] = useState(ORDEM_ASC);
-  const [itemVisualizando, setItemVisualizando] = useState(null);
-
-  const itensFiltrados = useMemo(() => {
-    const filtrados = itens.filter(item => {
-      const matchNome =
-        !filtroNome ||
-        item.nome?.toLowerCase().includes(filtroNome.toLowerCase());
-      const matchQualidade =
-        !filtroQualidade || item.qualidade === filtroQualidade;
-      const matchTipo = !filtroTipo || item.tipo === filtroTipo;
-      const matchUniverso = !filtroUniverso || item.universo === filtroUniverso;
-      return matchNome && matchQualidade && matchTipo && matchUniverso;
-    });
-    return ordenarPorNome(filtrados, ordenacao);
-  }, [
-    itens,
-    filtroNome,
-    filtroQualidade,
-    filtroTipo,
-    filtroUniverso,
-    ordenacao,
-  ]);
-
-  return (
-    <Box className="page-container" id="redungeon-itens" data-page="itens">
-      <Box
-        sx={{
-          display: 'flex',
-          alignItems: 'flex-start',
-          justifyContent: 'space-between',
-          mb: 3,
-        }}
-      >
-        <Box>
-          <Typography
-            variant="h5"
-            sx={{ color: 'var(--text-primary)', fontWeight: 700, mb: 0.5 }}
-          >
-            Itens
-          </Typography>
-          <Typography variant="body2" sx={{ color: 'var(--text-secondary)' }}>
-            Gerencie os itens disponíveis na campanha.
-          </Typography>
-        </Box>
-        {canCreate() && (
-          <Button
-            variant="contained"
-            onClick={() => navigate(ROUTE_PATHS.NOVO_ITEM)}
-            sx={{
-              background: 'var(--color-primary)',
-              '&:hover': { background: '#5a2090' },
-            }}
-          >
-            + Novo Item
-          </Button>
-        )}
-      </Box>
-
-      {loading ? (
-        <Box sx={{ display: 'flex', justifyContent: 'center', py: 8 }}>
-          <CircularProgress sx={{ color: 'var(--color-accent)' }} />
-        </Box>
-      ) : (
-        <>
-          <EntityFilters
-            nomeValue={filtroNome}
-            onNomeChange={setFiltroNome}
-            extraFilters={[
-              {
-                label: 'Qualidade',
-                value: filtroQualidade,
-                onChange: setFiltroQualidade,
-                options: RARIDADES,
-                allLabel: 'Todas',
-              },
-              {
-                label: 'Tipo',
-                value: filtroTipo,
-                onChange: setFiltroTipo,
-                options: TIPOS_ITEM,
-                allLabel: 'Todos',
-              },
-            ]}
-            universos={universos}
-            universoValue={filtroUniverso}
-            onUniversoChange={setFiltroUniverso}
-            sortValue={ordenacao}
-            onSortChange={setOrdenacao}
-          />
-
-          {itensFiltrados.length === 0 ? (
-            <Box
-              sx={{ textAlign: 'center', py: 8, color: 'var(--text-muted)' }}
-            >
-              <Typography variant="h2" sx={{ mb: 1 }}>
-                ⚔️
-              </Typography>
-              <Typography variant="body1">Nenhum item encontrado</Typography>
-            </Box>
-          ) : (
-            <Box
-              sx={{
-                display: 'grid',
-                gridTemplateColumns: {
-                  xs: '1fr',
-                  sm: 'repeat(auto-fill, minmax(320px, 1fr))',
-                  md: 'repeat(auto-fill, minmax(360px, 1fr))',
-                },
-                gap: 2,
-              }}
-            >
               {itensFiltrados.map(item => (
-                <ItemCard key={item.id} elevation={0}>
-                  <Box
-                    sx={{
-                      display: 'flex',
-                      justifyContent: 'flex-end',
-                      gap: 0.5,
-                      mb: 1,
-                    }}
-                  >
-                    <Tooltip title="Visualizar detalhes">
-                      <IconButton
-                        size="small"
-                        onClick={() => setItemVisualizando(item)}
-                        sx={{
-                          color: 'var(--text-secondary)',
-                          '&:hover': { color: 'var(--color-accent)' },
-                        }}
-                        aria-label={`Visualizar item ${item.nome}`}
-                      >
-                        <VisibilityOutlinedIcon fontSize="small" />
-                      </IconButton>
-                    </Tooltip>
-                    {canWrite(item.universo) && (
-                      <>
-                        <IconButton
-                          size="small"
-                          onClick={() =>
-                            navigate(ROUTE_PATHS.NOVO_ITEM, {
-                              state: { item },
-                            })
-                          }
-                          sx={{
-                            color: 'var(--color-accent)',
-                            '&:hover': {
-                              color: 'var(--color-accent)',
-                              opacity: 0.8,
-                            },
-                          }}
-                          aria-label={`Editar item ${item.nome}`}
-                        >
-                          <EditOutlinedIcon fontSize="small" />
-                        </IconButton>
-                        <IconButton
-                          size="small"
-                          onClick={() => handleRemove(item.id)}
-                          sx={{
-                            color: '#ef4444',
-                            '&:hover': { color: '#ef4444' },
-                          }}
-                          aria-label={`Remover item ${item.nome}`}
-                        >
-                          <DeleteOutlineIcon fontSize="small" />
-                        </IconButton>
-                      </>
+                <RacaCard key={item.id} elevation={0}>
+                  <RacaImageFrame>
+                    {item.linkImagem && (
+                      <Box component="img" className="raca-card-image" src={item.linkImagem} alt={item.nome} onError={e => { e.currentTarget.style.display = 'none'; }} />
                     )}
-                  </Box>
 
-                  {item.linkImagem && (
-                    <Box
-                      component="img"
-                      src={item.linkImagem}
-                      alt={item.nome}
-                      sx={{
-                        width: '100%',
-                        height: 180,
-                        borderRadius: 2,
-                        objectFit: 'cover',
-                        display: 'block',
-                        border: '1px solid var(--border-primary)',
-                        mb: 1.5,
-                      }}
-                      onError={e => {
-                        e.currentTarget.style.display = 'none';
-                      }}
-                    />
-                  )}
-                  <Box
-                    sx={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: 1,
-                      flexWrap: 'wrap',
-                    }}
-                  >
-                    <Typography
-                      variant="h6"
-                      sx={{
-                        color: 'var(--text-primary)',
-                        fontWeight: 600,
-                        lineHeight: 1.2,
-                      }}
-                    >
-                      {item.nome}
-                    </Typography>
-                    {item.mostrarNaLoja && (
-                      <Chip
-                        label="Na Loja"
-                        size="small"
-                        sx={{
-                          background: 'var(--color-accent)',
-                          color: 'var(--bg-primary)',
-                          fontWeight: 600,
-                        }}
-                      />
-                    )}
-                  </Box>
-                  {(item.qualidade || item.tipo) && (
-                    <Typography
-                      variant="caption"
-                      sx={{
-                        color: 'var(--color-accent)',
-                        fontWeight: 600,
-                        display: 'block',
-                        mb: 0.5,
-                      }}
-                    >
-                      {[
-                        universos.find(u => u.id === item.universo)?.Nome,
-                        item.tipo,
-                        item.qualidade,
-                      ]
-                        .filter(Boolean)
-                        .join(' — ')}
-                    </Typography>
-                  )}
-                  {(item.nivelAtual !== '' || item.nivelMaximo !== '') && (
-                    <Typography
-                      variant="caption"
-                      sx={{
-                        color: 'var(--text-muted)',
-                        display: 'block',
-                        mb: 0.5,
-                      }}
-                    >
-                      Nível{' '}
-                      {[item.nivelAtual, item.nivelMaximo]
-                        .filter(v => v !== '' && v !== null && v !== undefined)
-                        .join(' / ')}
-                    </Typography>
-                  )}
-                  {item.descricao && (
-                    <Typography
-                      variant="body2"
-                      sx={{
-                        color: 'var(--text-secondary)',
-                        mt: 0.5,
-                        display: '-webkit-box',
-                        WebkitLineClamp: 3,
-                        WebkitBoxOrient: 'vertical',
-                        overflow: 'hidden',
-                      }}
-                    >
-                      {item.descricao}
-                    </Typography>
-                  )}
-                </ItemCard>
+                    <RacaImageOverlay />
+
+                    <RacaActionBar>
+                      <Tooltip title="Visualizar detalhes">
+                        <IconButton size="small" onClick={() => setItemVisualizando(item)} sx={{ color: 'var(--text-secondary)', padding: '14px', minWidth: '16px', width: '16px', height: '16px', '&:hover': { color: 'var(--color-accent)' } }} aria-label={`Visualizar item ${item.nome}`}>
+                          <VisibilityOutlinedIcon fontSize="small" />
+                        </IconButton>
+                      </Tooltip>
+
+                      {canWrite(item.universo) && (
+                        <>
+                          <IconButton size="small" onClick={() => navigate(ROUTE_PATHS.NOVO_ITEM, { state: { item } })} sx={{ color: 'var(--color-accent)', padding: '4px', minWidth: '32px', width: '32px', height: '32px', '&:hover': { color: 'var(--color-accent)', opacity: 0.8 } }} aria-label={`Editar item ${item.nome}`}>
+                            <EditOutlinedIcon fontSize="small" />
+                          </IconButton>
+                          <IconButton size="small" onClick={() => handleRemove(item.id)} sx={{ color: '#ef4444', padding: '4px', minWidth: '32px', width: '32px', height: '32px', '&:hover': { color: '#ef4444' } }} aria-label={`Remover item ${item.nome}`}>
+                            <DeleteOutlineIcon fontSize="small" />
+                          </IconButton>
+                        </>
+                      )}
+                    </RacaActionBar>
+                  </RacaImageFrame>
+
+                  <RacaContent>
+                    <RacaTitle variant="h6">{item.nome}</RacaTitle>
+                    {item.categoria && <RacaSubtitle variant="caption">{item.categoria}</RacaSubtitle>}
+                    {item.preco && <RacaMeta>{`💰 ${item.preco}`}</RacaMeta>}
+                    {item.descricao && <RacaDescription variant="body2">{item.descricao}</RacaDescription>}
+
+                    <RacaFooter>
+                      <RacaBadge>{universos.find(u => u.id === item.universo)?.Nome || 'Universo Desconhecido'}</RacaBadge>
+                    </RacaFooter>
+                  </RacaContent>
+                </RacaCard>
               ))}
             </Box>
           )}

@@ -50,6 +50,20 @@ describe('NovaRaca (migrado para useEntityFormGuard/FormPageHeader/ImagePreviewP
     ).toBeInTheDocument();
   });
 
+  it('exibe o cabeçalho premium e o card de preview da seção de informações', async () => {
+    renderNova(undefined);
+
+    await waitFor(() =>
+      expect(screen.getByText('Nova Raça')).toBeInTheDocument(),
+    );
+
+    expect(screen.getByText(/Informações da Raça/i)).toBeInTheDocument();
+    expect(
+      screen.getByText(/Dados básicos utilizados pelo sistema/i),
+    ).toBeInTheDocument();
+    expect(screen.getByText('PREVIEW')).toBeInTheDocument();
+  });
+
   it('cria um registro novo via addRaca ao preencher o nome e salvar', async () => {
     addRaca.mockResolvedValue(undefined);
     const user = userEvent.setup();

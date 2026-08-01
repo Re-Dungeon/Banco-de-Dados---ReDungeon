@@ -19,7 +19,19 @@ import useUniversos from 'hooks/useUniversos';
 import { ordenarPorNome, ORDEM_ASC } from 'common/utils/ordenacao';
 import EntityFilters from 'components/EntityFilters/EntityFilters';
 import EntityViewDialog from 'components/EntityViewDialog/EntityViewDialog';
-import { ClasseCard } from './styles';
+import {
+  RacaCard,
+  RacaImageFrame,
+  RacaImageOverlay,
+  RacaActionBar,
+  RacaContent,
+  RacaTitle,
+  RacaSubtitle,
+  RacaDescription,
+  RacaFooter,
+  RacaMeta,
+  RacaBadge,
+} from '../Racas/styles';
 
 const ATRIBUTO_LABELS = {
   forca: 'Força',
@@ -167,133 +179,92 @@ const Classes = () => {
               }}
             >
               {classesFiltradas.map(classe => (
-                <ClasseCard key={classe.id} elevation={0}>
-                  <Box
-                    sx={{
-                      display: 'flex',
-                      justifyContent: 'flex-end',
-                      gap: 0.5,
-                      mb: 1,
-                    }}
-                  >
-                    <Tooltip title="Visualizar detalhes">
-                      <IconButton
-                        size="small"
-                        onClick={() => setClasseVisualizando(classe)}
-                        sx={{
-                          color: 'var(--text-secondary)',
-                          '&:hover': { color: 'var(--color-accent)' },
+                <RacaCard key={classe.id} elevation={0}>
+                  <RacaImageFrame>
+                    {classe.linkImagem && !/discordapp\.net\/attachments/.test(classe.linkImagem) && (
+                      <Box
+                        component="img"
+                        className="raca-card-image"
+                        src={classe.linkImagem}
+                        alt={classe.nome}
+                        onError={e => {
+                          e.currentTarget.style.display = 'none';
                         }}
-                        aria-label={`Visualizar classe ${classe.nome}`}
-                      >
-                        <VisibilityOutlinedIcon fontSize="small" />
-                      </IconButton>
-                    </Tooltip>
-                    {canWrite(classe.universo) && (
-                      <>
-                        <IconButton
-                          size="small"
-                          onClick={() =>
-                            navigate(ROUTE_PATHS.NOVA_CLASSE, {
-                              state: { classe },
-                            })
-                          }
-                          sx={{
-                            color: 'var(--color-accent)',
-                            '&:hover': {
-                              color: 'var(--color-accent)',
-                              opacity: 0.8,
-                            },
-                          }}
-                          aria-label={`Editar classe ${classe.nome}`}
-                        >
-                          <EditOutlinedIcon fontSize="small" />
-                        </IconButton>
-                        <IconButton
-                          size="small"
-                          onClick={() => handleRemove(classe.id)}
-                          sx={{
-                            color: '#ef4444',
-                            '&:hover': { color: '#ef4444' },
-                          }}
-                          aria-label={`Remover classe ${classe.nome}`}
-                        >
-                          <DeleteOutlineIcon fontSize="small" />
-                        </IconButton>
-                      </>
+                      />
                     )}
-                  </Box>
-                  {classe.linkImagem && (
-                    <Box
-                      component="img"
-                      src={classe.linkImagem}
-                      alt={classe.nome}
-                      sx={{
-                        width: '100%',
-                        height: 180,
-                        borderRadius: 2,
-                        objectFit: 'cover',
-                        display: 'block',
-                        border: '1px solid var(--border-primary)',
-                        mb: 1.5,
-                      }}
-                      onError={e => {
-                        e.currentTarget.style.display = 'none';
-                      }}
-                    />
-                  )}
-                  <Typography
-                    variant="h6"
-                    sx={{
-                      color: 'var(--text-primary)',
-                      fontWeight: 600,
-                      lineHeight: 1.2,
-                    }}
-                  >
-                    {classe.nome}
-                  </Typography>
-                  {classe.raridade && (
-                    <Typography
-                      variant="caption"
-                      sx={{
-                        color: 'var(--color-accent)',
-                        fontWeight: 600,
-                        display: 'block',
-                        mb: 1,
-                      }}
-                    >
-                      {`${universos.find(u => u.id === classe.universo)?.Nome || 'Universo Desconhecido'} - ${classe.raridade}`}
-                    </Typography>
-                  )}
-                  {classe.descricao && (
-                    <Typography
-                      variant="body2"
-                      sx={{
-                        color: 'var(--text-secondary)',
-                        mt: 0.5,
-                        display: '-webkit-box',
-                        WebkitLineClamp: 3,
-                        WebkitBoxOrient: 'vertical',
-                        overflow: 'hidden',
-                      }}
-                    >
-                      {classe.descricao}
-                    </Typography>
-                  )}
-                  {classe.habilidades?.length > 0 && (
-                    <Typography
-                      variant="caption"
-                      sx={{
-                        color: 'var(--text-muted)',
-                        mt: 1,
-                        display: 'block',
-                      }}
-                    >
-                      {classe.habilidades.length} habilidade
-                      {classe.habilidades.length !== 1 ? 's' : ''}
-                    </Typography>
-                  )}
-                </ClasseCard>
+
+                    <RacaImageOverlay />
+
+                    <RacaActionBar>
+                      <Tooltip title="Visualizar detalhes">
+                        <IconButton
+                          size="small"
+                          onClick={() => setClasseVisualizando(classe)}
+                          sx={{
+                            color: 'var(--text-secondary)',
+                            padding: '14px',
+                            minWidth: '16px',
+                            width: '16px',
+                            height: '16px',
+                            '&:hover': { color: 'var(--color-accent)' },
+                          }}
+                          aria-label={`Visualizar classe ${classe.nome}`}
+                        >
+                          <VisibilityOutlinedIcon fontSize="small" />
+                        </IconButton>
+                      </Tooltip>
+
+                      {canWrite(classe.universo) && (
+                        <>
+                          <IconButton
+                            size="small"
+                            onClick={() =>
+                              navigate(ROUTE_PATHS.NOVA_CLASSE, { state: { classe } })
+                            }
+                            sx={{
+                              color: 'var(--color-accent)',
+                              padding: '4px',
+                              minWidth: '32px',
+                              width: '32px',
+                              height: '32px',
+                              '&:hover': { color: 'var(--color-accent)', opacity: 0.8 },
+                            }}
+                            aria-label={`Editar classe ${classe.nome}`}
+                          >
+                            <EditOutlinedIcon fontSize="small" />
+                          </IconButton>
+                          <IconButton
+                            size="small"
+                            onClick={() => handleRemove(classe.id)}
+                            sx={{ color: '#ef4444', padding: '4px', minWidth: '32px', width: '32px', height: '32px', '&:hover': { color: '#ef4444' } }}
+                            aria-label={`Remover classe ${classe.nome}`}
+                          >
+                            <DeleteOutlineIcon fontSize="small" />
+                          </IconButton>
+                        </>
+                      )}
+                    </RacaActionBar>
+                  </RacaImageFrame>
+
+                  <RacaContent>
+                    <RacaTitle variant="h6">{classe.nome}</RacaTitle>
+                    {classe.raridade && (
+                      <RacaSubtitle variant="caption">
+                        {`${universos.find(u => u.id === classe.universo)?.Nome || 'Universo Desconhecido'} - ${classe.raridade}`}
+                      </RacaSubtitle>
+                    )}
+
+                    {classe.descricao && <RacaDescription variant="body2">{classe.descricao}</RacaDescription>}
+
+                    <RacaFooter>
+                      <RacaMeta>
+                        <RacaBadge>📖 {universos.find(u => u.id === classe.universo)?.Nome || 'Universo Desconhecido'}</RacaBadge>
+                        {classe.raridade && <RacaBadge>⭐ {classe.raridade}</RacaBadge>}
+                        {classe.tiposDisponiveis?.length > 0 && <RacaBadge>🧬 {classe.tiposDisponiveis[0]}</RacaBadge>}
+                      </RacaMeta>
+                    </RacaFooter>
+                  </RacaContent>
+                </RacaCard>
               ))}
             </Box>
           )}

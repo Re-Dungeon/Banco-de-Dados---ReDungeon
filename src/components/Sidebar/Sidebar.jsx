@@ -96,11 +96,11 @@ const Sidebar = ({ open, onClose }) => {
                           {item.icon}
                         </ListItemIcon>
                         <ListItemText
-                          primary={item.label}
-                          primaryTypographyProps={{
-                            fontSize: 14,
-                            fontWeight: 500,
-                          }}
+                          primary={
+                            <Typography sx={{ fontSize: 14, fontWeight: 500 }}>
+                              {item.label}
+                            </Typography>
+                          }
                         />
                       </NavItemButton>
                     </StyledNavLink>
@@ -121,11 +121,11 @@ const Sidebar = ({ open, onClose }) => {
                           {item.icon}
                         </ListItemIcon>
                         <ListItemText
-                          primary={item.label}
-                          primaryTypographyProps={{
-                            fontSize: 14,
-                            fontWeight: 500,
-                          }}
+                          primary={
+                            <Typography sx={{ fontSize: 14, fontWeight: 500 }}>
+                              {item.label}
+                            </Typography>
+                          }
                         />
                       </NavItemButton>
                     </StyledNavLink>

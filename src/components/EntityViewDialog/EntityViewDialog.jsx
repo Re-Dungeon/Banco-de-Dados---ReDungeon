@@ -28,33 +28,60 @@ const EntityViewDialog = ({
   <Dialog
     open={open}
     onClose={onClose}
-    maxWidth="sm"
+    /* Aumenta largura máxima do modal para visualização mais ampla */
+    maxWidth="lg"
     fullWidth
-    PaperProps={{
-      sx: {
-        background: 'var(--bg-card)',
-        border: '1px solid var(--border-primary)',
-        borderRadius: 2,
+    slotProps={{
+      paper: {
+        sx: {
+          background: 'rgba(5, 8, 20, 0.95)',
+          border: '1px solid rgba(96, 165, 250, 0.18)',
+          borderRadius: 3,
+          boxShadow: '0 34px 68px rgba(0, 0, 0, 0.38)',
+          overflow: 'hidden',
+          maxWidth: '1100px',
+          width: '100%',
+        },
       },
     }}
   >
-    <DialogTitle sx={{ color: 'var(--text-primary)', fontWeight: 700, pb: 1 }}>
-      {titulo}
-      {subtitulo && (
-        <Typography
-          variant="caption"
-          sx={{
-            display: 'block',
-            color: 'var(--color-accent)',
-            fontWeight: 600,
-            mt: 0.5,
-          }}
-        >
-          {subtitulo}
-        </Typography>
-      )}
-    </DialogTitle>
-    <DialogContent dividers sx={{ borderColor: 'var(--border-primary)' }}>
+    {(titulo || subtitulo) && (
+      <DialogTitle
+        sx={{
+          color: 'var(--text-primary)',
+          fontWeight: 700,
+          pb: 1,
+          pt: 2,
+          px: 3,
+          lineHeight: 1.1,
+        }}
+      >
+        {titulo}
+        {subtitulo && (
+          <Typography
+            variant="caption"
+            sx={{
+              display: 'block',
+              color: 'var(--color-accent)',
+              fontWeight: 600,
+              mt: 0.75,
+            }}
+          >
+            {subtitulo}
+          </Typography>
+        )}
+      </DialogTitle>
+    )}
+    <DialogContent
+      dividers
+      sx={{
+        borderColor: 'rgba(96, 165, 250, 0.12)',
+        px: 3,
+        pt: 2,
+        pb: 0,
+        background: 'rgba(4, 10, 24, 0.99)',
+      }}
+    >
       {imagem && (
         <Box
           component="img"
@@ -100,12 +127,28 @@ const EntityViewDialog = ({
       )}
       {children}
     </DialogContent>
-    <DialogActions sx={{ px: 3, py: 2 }}>
+    <DialogActions
+      sx={{
+        px: 3,
+        py: 2,
+        borderTop: '1px solid rgba(96, 165, 250, 0.12)',
+        justifyContent: 'flex-end',
+        gap: 1,
+      }}
+    >
       <Button
         onClick={onClose}
         sx={{
-          color: 'var(--text-secondary)',
-          '&:hover': { color: 'var(--text-primary)' },
+          color: 'var(--text-primary)',
+          border: '1px solid rgba(96, 165, 250, 0.18)',
+          boxShadow: '0 8px 18px rgba(0, 0, 0, 0.18)',
+          textTransform: 'none',
+          px: 3,
+          py: 1,
+          '&:hover': {
+            background: 'rgba(96, 165, 250, 0.08)',
+            color: 'var(--text-primary)',
+          },
         }}
       >
         Fechar
