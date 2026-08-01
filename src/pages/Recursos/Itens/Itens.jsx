@@ -7,7 +7,6 @@ import IconButton from '@mui/material/IconButton';
 import CircularProgress from '@mui/material/CircularProgress';
 import Divider from '@mui/material/Divider';
 import Tooltip from '@mui/material/Tooltip';
-import Chip from '@mui/material/Chip';
 import DeleteOutlineIcon from '@mui/icons-material/DeleteOutlined';
 import EditOutlinedIcon from '@mui/icons-material/EditOutlined';
 import VisibilityOutlinedIcon from '@mui/icons-material/VisibilityOutlined';
@@ -49,47 +48,226 @@ const Itens = () => {
   const [filtroQualidade, setFiltroQualidade] = useState('');
   const [filtroTipo, setFiltroTipo] = useState('');
   const [filtroUniverso, setFiltroUniverso] = useState('');
-              {itensFiltrados.map(item => (
-                <RacaCard key={item.id} elevation={0}>
-                  <RacaImageFrame>
-                    {item.linkImagem && (
-                      <Box component="img" className="raca-card-image" src={item.linkImagem} alt={item.nome} onError={e => { e.currentTarget.style.display = 'none'; }} />
-                    )}
+  const [ordenacao, setOrdenacao] = useState(ORDEM_ASC);
+  const [itemVisualizando, setItemVisualizando] = useState(null);
 
-                    <RacaImageOverlay />
+  const itensFiltrados = useMemo(() => {
+    const filtrados = itens.filter(item => {
+      const matchNome =
+        !filtroNome ||
+        item.nome?.toLowerCase().includes(filtroNome.toLowerCase());
+      const matchQualidade =
+        !filtroQualidade || item.qualidade === filtroQualidade;
+      const matchTipo = !filtroTipo || item.tipo === filtroTipo;
+      const matchUniverso = !filtroUniverso || item.universo === filtroUniverso;
+      return matchNome && matchQualidade && matchTipo && matchUniverso;
+    });
+    return ordenarPorNome(filtrados, ordenacao);
+  }, [
+    itens,
+    filtroNome,
+    filtroQualidade,
+    filtroTipo,
+    filtroUniverso,
+    ordenacao,
+  ]);
 
-                    <RacaActionBar>
-                      <Tooltip title="Visualizar detalhes">
-                        <IconButton size="small" onClick={() => setItemVisualizando(item)} sx={{ color: 'var(--text-secondary)', padding: '14px', minWidth: '16px', width: '16px', height: '16px', '&:hover': { color: 'var(--color-accent)' } }} aria-label={`Visualizar item ${item.nome}`}>
-                          <VisibilityOutlinedIcon fontSize="small" />
-                        </IconButton>
-                      </Tooltip>
+  return (
+    <Box className="page-container" id="redungeon-itens" data-page="itens">
+      <Box
+        sx={{
+          display: 'flex',
+          alignItems: 'flex-start',
+          justifyContent: 'space-between',
+          mb: 3,
+        }}
+      >
+        <Box>
+          <Typography
+            variant="h5"
+            sx={{ color: 'var(--text-primary)', fontWeight: 700, mb: 0.5 }}
+          >
+            Itens
+          </Typography>
+          <Typography variant="body2" sx={{ color: 'var(--text-secondary)' }}>
+            Gerencie os itens disponíveis na campanha.
+          </Typography>
+        </Box>
+        {canCreate() && (
+          <Button
+            variant="contained"
+            onClick={() => navigate(ROUTE_PATHS.NOVO_ITEM)}
+            sx={{
+              background: 'var(--color-primary)',
+              '&:hover': { background: '#5a2090' },
+            }}
+          >
+            + Novo Item
+          </Button>
+        )}
+      </Box>
 
-                      {canWrite(item.universo) && (
-                        <>
-                          <IconButton size="small" onClick={() => navigate(ROUTE_PATHS.NOVO_ITEM, { state: { item } })} sx={{ color: 'var(--color-accent)', padding: '4px', minWidth: '32px', width: '32px', height: '32px', '&:hover': { color: 'var(--color-accent)', opacity: 0.8 } }} aria-label={`Editar item ${item.nome}`}>
-                            <EditOutlinedIcon fontSize="small" />
-                          </IconButton>
-                          <IconButton size="small" onClick={() => handleRemove(item.id)} sx={{ color: '#ef4444', padding: '4px', minWidth: '32px', width: '32px', height: '32px', '&:hover': { color: '#ef4444' } }} aria-label={`Remover item ${item.nome}`}>
-                            <DeleteOutlineIcon fontSize="small" />
-                          </IconButton>
-                        </>
+      {loading ? (
+        <Box sx={{ display: 'flex', justifyContent: 'center', py: 8 }}>
+          <CircularProgress sx={{ color: 'var(--color-accent)' }} />
+        </Box>
+      ) : (
+        <>
+          <EntityFilters
+            nomeValue={filtroNome}
+            onNomeChange={setFiltroNome}
+            extraFilters={[
+              {
+                label: 'Qualidade',
+                value: filtroQualidade,
+                onChange: setFiltroQualidade,
+                options: RARIDADES,
+                allLabel: 'Todas',
+              },
+              {
+                label: 'Tipo',
+                value: filtroTipo,
+                onChange: setFiltroTipo,
+                options: TIPOS_ITEM,
+                allLabel: 'Todos',
+              },
+            ]}
+            universos={universos}
+            universoValue={filtroUniverso}
+            onUniversoChange={setFiltroUniverso}
+            sortValue={ordenacao}
+            onSortChange={setOrdenacao}
+          />
+
+          {itensFiltrados.length === 0 ? (
+            <Box
+              sx={{ textAlign: 'center', py: 8, color: 'var(--text-muted)' }}
+            >
+              <Typography variant="h2" sx={{ mb: 1 }}>
+                ⚔️
+              </Typography>
+              <Typography variant="body1">Nenhum item encontrado</Typography>
+            </Box>
+          ) : (
+            <Box
+              sx={{
+                display: 'grid',
+                gridTemplateColumns: {
+                  xs: '1fr',
+                  sm: 'repeat(auto-fill, minmax(320px, 1fr))',
+                  md: 'repeat(auto-fill, minmax(360px, 1fr))',
+                },
+                gap: 2,
+              }}
+            >
+              {itensFiltrados.map(item => {
+                const universoNome =
+                  universos.find(u => u.id === item.universo)?.Nome ||
+                  'Universo Desconhecido';
+
+                return (
+                  <RacaCard key={item.id} elevation={0}>
+                    <RacaImageFrame>
+                      {item.linkImagem && (
+                        <Box
+                          component="img"
+                          className="raca-card-image"
+                          src={item.linkImagem}
+                          alt={item.nome}
+                          onError={e => {
+                            e.currentTarget.style.display = 'none';
+                          }}
+                        />
                       )}
-                    </RacaActionBar>
-                  </RacaImageFrame>
+                      <RacaImageOverlay />
+                      <RacaActionBar>
+                        <Tooltip title="Visualizar detalhes">
+                          <IconButton
+                            size="small"
+                            onClick={() => setItemVisualizando(item)}
+                            sx={{
+                              color: 'var(--text-secondary)',
+                              padding: '14px',
+                              minWidth: '16px',
+                              width: '16px',
+                              height: '16px',
+                              '&:hover': { color: 'var(--color-accent)' },
+                            }}
+                            aria-label={`Visualizar item ${item.nome}`}
+                          >
+                            <VisibilityOutlinedIcon fontSize="small" />
+                          </IconButton>
+                        </Tooltip>
+                        {canWrite(item.universo) && (
+                          <>
+                            <IconButton
+                              size="small"
+                              onClick={() =>
+                                navigate(ROUTE_PATHS.NOVO_ITEM, {
+                                  state: { item },
+                                })
+                              }
+                              sx={{
+                                color: 'var(--color-accent)',
+                                padding: '4px',
+                                minWidth: '32px',
+                                width: '32px',
+                                height: '32px',
+                                '&:hover': {
+                                  color: 'var(--color-accent)',
+                                  opacity: 0.8,
+                                },
+                              }}
+                              aria-label={`Editar item ${item.nome}`}
+                            >
+                              <EditOutlinedIcon fontSize="small" />
+                            </IconButton>
+                            <IconButton
+                              size="small"
+                              onClick={() => handleRemove(item.id)}
+                              sx={{
+                                color: '#ef4444',
+                                padding: '4px',
+                                minWidth: '32px',
+                                width: '32px',
+                                height: '32px',
+                                '&:hover': { color: '#ef4444' },
+                              }}
+                              aria-label={`Remover item ${item.nome}`}
+                            >
+                              <DeleteOutlineIcon fontSize="small" />
+                            </IconButton>
+                          </>
+                        )}
+                      </RacaActionBar>
+                    </RacaImageFrame>
 
-                  <RacaContent>
-                    <RacaTitle variant="h6">{item.nome}</RacaTitle>
-                    {item.categoria && <RacaSubtitle variant="caption">{item.categoria}</RacaSubtitle>}
-                    {item.preco && <RacaMeta>{`💰 ${item.preco}`}</RacaMeta>}
-                    {item.descricao && <RacaDescription variant="body2">{item.descricao}</RacaDescription>}
-
-                    <RacaFooter>
-                      <RacaBadge>{universos.find(u => u.id === item.universo)?.Nome || 'Universo Desconhecido'}</RacaBadge>
-                    </RacaFooter>
-                  </RacaContent>
-                </RacaCard>
-              ))}
+                    <RacaContent>
+                      <RacaTitle variant="h6">{item.nome}</RacaTitle>
+                      <RacaSubtitle variant="caption">
+                        {universoNome}
+                      </RacaSubtitle>
+                      {item.descricao && (
+                        <RacaDescription variant="body2">
+                          {item.descricao}
+                        </RacaDescription>
+                      )}
+                      <RacaFooter>
+                        <RacaMeta>
+                          <RacaBadge>📖 {universoNome}</RacaBadge>
+                          {item.tipo && <RacaBadge>🗡️ {item.tipo}</RacaBadge>}
+                          {item.qualidade && (
+                            <RacaBadge>⭐ {item.qualidade}</RacaBadge>
+                          )}
+                          {item.mostrarNaLoja && (
+                            <RacaBadge>🛒 Na Loja</RacaBadge>
+                          )}
+                        </RacaMeta>
+                      </RacaFooter>
+                    </RacaContent>
+                  </RacaCard>
+                );
+              })}
             </Box>
           )}
         </>
