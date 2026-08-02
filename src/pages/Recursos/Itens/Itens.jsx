@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+﻿import React, { useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
@@ -90,7 +90,7 @@ const Itens = () => {
             Itens
           </Typography>
           <Typography variant="body2" sx={{ color: 'var(--text-secondary)' }}>
-            Gerencie os itens disponíveis na campanha.
+            Gerencie os itens dispon├¡veis na campanha.
           </Typography>
         </Box>
         {canCreate() && (
@@ -144,7 +144,7 @@ const Itens = () => {
               sx={{ textAlign: 'center', py: 8, color: 'var(--text-muted)' }}
             >
               <Typography variant="h2" sx={{ mb: 1 }}>
-                ⚔️
+                ÔÜö´©Å
               </Typography>
               <Typography variant="body1">Nenhum item encontrado</Typography>
             </Box>
@@ -254,13 +254,15 @@ const Itens = () => {
                       )}
                       <RacaFooter>
                         <RacaMeta>
-                          <RacaBadge>📖 {universoNome}</RacaBadge>
-                          {item.tipo && <RacaBadge>🗡️ {item.tipo}</RacaBadge>}
+                          <RacaBadge>­ƒôû {universoNome}</RacaBadge>
+                          {item.tipo && (
+                            <RacaBadge>­ƒùí´©Å {item.tipo}</RacaBadge>
+                          )}
                           {item.qualidade && (
-                            <RacaBadge>⭐ {item.qualidade}</RacaBadge>
+                            <RacaBadge>Ô¡É {item.qualidade}</RacaBadge>
                           )}
                           {item.mostrarNaLoja && (
-                            <RacaBadge>🛒 Na Loja</RacaBadge>
+                            <RacaBadge>­ƒøÆ Na Loja</RacaBadge>
                           )}
                         </RacaMeta>
                       </RacaFooter>
@@ -285,18 +287,18 @@ const Itens = () => {
             itemVisualizando?.qualidade,
           ]
             .filter(Boolean)
-            .join(' — ')
+            .join(' ÔÇö ')
         }
         imagem={itemVisualizando?.linkImagem}
       >
         {/* Atributos */}
         {[
-          { label: 'Nível Atual', value: itemVisualizando?.nivelAtual },
-          { label: 'Nível Máximo', value: itemVisualizando?.nivelMaximo },
-          { label: 'Peso Unitário', value: itemVisualizando?.pesoUnitario },
-          { label: 'Bônus de Espaço', value: itemVisualizando?.bonusEspaco },
-          { label: 'Preço de Compra', value: itemVisualizando?.precoCompra },
-          { label: 'Preço de Venda', value: itemVisualizando?.precoVenda },
+          { label: 'N├¡vel Atual', value: itemVisualizando?.nivelAtual },
+          { label: 'N├¡vel M├íximo', value: itemVisualizando?.nivelMaximo },
+          { label: 'Peso Unit├írio', value: itemVisualizando?.pesoUnitario },
+          { label: 'B├┤nus de Espa├ºo', value: itemVisualizando?.bonusEspaco },
+          { label: 'Pre├ºo de Compra', value: itemVisualizando?.precoCompra },
+          { label: 'Pre├ºo de Venda', value: itemVisualizando?.precoVenda },
           { label: 'Dados', value: itemVisualizando?.dados },
           { label: 'Extra', value: itemVisualizando?.extra },
         ].some(
@@ -325,25 +327,25 @@ const Itens = () => {
               }}
             >
               {[
-                { label: 'Nível Atual', value: itemVisualizando?.nivelAtual },
+                { label: 'N├¡vel Atual', value: itemVisualizando?.nivelAtual },
                 {
-                  label: 'Nível Máximo',
+                  label: 'N├¡vel M├íximo',
                   value: itemVisualizando?.nivelMaximo,
                 },
                 {
-                  label: 'Peso Unitário',
+                  label: 'Peso Unit├írio',
                   value: itemVisualizando?.pesoUnitario,
                 },
                 {
-                  label: 'Bônus de Espaço',
+                  label: 'B├┤nus de Espa├ºo',
                   value: itemVisualizando?.bonusEspaco,
                 },
                 {
-                  label: 'Preço de Compra',
+                  label: 'Pre├ºo de Compra',
                   value: itemVisualizando?.precoCompra,
                 },
                 {
-                  label: 'Preço de Venda',
+                  label: 'Pre├ºo de Venda',
                   value: itemVisualizando?.precoVenda,
                 },
                 { label: 'Dados', value: itemVisualizando?.dados },
@@ -395,7 +397,7 @@ const Itens = () => {
                 fontSize: '0.72rem',
               }}
             >
-              Descrição
+              Descri├º├úo
             </Typography>
             <Typography
               variant="body2"

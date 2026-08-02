@@ -260,8 +260,9 @@ export const RacaModalBadge = styled(Box)`
 
 export const RacaModalImage = styled(Box)`
   width: 100%;
-  min-height: 170px;
-  max-height: 190px;
+  height: 260px;
+  min-height: 260px;
+  max-height: 260px;
   border-radius: 22px;
   overflow: hidden;
   border: 1px solid rgba(96, 165, 250, 0.16);

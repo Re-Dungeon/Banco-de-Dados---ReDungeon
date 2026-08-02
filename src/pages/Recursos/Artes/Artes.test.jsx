@@ -31,7 +31,7 @@ const renderArtes = () =>
     </MemoryRouter>,
   );
 
-describe('Artes (padrão useEntityCRUD + useUniversos + EntityFilters + EntityViewDialog)', () => {
+describe('Artes (padrão useEntityCRUD + useUniversos + EntityFilters)', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     canCreate.mockReturnValue(true);
@@ -73,6 +73,9 @@ describe('Artes (padrão useEntityCRUD + useUniversos + EntityFilters + EntityVi
 
     await user.click(screen.getByLabelText('Remover arte Punho Flamejante'));
 
+    const dialog = await screen.findByRole('dialog');
+    await user.click(within(dialog).getByRole('button', { name: 'Excluir' }));
+
     await waitFor(() =>
       expect(screen.queryByText('Punho Flamejante')).not.toBeInTheDocument(),
     );
@@ -80,33 +83,22 @@ describe('Artes (padrão useEntityCRUD + useUniversos + EntityFilters + EntityVi
     expect(getArtes).toHaveBeenCalledTimes(1);
   });
 
-  it('abre o dialog de visualização com meta-campos e botão Editar', async () => {
-    getArtes.mockResolvedValue([
-      {
-        id: 'a1',
-        nome: 'Punho Flamejante',
-        descricao: 'Um soco em chamas.',
-        recarga: '1 turno',
-      },
-    ]);
+  it('não exibe o botão de visualização nem abre um modal ao clicar em ações de arte', async () => {
     const user = userEvent.setup();
     renderArtes();
 
     await waitFor(() =>
       expect(screen.getByText('Punho Flamejante')).toBeInTheDocument(),
     );
-    await user.click(screen.getByLabelText('Visualizar arte Punho Flamejante'));
 
-    const dialog = await screen.findByRole('dialog');
-    expect(within(dialog).getByText('Recarga')).toBeInTheDocument();
-    expect(within(dialog).getByText('1 turno')).toBeInTheDocument();
-    expect(within(dialog).getByText('Um soco em chamas.')).toBeInTheDocument();
+    expect(
+      screen.queryByLabelText('Visualizar arte Punho Flamejante'),
+    ).not.toBeInTheDocument();
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
 
-    await user.click(within(dialog).getByRole('button', { name: 'Editar' }));
+    await user.click(screen.getByLabelText('Editar arte Punho Flamejante'));
 
-    await waitFor(() =>
-      expect(screen.queryByRole('dialog')).not.toBeInTheDocument(),
-    );
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
   });
 
   it('não mostra botões de editar/remover quando canWrite retorna false', async () => {

@@ -15,8 +15,36 @@ class ErrorBoundary extends React.Component {
   }
 
   componentDidCatch(error, errorInfo) {
-    // eslint-disable-next-line no-console
-    console.error('ErrorBoundary capturou um erro:', error, errorInfo);
+    const safeStringify = value => {
+      try {
+        if (value instanceof Error) {
+          return value.stack || value.message || String(value);
+        }
+        if (typeof value === 'object' && value !== null) {
+          return JSON.stringify(value, Object.getOwnPropertyNames(value), 2);
+        }
+        return String(value);
+      } catch {
+        return 'Unable to serialize error information';
+      }
+    };
+
+    try {
+      // eslint-disable-next-line no-console
+      console.error('ErrorBoundary capturou um erro:');
+      // eslint-disable-next-line no-console
+      console.error(safeStringify(error));
+      // eslint-disable-next-line no-console
+      console.error(
+        safeStringify(errorInfo?.componentStack || errorInfo) ||
+          'No additional error info',
+      );
+    } catch (loggingError) {
+      // eslint-disable-next-line no-console
+      console.error('Erro ao registrar o erro no ErrorBoundary:');
+      // eslint-disable-next-line no-console
+      console.error(safeStringify(loggingError));
+    }
   }
 
   handleReload = () => {

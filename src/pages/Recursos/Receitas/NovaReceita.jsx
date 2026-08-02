@@ -85,8 +85,10 @@ const NovaReceita = () => {
   };
 
   const menuPropsSx = {
-    PaperProps: {
-      sx: { background: 'var(--bg-card)', color: 'var(--text-primary)' },
+    slotProps: {
+      paper: {
+        sx: { background: 'var(--bg-card)', color: 'var(--text-primary)' },
+      },
     },
   };
 
@@ -285,8 +287,8 @@ const NovaReceita = () => {
                             ? 'Nenhum material encontrado neste universo'
                             : 'Selecione um Universo primeiro'
                         }
-                        renderTags={(tagValue, getTagProps) =>
-                          tagValue.map((option, index) => (
+                        renderValue={(value, getTagProps) =>
+                          value.map((option, index) => (
                             <Chip
                               {...getTagProps({ index })}
                               key={option.id}
@@ -306,6 +308,7 @@ const NovaReceita = () => {
                             label="Materiais"
                             placeholder="Buscar material..."
                             sx={slotInputSx}
+                            fullWidth
                           />
                         )}
                         slotProps={{

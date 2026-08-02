@@ -2,13 +2,15 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { MemoryRouter } from 'react-router-dom';
+import { invalidateUniversosCache } from 'hooks/useUniversos';
 
 const getDivindades = vi.fn();
 const removeDivindade = vi.fn();
+const getUniversos = vi.fn().mockResolvedValue([]);
 vi.mock('service/storage', () => ({
   getDivindades: (...args) => getDivindades(...args),
   removeDivindade: (...args) => removeDivindade(...args),
-  getUniversos: vi.fn().mockResolvedValue([]),
+  getUniversos: (...args) => getUniversos(...args),
 }));
 
 const canCreate = vi.fn(() => true);
@@ -33,6 +35,7 @@ const renderDivindades = () =>
 
 describe('Divindades (padrão useEntityCRUD + useUniversos + EntityFilters + EntityViewDialog)', () => {
   beforeEach(() => {
+    invalidateUniversosCache();
     vi.clearAllMocks();
     canCreate.mockReturnValue(true);
     canWrite.mockReturnValue(true);
@@ -67,6 +70,9 @@ describe('Divindades (padrão useEntityCRUD + useUniversos + EntityFilters + Ent
 
     await user.click(screen.getByLabelText('Remover divindade Anúbis'));
 
+    const dialog = await screen.findByRole('dialog');
+    await user.click(within(dialog).getByRole('button', { name: 'Excluir' }));
+
     await waitFor(() =>
       expect(screen.queryByText('Anúbis')).not.toBeInTheDocument(),
     );
@@ -74,11 +80,16 @@ describe('Divindades (padrão useEntityCRUD + useUniversos + EntityFilters + Ent
     expect(getDivindades).toHaveBeenCalledTimes(1);
   });
 
-  it('abre o dialog de visualização com a descrição', async () => {
+  it('abre o dialog de visualização com detalhes de universo, cor e descrição', async () => {
+    getUniversos.mockResolvedValue([
+      { id: 'u1', Nome: 'Universo Prime' },
+    ]);
     getDivindades.mockResolvedValue([
       {
         id: 'd1',
         nome: 'Anúbis',
+        universo: 'u1',
+        cor: '#ff0000',
         descricao: 'Divindade dos mortos.',
       },
     ]);
@@ -92,6 +103,8 @@ describe('Divindades (padrão useEntityCRUD + useUniversos + EntityFilters + Ent
     expect(
       within(dialog).getByText('Divindade dos mortos.'),
     ).toBeInTheDocument();
+    expect(within(dialog).getByText('📖 Universo Prime')).toBeInTheDocument();
+    expect(within(dialog).getByText('🎨 #ff0000')).toBeInTheDocument();
   });
 
   it('não mostra botões de editar/remover quando canWrite retorna false', async () => {

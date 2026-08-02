@@ -13,11 +13,24 @@ import { getDivindades, removeDivindade } from 'service/storage';
 import { ROUTE_PATHS } from 'common/constants/routes';
 import { useAuth } from 'context/AuthContext';
 import useEntityCRUD from 'hooks/useEntityCRUD';
+import useDeleteConfirmation from 'hooks/useDeleteConfirmation';
 import useUniversos from 'hooks/useUniversos';
 import { ordenarPorNome, ORDEM_ASC } from 'common/utils/ordenacao';
 import EntityFilters from 'components/EntityFilters/EntityFilters';
 import EntityViewDialog from 'components/EntityViewDialog/EntityViewDialog';
 import { DivindadeCard } from './styles';
+import {
+  RacaCard,
+  RacaImageFrame,
+  RacaImageOverlay,
+  RacaActionBar,
+  RacaContent,
+  RacaTitle,
+  RacaSubtitle,
+  RacaDescription,
+  RacaFooter,
+} from '../Racas/styles';
+import CardTokens from 'components/CardTokens/CardTokens';
 
 const Divindades = () => {
   const navigate = useNavigate();
@@ -28,11 +41,29 @@ const Divindades = () => {
     remove: handleRemove,
   } = useEntityCRUD({ getAll: getDivindades, remove: removeDivindade });
   const { universos, loadingUniversos } = useUniversos();
+  const { confirmDelete, deleteConfirmationDialog } = useDeleteConfirmation();
   const loading = loadingDivindades || loadingUniversos;
   const [filtroNome, setFiltroNome] = useState('');
   const [filtroUniverso, setFiltroUniverso] = useState('');
   const [ordenacao, setOrdenacao] = useState(ORDEM_ASC);
   const [divindadeVisualizando, setDivindadeVisualizando] = useState(null);
+
+  const divindadeUniversoNome = divindadeVisualizando
+    ? universos.find(u => u.id === divindadeVisualizando.universo)?.Nome || ''
+    : '';
+
+  const divindadeMetaItems = [
+    divindadeVisualizando?.universo &&
+      `📖 ${divindadeUniversoNome || 'Universo Desconhecido'}`,
+    divindadeVisualizando?.cor && `🎨 ${divindadeVisualizando.cor}`,
+  ].filter(Boolean);
+
+  const divindadeVisualizandoSubtitle = [
+    divindadeUniversoNome,
+    divindadeVisualizando?.cor,
+  ]
+    .filter(Boolean)
+    .join(' · ');
 
   const divindadesFiltradas = useMemo(() => {
     const filtradas = divindades.filter(divindade => {
@@ -125,151 +156,67 @@ const Divindades = () => {
               }}
             >
               {divindadesFiltradas.map(divindade => (
-                <DivindadeCard key={divindade.id} elevation={0}>
-                  <Box
-                    sx={{
-                      display: 'flex',
-                      justifyContent: 'flex-end',
-                      gap: 0.5,
-                      mb: 1,
-                    }}
-                  >
-                    <Tooltip title="Visualizar detalhes">
-                      <IconButton
-                        size="small"
-                        onClick={() => setDivindadeVisualizando(divindade)}
-                        sx={{
-                          color: 'var(--text-secondary)',
-                          '&:hover': { color: 'var(--color-accent)' },
-                        }}
-                        aria-label={`Visualizar divindade ${divindade.nome}`}
-                      >
-                        <VisibilityOutlinedIcon fontSize="small" />
-                      </IconButton>
-                    </Tooltip>
-                    {canWrite(divindade.universo) && (
-                      <>
-                        <IconButton
-                          size="small"
-                          onClick={() =>
-                            navigate(ROUTE_PATHS.NOVA_DIVINDADE, {
-                              state: { divindade },
-                            })
-                          }
-                          sx={{
-                            color: 'var(--color-accent)',
-                            '&:hover': {
-                              color: 'var(--color-accent)',
-                              opacity: 0.8,
-                            },
-                          }}
-                          aria-label={`Editar divindade ${divindade.nome}`}
-                        >
-                          <EditOutlinedIcon fontSize="small" />
+                <RacaCard key={divindade.id} elevation={0}>
+                  <RacaImageFrame>
+                    <RacaImageOverlay />
+                    <RacaActionBar>
+                      <Tooltip title="Visualizar detalhes">
+                        <IconButton size="small" onClick={() => setDivindadeVisualizando(divindade)} sx={{ color: 'var(--text-secondary)', padding: '14px', minWidth: '16px', width: '16px', height: '16px', '&:hover': { color: 'var(--color-accent)' } }} aria-label={`Visualizar divindade ${divindade.nome}`}>
+                          <VisibilityOutlinedIcon fontSize="small" />
                         </IconButton>
-                        <IconButton
-                          size="small"
-                          onClick={() => handleRemove(divindade.id)}
-                          sx={{
-                            color: '#ef4444',
-                            '&:hover': { color: '#ef4444' },
-                          }}
-                          aria-label={`Remover divindade ${divindade.nome}`}
-                        >
-                          <DeleteOutlineIcon fontSize="small" />
-                        </IconButton>
-                      </>
+                      </Tooltip>
+
+                      {canWrite(divindade.universo) && (
+                        <>
+                          <IconButton size="small" onClick={() => navigate(ROUTE_PATHS.NOVA_DIVINDADE, { state: { divindade } })} sx={{ color: 'var(--color-accent)', padding: '4px', minWidth: '32px', width: '32px', height: '32px', '&:hover': { color: 'var(--color-accent)', opacity: 0.8 } }} aria-label={`Editar divindade ${divindade.nome}`}>
+                            <EditOutlinedIcon fontSize="small" />
+                          </IconButton>
+                          <IconButton size="small" onClick={() => confirmDelete(divindade.nome, () => handleRemove(divindade.id))} sx={{ color: '#ef4444', padding: '4px', minWidth: '32px', width: '32px', height: '32px', '&:hover': { color: '#ef4444' } }} aria-label={`Remover divindade ${divindade.nome}`}>
+                            <DeleteOutlineIcon fontSize="small" />
+                          </IconButton>
+                        </>
+                      )}
+                    </RacaActionBar>
+
+                    {divindade.linkImagem && (
+                      <Box component="img" className="raca-card-image" src={divindade.linkImagem} alt={divindade.nome} onError={e => { e.currentTarget.style.display = 'none'; }} />
                     )}
-                  </Box>
+                  </RacaImageFrame>
 
-                  {divindade.linkImagem && (
-                    <Box
-                      component="img"
-                      src={divindade.linkImagem}
-                      alt={divindade.nome}
-                      sx={{
-                        width: '100%',
-                        height: 160,
-                        borderRadius: 2,
-                        objectFit: 'cover',
-                        display: 'block',
-                        border: '1px solid var(--border-primary)',
-                        mb: 1.5,
-                      }}
-                      onError={e => {
-                        e.currentTarget.style.display = 'none';
-                      }}
-                    />
-                  )}
+                  <RacaContent>
+                    <RacaTitle variant="h6">{divindade.nome}</RacaTitle>
 
-                  <Typography
-                    variant="h6"
-                    sx={{
-                      color: 'var(--text-primary)',
-                      fontWeight: 600,
-                      lineHeight: 1.2,
-                    }}
-                  >
-                    {divindade.nome}
-                  </Typography>
+                    {divindade.cor && (
+                      <RacaSubtitle variant="caption">
+                        <Box component="span" sx={{ width: 10, height: 10, borderRadius: '50%', background: divindade.cor, border: '1px solid var(--border-primary)', display: 'inline-block', verticalAlign: 'middle', mr: 1 }} />
+                        {divindade.cor}
+                      </RacaSubtitle>
+                    )}
 
-                  {divindade.cor && (
-                    <Typography
-                      variant="caption"
-                      sx={{
-                        color: 'var(--color-accent)',
-                        fontWeight: 600,
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: 0.75,
-                        mb: 1,
-                      }}
-                    >
-                      <Box
-                        component="span"
-                        sx={{
-                          width: 10,
-                          height: 10,
-                          borderRadius: '50%',
-                          background: divindade.cor,
-                          border: '1px solid var(--border-primary)',
-                          flexShrink: 0,
-                        }}
+                    {divindade.descricao && <RacaDescription variant="body2">{divindade.descricao}</RacaDescription>}
+
+                    <RacaFooter>
+                      <CardTokens
+                        items={[`📖 ${universos.find(u => u.id === divindade.universo)?.Nome || 'Universo Desconhecido'}`]}
                       />
-                      {divindade.cor}
-                    </Typography>
-                  )}
-
-                  {divindade.descricao && (
-                    <Typography
-                      variant="body2"
-                      sx={{
-                        color: 'var(--text-secondary)',
-                        mt: 0.5,
-                        display: '-webkit-box',
-                        WebkitLineClamp: 3,
-                        WebkitBoxOrient: 'vertical',
-                        overflow: 'hidden',
-                      }}
-                    >
-                      {divindade.descricao}
-                    </Typography>
-                  )}
-                </DivindadeCard>
+                    </RacaFooter>
+                  </RacaContent>
+                </RacaCard>
               ))}
             </Box>
           )}
         </>
       )}
 
+      {deleteConfirmationDialog}
+
       <EntityViewDialog
         open={Boolean(divindadeVisualizando)}
         onClose={() => setDivindadeVisualizando(null)}
         titulo={divindadeVisualizando?.nome}
-        subtitulo={divindadeVisualizando?.cor}
+        subtitulo={divindadeVisualizandoSubtitle}
         imagem={divindadeVisualizando?.linkImagem}
-        imagemSx={{ height: 'auto', maxHeight: 220 }}
-        descricao={divindadeVisualizando?.descricao}
+        imagemSx={{ height: 400, maxHeight: 400, objectPosition: 'center' }}
         actions={
           canWrite(divindadeVisualizando?.universo) && (
             <Button
@@ -289,7 +236,38 @@ const Divindades = () => {
             </Button>
           )
         }
-      />
+      >
+        {divindadeMetaItems.length > 0 && (
+          <Box sx={{ mb: 2 }}>
+            <CardTokens items={divindadeMetaItems} maxVisible={2} />
+          </Box>
+        )}
+
+        {divindadeVisualizando?.descricao && (
+          <Box sx={{ mb: 2 }}>
+            <Typography
+              variant="subtitle2"
+              sx={{
+                color: 'var(--color-accent)',
+                fontWeight: 700,
+                mb: 0.75,
+                textTransform: 'uppercase',
+                letterSpacing: 1,
+                fontSize: '0.72rem',
+              }}
+            >
+              Descrição
+            </Typography>
+            <Typography
+              variant="body2"
+              sx={{ color: 'var(--text-secondary)', lineHeight: 1.85 }}
+            >
+              {divindadeVisualizando.descricao}
+            </Typography>
+          </Box>
+        )}
+      </EntityViewDialog>
+      {deleteConfirmationDialog}
     </Box>
   );
 };

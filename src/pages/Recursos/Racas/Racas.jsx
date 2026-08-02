@@ -1,11 +1,12 @@
-﻿import React, { useState, useMemo, useEffect } from 'react';
+﻿import React, { useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import Button from '@mui/material/Button';
 import IconButton from '@mui/material/IconButton';
 import CircularProgress from '@mui/material/CircularProgress';
-import Divider from '@mui/material/Divider';
+// Divider was removed — kept import commented in case needed later
+// import Divider from '@mui/material/Divider';
 import Tooltip from '@mui/material/Tooltip';
 import DeleteOutlineIcon from '@mui/icons-material/DeleteOutlined';
 import EditOutlinedIcon from '@mui/icons-material/EditOutlined';
@@ -16,8 +17,10 @@ import Fade from '@mui/material/Fade';
 import { getRacas, removeRaca } from 'service/storage';
 import { ROUTE_PATHS } from 'common/constants/routes';
 import { useAuth } from 'context/AuthContext';
+import CardTokens from 'components/CardTokens/CardTokens';
 import { RARIDADES, TIPOS_PERSONAGEM } from 'common/constants/constants';
 import useEntityCRUD from 'hooks/useEntityCRUD';
+import useDeleteConfirmation from 'hooks/useDeleteConfirmation';
 import useUniversos from 'hooks/useUniversos';
 import { ordenarPorNome, ORDEM_ASC } from 'common/utils/ordenacao';
 import EntityFilters from 'components/EntityFilters/EntityFilters';
@@ -32,8 +35,6 @@ import {
   RacaSubtitle,
   RacaDescription,
   RacaFooter,
-  RacaMeta,
-  RacaBadge,
   RacaModalHeader,
   RacaModalHeroBadges,
   RacaModalBadge,
@@ -102,6 +103,7 @@ const Racas = () => {
     remove: handleRemove,
   } = useEntityCRUD({ getAll: getRacas, remove: removeRaca });
   const { universos, loadingUniversos } = useUniversos();
+  const { confirmDelete, deleteConfirmationDialog } = useDeleteConfirmation();
   const loading = loadingRacas || loadingUniversos;
   const [filtroNome, setFiltroNome] = useState('');
   const [filtroRaridade, setFiltroRaridade] = useState('');
@@ -281,7 +283,7 @@ const Racas = () => {
                             </IconButton>
                             <IconButton
                               size="small"
-                              onClick={() => handleRemove(raca.id)}
+                              onClick={() => confirmDelete(raca.nome, () => handleRemove(raca.id))}
                               sx={{
                                 color: '#ef4444',
                                 padding: '4px',
@@ -310,13 +312,13 @@ const Racas = () => {
                         </RacaDescription>
                       )}
                       <RacaFooter>
-                        <RacaMeta>
-                          <RacaBadge>📖 {universoNome}</RacaBadge>
-                          {raca.raridade && <RacaBadge>⭐ {raca.raridade}</RacaBadge>}
-                          {raca.tiposDisponiveis?.length > 0 && (
-                            <RacaBadge>🧬 {raca.tiposDisponiveis[0]}</RacaBadge>
-                          )}
-                        </RacaMeta>
+                        <CardTokens
+                          items={[
+                            `📖 ${universoNome}`,
+                            ...(raca.raridade ? [`⭐ ${raca.raridade}`] : []),
+                            ...(raca.tiposDisponiveis?.length > 0 ? [`🧬 ${raca.tiposDisponiveis[0]}`] : []),
+                          ]}
+                        />
                       </RacaFooter>
                     </RacaContent>
                   </RacaCard>
@@ -425,13 +427,16 @@ const Racas = () => {
             <RacaSectionTitle>Habilidades</RacaSectionTitle>
 
             <Box sx={{ mt: 1 }}>
-              <AbilitiesTabs raca={racaVisualizando} />
+              <div key={racaVisualizando?.id || 'no-raca'}>
+                <AbilitiesTabs raca={racaVisualizando} />
+              </div>
             </Box>
 
             {/* Nota: os cards agora aparecem dentro das abas (AbilityCardView). */}
           </>
         )}
       </EntityViewDialog>
+      {deleteConfirmationDialog}
     </Box>
   );
 };
@@ -445,10 +450,6 @@ const Racas = () => {
 */
 function AbilitiesTabs({ raca }) {
   const [tab, setTab] = useState(0);
-
-  useEffect(() => {
-    setTab(0);
-  }, [raca?.id]);
 
   const basicas = raca?.habilidadesRaciais?.habilidadesBasicas || [];
   const avancadas = raca?.habilidadesRaciais?.habilidadesAvancadas || [];

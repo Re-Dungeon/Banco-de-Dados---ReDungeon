@@ -48,6 +48,22 @@ describe('EntityViewDialog', () => {
     expect(within(dialog).queryByText('Descrição')).not.toBeInTheDocument();
   });
 
+  it('renderiza conteúdo de cabeçalho e hero quando fornecido', () => {
+    render(
+      <EntityViewDialog
+        open
+        onClose={vi.fn()}
+        titulo="Elfo"
+        headerContent={<div>Conteúdo premium do cabeçalho</div>}
+        heroContent={<div>Conteúdo premium do hero</div>}
+        imagem="https://example.com/elfo.png"
+      />,
+    );
+
+    expect(screen.getByText('Conteúdo premium do cabeçalho')).toBeInTheDocument();
+    expect(screen.getByText('Conteúdo premium do hero')).toBeInTheDocument();
+  });
+
   it('chama onClose ao clicar em Fechar', async () => {
     const onClose = vi.fn();
     const user = userEvent.setup();

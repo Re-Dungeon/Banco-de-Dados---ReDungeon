@@ -162,14 +162,16 @@ const NovaRaca = () => {
   };
 
   const menuPropsSx = {
-    PaperProps: {
-      sx: {
-        background: 'linear-gradient(145deg, #10182b 0%, #0f172a 100%)',
-        color: 'var(--text-primary)',
-        border: '1px solid rgba(43, 57, 85, 0.95)',
-        borderRadius: '16px',
-        boxShadow: '0 16px 36px rgba(2, 6, 23, 0.38)',
-        overflow: 'hidden',
+    slotProps: {
+      paper: {
+        sx: {
+          background: 'linear-gradient(145deg, #10182b 0%, #0f172a 100%)',
+          color: 'var(--text-primary)',
+          border: '1px solid rgba(43, 57, 85, 0.95)',
+          borderRadius: '16px',
+          boxShadow: '0 16px 36px rgba(2, 6, 23, 0.38)',
+          overflow: 'hidden',
+        },
       },
     },
   };

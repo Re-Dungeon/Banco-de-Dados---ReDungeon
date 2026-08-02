@@ -18,15 +18,29 @@ import {
 import { ROUTE_PATHS } from 'common/constants/routes';
 import { useAuth } from 'context/AuthContext';
 import useEntityCRUD from 'hooks/useEntityCRUD';
+import useDeleteConfirmation from 'hooks/useDeleteConfirmation';
 import useUniversos from 'hooks/useUniversos';
 import { ordenarPorNome, ORDEM_ASC } from 'common/utils/ordenacao';
 import EntityFilters from 'components/EntityFilters/EntityFilters';
 import EntityViewDialog from 'components/EntityViewDialog/EntityViewDialog';
 import { VeiaAstralCard } from './styles';
+import {
+  RacaCard,
+  RacaImageFrame,
+  RacaImageOverlay,
+  RacaActionBar,
+  RacaContent,
+  RacaTitle,
+  RacaSubtitle,
+  RacaDescription,
+  RacaFooter,
+} from '../Racas/styles';
+import CardTokens from 'components/CardTokens/CardTokens';
 
 const VeiasAstrais = () => {
   const navigate = useNavigate();
   const { canCreate, canWrite } = useAuth();
+  const { confirmDelete, deleteConfirmationDialog } = useDeleteConfirmation();
   const {
     items: veiasAstrais,
     loading: loadingVeiasAstrais,
@@ -180,155 +194,51 @@ const VeiasAstrais = () => {
               }}
             >
               {veiasAstraisFiltradas.map(veiaAstral => (
-                <VeiaAstralCard key={veiaAstral.id} elevation={0}>
-                  <Box
-                    sx={{
-                      display: 'flex',
-                      justifyContent: 'flex-end',
-                      gap: 0.5,
-                      mb: 1,
-                    }}
-                  >
-                    <Tooltip title="Visualizar detalhes">
-                      <IconButton
-                        size="small"
-                        onClick={() => setVeiaAstralVisualizando(veiaAstral)}
-                        sx={{
-                          color: 'var(--text-secondary)',
-                          '&:hover': { color: 'var(--color-accent)' },
-                        }}
-                        aria-label={`Visualizar veia astral ${veiaAstral.nome}`}
-                      >
-                        <VisibilityOutlinedIcon fontSize="small" />
-                      </IconButton>
-                    </Tooltip>
-                    {canWrite(veiaAstral.universo) && (
-                      <>
-                        <IconButton
-                          size="small"
-                          onClick={() =>
-                            navigate(ROUTE_PATHS.NOVA_VEIA_ASTRAL, {
-                              state: { veiaAstral },
-                            })
-                          }
-                          sx={{
-                            color: 'var(--color-accent)',
-                            '&:hover': {
-                              color: 'var(--color-accent)',
-                              opacity: 0.8,
-                            },
-                          }}
-                          aria-label={`Editar veia astral ${veiaAstral.nome}`}
-                        >
-                          <EditOutlinedIcon fontSize="small" />
+                <RacaCard key={veiaAstral.id} elevation={0}>
+                  <RacaImageFrame>
+                    <RacaImageOverlay />
+                    <RacaActionBar>
+                      <Tooltip title="Visualizar detalhes">
+                        <IconButton size="small" onClick={() => setVeiaAstralVisualizando(veiaAstral)} sx={{ color: 'var(--text-secondary)', padding: '14px', minWidth: '16px', width: '16px', height: '16px', '&:hover': { color: 'var(--color-accent)' } }} aria-label={`Visualizar veia astral ${veiaAstral.nome}`}>
+                          <VisibilityOutlinedIcon fontSize="small" />
                         </IconButton>
-                        <IconButton
-                          size="small"
-                          onClick={() => handleRemove(veiaAstral.id)}
-                          sx={{
-                            color: '#ef4444',
-                            '&:hover': { color: '#ef4444' },
-                          }}
-                          aria-label={`Remover veia astral ${veiaAstral.nome}`}
-                        >
-                          <DeleteOutlineIcon fontSize="small" />
-                        </IconButton>
-                      </>
+                      </Tooltip>
+
+                      {canWrite(veiaAstral.universo) && (
+                        <>
+                          <IconButton size="small" onClick={() => navigate(ROUTE_PATHS.NOVA_VEIA_ASTRAL, { state: { veiaAstral } })} sx={{ color: 'var(--color-accent)', padding: '4px', minWidth: '32px', width: '32px', height: '32px', '&:hover': { color: 'var(--color-accent)', opacity: 0.8 } }} aria-label={`Editar veia astral ${veiaAstral.nome}`}>
+                            <EditOutlinedIcon fontSize="small" />
+                          </IconButton>
+                          <IconButton size="small" onClick={() => confirmDelete(veiaAstral.nome, () => handleRemove(veiaAstral.id))} sx={{ color: '#ef4444', padding: '4px', minWidth: '32px', width: '32px', height: '32px', '&:hover': { color: '#ef4444' } }} aria-label={`Remover veia astral ${veiaAstral.nome}`}>
+                            <DeleteOutlineIcon fontSize="small" />
+                          </IconButton>
+                        </>
+                      )}
+                    </RacaActionBar>
+
+                    {veiaAstral.linkImagem && (
+                      <Box component="img" className="raca-card-image" src={veiaAstral.linkImagem} alt={veiaAstral.nome} onError={e => { e.currentTarget.style.display = 'none'; }} />
                     )}
-                  </Box>
+                  </RacaImageFrame>
 
-                  {veiaAstral.linkImagem && (
-                    <Box
-                      component="img"
-                      src={veiaAstral.linkImagem}
-                      alt={veiaAstral.nome}
-                      sx={{
-                        width: '100%',
-                        height: 160,
-                        borderRadius: 2,
-                        objectFit: 'cover',
-                        display: 'block',
-                        border: '1px solid var(--border-primary)',
-                        mb: 1.5,
-                      }}
-                      onError={e => {
-                        e.currentTarget.style.display = 'none';
-                      }}
-                    />
-                  )}
+                  <RacaContent>
+                    <RacaTitle variant="h6">{veiaAstral.nome}</RacaTitle>
 
-                  <Typography
-                    variant="h6"
-                    sx={{
-                      color: 'var(--text-primary)',
-                      fontWeight: 600,
-                      lineHeight: 1.2,
-                    }}
-                  >
-                    {veiaAstral.nome}
-                  </Typography>
+                    {(veiaAstral.divindade || veiaAstral.nivel) && <RacaSubtitle variant="caption">{[getDivindadeNome(veiaAstral), veiaAstral.nivel ? `Nível ${veiaAstral.nivel}` : null].filter(Boolean).join(' · ')}</RacaSubtitle>}
 
-                  {(veiaAstral.divindade || veiaAstral.nivel) && (
-                    <Typography
-                      variant="caption"
-                      sx={{
-                        color: 'var(--color-accent)',
-                        fontWeight: 600,
-                        display: 'block',
-                        mb: 1,
-                      }}
-                    >
-                      {[
-                        getDivindadeNome(veiaAstral),
-                        veiaAstral.nivel ? `Nível ${veiaAstral.nivel}` : null,
-                      ]
-                        .filter(Boolean)
-                        .join(' · ')}
-                    </Typography>
-                  )}
+                    {veiaAstral.descricao && <RacaDescription variant="body2">{veiaAstral.descricao}</RacaDescription>}
 
-                  {veiaAstral.custo && (
-                    <Typography
-                      variant="caption"
-                      sx={{
-                        color: 'var(--text-secondary)',
-                        display: 'block',
-                        mb: 1,
-                      }}
-                    >
-                      💠 {veiaAstral.custo}
-                    </Typography>
-                  )}
-
-                  {veiaAstral.requisito && (
-                    <Typography
-                      variant="caption"
-                      sx={{
-                        color: 'var(--text-secondary)',
-                        display: 'block',
-                        mb: 1,
-                      }}
-                    >
-                      🔗 Requer: {getRequisitoNome(veiaAstral)}
-                    </Typography>
-                  )}
-
-                  {veiaAstral.descricao && (
-                    <Typography
-                      variant="body2"
-                      sx={{
-                        color: 'var(--text-secondary)',
-                        mt: 0.5,
-                        display: '-webkit-box',
-                        WebkitLineClamp: 3,
-                        WebkitBoxOrient: 'vertical',
-                        overflow: 'hidden',
-                      }}
-                    >
-                      {veiaAstral.descricao}
-                    </Typography>
-                  )}
-                </VeiaAstralCard>
+                    <RacaFooter>
+                      <CardTokens
+                        items={[
+                          `📖 ${universos.find(u => u.id === veiaAstral.universo)?.Nome || 'Universo Desconhecido'}`,
+                          ...(veiaAstral.custo ? [`💠 ${veiaAstral.custo}`] : []),
+                          ...(veiaAstral.requisito ? [`🔗 ${getRequisitoNome(veiaAstral)}`] : []),
+                        ]}
+                      />
+                    </RacaFooter>
+                  </RacaContent>
+                </RacaCard>
               ))}
             </Box>
           )}
@@ -459,6 +369,7 @@ const VeiasAstrais = () => {
           </>
         )}
       </EntityViewDialog>
+      {deleteConfirmationDialog}
     </Box>
   );
 };

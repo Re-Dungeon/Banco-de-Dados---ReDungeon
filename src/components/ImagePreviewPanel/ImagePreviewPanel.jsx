@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useMemo, useState, useEffect } from 'react';
 import PropTypes from 'prop-types';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
@@ -14,6 +14,7 @@ import Typography from '@mui/material/Typography';
 const ImagePreviewPanel = ({ src, alt }) => {
   const [imgError, setImgError] = useState(false);
 
+  // Resetar o estado interno de erro sempre que a prop `src` mudar.
   useEffect(() => {
     setImgError(false);
   }, [src]);

@@ -39,8 +39,10 @@ const selectSx = {
 };
 
 const selectMenuProps = {
-  PaperProps: {
-    sx: { background: 'var(--bg-card)', color: 'var(--text-primary)' },
+  slotProps: {
+    paper: {
+      sx: { background: 'var(--bg-card)', color: 'var(--text-primary)' },
+    },
   },
 };
 
@@ -63,8 +65,10 @@ const EntityFilters = ({
 }) => {
   const menuProps = menuMaxHeight
     ? {
-        PaperProps: {
-          sx: { ...selectMenuProps.PaperProps.sx, maxHeight: menuMaxHeight },
+        slotProps: {
+          paper: {
+            sx: { ...selectMenuProps.slotProps.paper.sx, maxHeight: menuMaxHeight },
+          },
         },
       }
     : selectMenuProps;

@@ -62,7 +62,7 @@ describe('Regras (padrão useEntityCRUD + useUniversos + EntityFilters + EntityV
     expect(screen.queryByText('Iniciativa')).not.toBeInTheDocument();
   });
 
-  it('remove uma regra e ela desaparece da lista sem novo fetch', async () => {
+  it('solicita confirmação antes de remover uma regra', async () => {
     removeRegra.mockResolvedValue(undefined);
     const user = userEvent.setup();
     renderRegras();
@@ -72,6 +72,14 @@ describe('Regras (padrão useEntityCRUD + useUniversos + EntityFilters + EntityV
     );
 
     await user.click(screen.getByLabelText('Remover regra Iniciativa'));
+
+    const dialog = await screen.findByRole('dialog');
+    expect(within(dialog).getByText('Confirmar exclusão')).toBeInTheDocument();
+    expect(
+      within(dialog).getByText(/Tem certeza de que deseja excluir este item/i),
+    ).toBeInTheDocument();
+
+    await user.click(within(dialog).getByRole('button', { name: 'Excluir' }));
 
     await waitFor(() =>
       expect(screen.queryByText('Iniciativa')).not.toBeInTheDocument(),

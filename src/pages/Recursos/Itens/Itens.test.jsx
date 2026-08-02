@@ -73,6 +73,9 @@ describe('Itens (padrão useEntityCRUD + useUniversos + EntityFilters + EntityVi
 
     await user.click(screen.getByLabelText('Remover item Espada Longa'));
 
+    const dialog = await screen.findByRole('dialog');
+    await user.click(within(dialog).getByRole('button', { name: 'Excluir' }));
+
     await waitFor(() =>
       expect(screen.queryByText('Espada Longa')).not.toBeInTheDocument(),
     );
