@@ -1,4 +1,4 @@
-﻿import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
@@ -15,6 +15,7 @@ import { ROUTE_PATHS } from 'common/constants/routes';
 import { useAuth } from 'context/AuthContext';
 import { RARIDADES } from 'common/constants/constants';
 import useEntityCRUD from 'hooks/useEntityCRUD';
+import useDeleteConfirmation from 'hooks/useDeleteConfirmation';
 import useUniversos from 'hooks/useUniversos';
 import { ordenarPorNome, ORDEM_ASC } from 'common/utils/ordenacao';
 import EntityFilters from 'components/EntityFilters/EntityFilters';
@@ -42,6 +43,7 @@ const Itens = () => {
     loading: loadingItens,
     remove: handleRemove,
   } = useEntityCRUD({ getAll: getItens, remove: removeIten });
+  const { confirmDelete, deleteConfirmationDialog } = useDeleteConfirmation();
   const { universos, loadingUniversos } = useUniversos();
   const loading = loadingItens || loadingUniversos;
   const [filtroNome, setFiltroNome] = useState('');
@@ -90,7 +92,7 @@ const Itens = () => {
             Itens
           </Typography>
           <Typography variant="body2" sx={{ color: 'var(--text-secondary)' }}>
-            Gerencie os itens dispon├¡veis na campanha.
+            Gerencie os itens disponíveis na campanha.
           </Typography>
         </Box>
         {canCreate() && (
@@ -144,7 +146,7 @@ const Itens = () => {
               sx={{ textAlign: 'center', py: 8, color: 'var(--text-muted)' }}
             >
               <Typography variant="h2" sx={{ mb: 1 }}>
-                ÔÜö´©Å
+                ⚔️
               </Typography>
               <Typography variant="body1">Nenhum item encontrado</Typography>
             </Box>
@@ -224,7 +226,11 @@ const Itens = () => {
                             </IconButton>
                             <IconButton
                               size="small"
-                              onClick={() => handleRemove(item.id)}
+                              onClick={() =>
+                                confirmDelete(item.nome, () =>
+                                  handleRemove(item.id),
+                                )
+                              }
                               sx={{
                                 color: '#ef4444',
                                 padding: '4px',
@@ -254,15 +260,13 @@ const Itens = () => {
                       )}
                       <RacaFooter>
                         <RacaMeta>
-                          <RacaBadge>­ƒôû {universoNome}</RacaBadge>
-                          {item.tipo && (
-                            <RacaBadge>­ƒùí´©Å {item.tipo}</RacaBadge>
-                          )}
+                          <RacaBadge>📖 {universoNome}</RacaBadge>
+                          {item.tipo && <RacaBadge>🗡️ {item.tipo}</RacaBadge>}
                           {item.qualidade && (
-                            <RacaBadge>Ô¡É {item.qualidade}</RacaBadge>
+                            <RacaBadge>⭐ {item.qualidade}</RacaBadge>
                           )}
                           {item.mostrarNaLoja && (
-                            <RacaBadge>­ƒøÆ Na Loja</RacaBadge>
+                            <RacaBadge>🛒 Na Loja</RacaBadge>
                           )}
                         </RacaMeta>
                       </RacaFooter>
@@ -287,18 +291,19 @@ const Itens = () => {
             itemVisualizando?.qualidade,
           ]
             .filter(Boolean)
-            .join(' ÔÇö ')
+            .join(' — ')
         }
         imagem={itemVisualizando?.linkImagem}
+        imagemSx={{ height: 'auto', maxHeight: 220 }}
       >
         {/* Atributos */}
         {[
-          { label: 'N├¡vel Atual', value: itemVisualizando?.nivelAtual },
-          { label: 'N├¡vel M├íximo', value: itemVisualizando?.nivelMaximo },
-          { label: 'Peso Unit├írio', value: itemVisualizando?.pesoUnitario },
-          { label: 'B├┤nus de Espa├ºo', value: itemVisualizando?.bonusEspaco },
-          { label: 'Pre├ºo de Compra', value: itemVisualizando?.precoCompra },
-          { label: 'Pre├ºo de Venda', value: itemVisualizando?.precoVenda },
+          { label: 'Nível Atual', value: itemVisualizando?.nivelAtual },
+          { label: 'Nível Máximo', value: itemVisualizando?.nivelMaximo },
+          { label: 'Peso Unitário', value: itemVisualizando?.pesoUnitario },
+          { label: 'Bônus de Espaço', value: itemVisualizando?.bonusEspaco },
+          { label: 'Preço de Compra', value: itemVisualizando?.precoCompra },
+          { label: 'Preço de Venda', value: itemVisualizando?.precoVenda },
           { label: 'Dados', value: itemVisualizando?.dados },
           { label: 'Extra', value: itemVisualizando?.extra },
         ].some(
@@ -327,25 +332,25 @@ const Itens = () => {
               }}
             >
               {[
-                { label: 'N├¡vel Atual', value: itemVisualizando?.nivelAtual },
+                { label: 'Nível Atual', value: itemVisualizando?.nivelAtual },
                 {
-                  label: 'N├¡vel M├íximo',
+                  label: 'Nível Máximo',
                   value: itemVisualizando?.nivelMaximo,
                 },
                 {
-                  label: 'Peso Unit├írio',
+                  label: 'Peso Unitário',
                   value: itemVisualizando?.pesoUnitario,
                 },
                 {
-                  label: 'B├┤nus de Espa├ºo',
+                  label: 'Bônus de Espaço',
                   value: itemVisualizando?.bonusEspaco,
                 },
                 {
-                  label: 'Pre├ºo de Compra',
+                  label: 'Preço de Compra',
                   value: itemVisualizando?.precoCompra,
                 },
                 {
-                  label: 'Pre├ºo de Venda',
+                  label: 'Preço de Venda',
                   value: itemVisualizando?.precoVenda,
                 },
                 { label: 'Dados', value: itemVisualizando?.dados },
@@ -397,7 +402,7 @@ const Itens = () => {
                 fontSize: '0.72rem',
               }}
             >
-              Descri├º├úo
+              Descrição
             </Typography>
             <Typography
               variant="body2"
@@ -458,6 +463,7 @@ const Itens = () => {
           </>
         )}
       </EntityViewDialog>
+      {deleteConfirmationDialog}
     </Box>
   );
 };
