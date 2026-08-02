@@ -11,7 +11,7 @@ export const VEIA_ASTRAL_SCHEMA = Yup.object({
   linkImagem: urlImagemSchema,
   universo: Yup.string(),
   divindade: Yup.string(),
-  requisito: Yup.string(),
+  requisitos: Yup.array().of(Yup.string()),
   descricao: descricaoSchema,
   aprimoramento: descricaoSchema,
   custo: campoCurtoSchema,
@@ -26,9 +26,13 @@ export const VEIA_ASTRAL_INITIAL_VALUES = {
   linkImagem: '',
   universo: '',
   divindade: '',
-  requisito: '',
+  requisitos: [],
   descricao: '',
   aprimoramento: '',
   custo: '',
   nivel: '',
 };
+
+export const getRequisitosIds = veiaAstral =>
+  veiaAstral?.requisitos ??
+  (veiaAstral?.requisito ? [veiaAstral.requisito] : []);

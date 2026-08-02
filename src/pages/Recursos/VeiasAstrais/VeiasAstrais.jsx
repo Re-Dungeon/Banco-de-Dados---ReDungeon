@@ -35,6 +35,7 @@ import {
   RacaFooter,
 } from '../Racas/styles';
 import CardTokens from 'components/CardTokens/CardTokens';
+import { getRequisitosIds } from './utils';
 
 const VeiasAstrais = () => {
   const navigate = useNavigate();
@@ -78,8 +79,11 @@ const VeiasAstrais = () => {
     () => Object.fromEntries(veiasAstrais.map(v => [v.id, v.nome])),
     [veiasAstrais],
   );
-  const getRequisitoNome = veiaAstral =>
-    nomePorVeiaAstralId[veiaAstral?.requisito] || '';
+  const getRequisitosNomes = veiaAstral =>
+    getRequisitosIds(veiaAstral)
+      .map(id => nomePorVeiaAstralId[id])
+      .filter(Boolean)
+      .join(', ');
 
   const veiasAstraisFiltradas = useMemo(() => {
     const filtradas = veiasAstrais.filter(veiaAstral => {
@@ -198,17 +202,64 @@ const VeiasAstrais = () => {
                     <RacaImageOverlay />
                     <RacaActionBar>
                       <Tooltip title="Visualizar detalhes">
-                        <IconButton size="small" onClick={() => setVeiaAstralVisualizando(veiaAstral)} sx={{ color: 'var(--text-secondary)', padding: '14px', minWidth: '16px', width: '16px', height: '16px', '&:hover': { color: 'var(--color-accent)' } }} aria-label={`Visualizar veia astral ${veiaAstral.nome}`}>
+                        <IconButton
+                          size="small"
+                          onClick={() => setVeiaAstralVisualizando(veiaAstral)}
+                          sx={{
+                            color: 'var(--text-secondary)',
+                            padding: '14px',
+                            minWidth: '16px',
+                            width: '16px',
+                            height: '16px',
+                            '&:hover': { color: 'var(--color-accent)' },
+                          }}
+                          aria-label={`Visualizar veia astral ${veiaAstral.nome}`}
+                        >
                           <VisibilityOutlinedIcon fontSize="small" />
                         </IconButton>
                       </Tooltip>
 
                       {canWrite(veiaAstral.universo) && (
                         <>
-                          <IconButton size="small" onClick={() => navigate(ROUTE_PATHS.NOVA_VEIA_ASTRAL, { state: { veiaAstral } })} sx={{ color: 'var(--color-accent)', padding: '4px', minWidth: '32px', width: '32px', height: '32px', '&:hover': { color: 'var(--color-accent)', opacity: 0.8 } }} aria-label={`Editar veia astral ${veiaAstral.nome}`}>
+                          <IconButton
+                            size="small"
+                            onClick={() =>
+                              navigate(ROUTE_PATHS.NOVA_VEIA_ASTRAL, {
+                                state: { veiaAstral },
+                              })
+                            }
+                            sx={{
+                              color: 'var(--color-accent)',
+                              padding: '4px',
+                              minWidth: '32px',
+                              width: '32px',
+                              height: '32px',
+                              '&:hover': {
+                                color: 'var(--color-accent)',
+                                opacity: 0.8,
+                              },
+                            }}
+                            aria-label={`Editar veia astral ${veiaAstral.nome}`}
+                          >
                             <EditOutlinedIcon fontSize="small" />
                           </IconButton>
-                          <IconButton size="small" onClick={() => confirmDelete(veiaAstral.nome, () => handleRemove(veiaAstral.id))} sx={{ color: '#ef4444', padding: '4px', minWidth: '32px', width: '32px', height: '32px', '&:hover': { color: '#ef4444' } }} aria-label={`Remover veia astral ${veiaAstral.nome}`}>
+                          <IconButton
+                            size="small"
+                            onClick={() =>
+                              confirmDelete(veiaAstral.nome, () =>
+                                handleRemove(veiaAstral.id),
+                              )
+                            }
+                            sx={{
+                              color: '#ef4444',
+                              padding: '4px',
+                              minWidth: '32px',
+                              width: '32px',
+                              height: '32px',
+                              '&:hover': { color: '#ef4444' },
+                            }}
+                            aria-label={`Remover veia astral ${veiaAstral.nome}`}
+                          >
                             <DeleteOutlineIcon fontSize="small" />
                           </IconButton>
                         </>
@@ -216,23 +267,48 @@ const VeiasAstrais = () => {
                     </RacaActionBar>
 
                     {veiaAstral.linkImagem && (
-                      <Box component="img" className="raca-card-image" src={veiaAstral.linkImagem} alt={veiaAstral.nome} onError={e => { e.currentTarget.style.display = 'none'; }} />
+                      <Box
+                        component="img"
+                        className="raca-card-image"
+                        src={veiaAstral.linkImagem}
+                        alt={veiaAstral.nome}
+                        onError={e => {
+                          e.currentTarget.style.display = 'none';
+                        }}
+                      />
                     )}
                   </RacaImageFrame>
 
                   <RacaContent>
                     <RacaTitle variant="h6">{veiaAstral.nome}</RacaTitle>
 
-                    {(veiaAstral.divindade || veiaAstral.nivel) && <RacaSubtitle variant="caption">{[getDivindadeNome(veiaAstral), veiaAstral.nivel ? `Nível ${veiaAstral.nivel}` : null].filter(Boolean).join(' · ')}</RacaSubtitle>}
+                    {(veiaAstral.divindade || veiaAstral.nivel) && (
+                      <RacaSubtitle variant="caption">
+                        {[
+                          getDivindadeNome(veiaAstral),
+                          veiaAstral.nivel ? `Nível ${veiaAstral.nivel}` : null,
+                        ]
+                          .filter(Boolean)
+                          .join(' · ')}
+                      </RacaSubtitle>
+                    )}
 
-                    {veiaAstral.descricao && <RacaDescription variant="body2">{veiaAstral.descricao}</RacaDescription>}
+                    {veiaAstral.descricao && (
+                      <RacaDescription variant="body2">
+                        {veiaAstral.descricao}
+                      </RacaDescription>
+                    )}
 
                     <RacaFooter>
                       <CardTokens
                         items={[
                           `📖 ${universos.find(u => u.id === veiaAstral.universo)?.Nome || 'Universo Desconhecido'}`,
-                          ...(veiaAstral.custo ? [`💠 ${veiaAstral.custo}`] : []),
-                          ...(veiaAstral.requisito ? [`🔗 ${getRequisitoNome(veiaAstral)}`] : []),
+                          ...(veiaAstral.custo
+                            ? [`💠 ${veiaAstral.custo}`]
+                            : []),
+                          ...(getRequisitosIds(veiaAstral).length
+                            ? [`🔗 ${getRequisitosNomes(veiaAstral)}`]
+                            : []),
                         ]}
                       />
                     </RacaFooter>
@@ -303,7 +379,7 @@ const VeiasAstrais = () => {
           </Box>
         )}
 
-        {veiaAstralVisualizando?.requisito && (
+        {getRequisitosIds(veiaAstralVisualizando).length > 0 && (
           <Box sx={{ mb: 2 }}>
             <Typography
               variant="caption"
@@ -313,13 +389,13 @@ const VeiasAstrais = () => {
                 mb: 0.3,
               }}
             >
-              Requisito
+              Requisitos
             </Typography>
             <Typography
               variant="body2"
               sx={{ color: 'var(--text-primary)', fontWeight: 600 }}
             >
-              {getRequisitoNome(veiaAstralVisualizando)}
+              {getRequisitosNomes(veiaAstralVisualizando)}
             </Typography>
           </Box>
         )}

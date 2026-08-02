@@ -20,7 +20,11 @@ import FormPageHeader from 'components/FormPageHeader/FormPageHeader';
 import ImagePreviewPanel from 'components/ImagePreviewPanel/ImagePreviewPanel';
 import FormActions from 'components/FormActions/FormActions';
 import SectionTitle from 'components/SectionTitle/SectionTitle';
-import { VEIA_ASTRAL_SCHEMA, VEIA_ASTRAL_INITIAL_VALUES } from './utils';
+import {
+  VEIA_ASTRAL_SCHEMA,
+  VEIA_ASTRAL_INITIAL_VALUES,
+  getRequisitosIds,
+} from './utils';
 
 const NovaVeiaAstral = () => {
   const navigate = useNavigate();
@@ -56,10 +60,15 @@ const NovaVeiaAstral = () => {
     };
   }, []);
 
+  // eslint-disable-next-line no-unused-vars
+  const { requisito: requisitoLegado, ...veiaAstralParaEditarSemLegado } =
+    veiaAstralParaEditar ?? {};
+
   const editInitialValues = veiaAstralParaEditar
     ? {
         ...VEIA_ASTRAL_INITIAL_VALUES,
-        ...veiaAstralParaEditar,
+        ...veiaAstralParaEditarSemLegado,
+        requisitos: getRequisitosIds(veiaAstralParaEditar),
       }
     : VEIA_ASTRAL_INITIAL_VALUES;
 
@@ -222,7 +231,7 @@ const NovaVeiaAstral = () => {
                               MenuProps={menuPropsSx}
                               onChange={e => {
                                 field.onChange(e);
-                                form.setFieldValue('requisito', '');
+                                form.setFieldValue('requisitos', []);
                               }}
                             >
                               <MenuItem value="">Nenhuma</MenuItem>
@@ -260,19 +269,32 @@ const NovaVeiaAstral = () => {
                     </Box>
 
                     {Number(values.nivel) > 1 && (
-                      <Field name="requisito">
-                        {({ field }) => (
+                      <Field name="requisitos">
+                        {({ field, form }) => (
                           <FormControl fullWidth>
                             <InputLabel sx={labelSx}>
-                              Requisito (Veia Astral)
+                              Requisitos (Veias Astrais)
                             </InputLabel>
                             <Select
                               {...field}
-                              label="Requisito (Veia Astral)"
+                              multiple
+                              value={field.value || []}
+                              label="Requisitos (Veias Astrais)"
                               sx={selectSx}
                               MenuProps={menuPropsSx}
+                              onChange={e =>
+                                form.setFieldValue('requisitos', e.target.value)
+                              }
+                              renderValue={selected =>
+                                selected
+                                  .map(
+                                    id =>
+                                      veiasAstrais.find(v => v.id === id)?.nome,
+                                  )
+                                  .filter(Boolean)
+                                  .join(', ')
+                              }
                             >
-                              <MenuItem value="">Nenhum</MenuItem>
                               {veiasAstrais
                                 .filter(
                                   veiaAstral =>
