@@ -3,7 +3,6 @@ import PropTypes from 'prop-types';
 import { Formik, Form, Field } from 'formik';
 import IconButton from '@mui/material/IconButton';
 import Box from '@mui/material/Box';
-import InputAdornment from '@mui/material/InputAdornment';
 import { useAuth } from 'context/AuthContext';
 import { loginSchema, getFirebaseErrorMessage } from './utils';
 import {

@@ -22,7 +22,6 @@ import { ordenarPorNome, ORDEM_ASC } from 'common/utils/ordenacao';
 import EntityFilters from 'components/EntityFilters/EntityFilters';
 import EntityViewDialog from 'components/EntityViewDialog/EntityViewDialog';
 import { CAMPOS_POR_TIPO } from './utils';
-import { OrigemCard } from './styles';
 import {
   RacaCard,
   RacaImageFrame,

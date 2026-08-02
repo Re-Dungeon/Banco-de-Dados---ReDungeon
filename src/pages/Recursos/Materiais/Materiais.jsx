@@ -14,14 +14,12 @@ import VisibilityOutlinedIcon from '@mui/icons-material/VisibilityOutlined';
 import { getMateriais, removeMaterial } from 'service/storage';
 import { ROUTE_PATHS } from 'common/constants/routes';
 import { useAuth } from 'context/AuthContext';
-import { RARIDADES } from 'common/constants/constants';
 import useEntityCRUD from 'hooks/useEntityCRUD';
 import useDeleteConfirmation from 'hooks/useDeleteConfirmation';
 import useUniversos from 'hooks/useUniversos';
 import { ordenarPorNome, ORDEM_ASC } from 'common/utils/ordenacao';
 import EntityFilters from 'components/EntityFilters/EntityFilters';
 import EntityViewDialog from 'components/EntityViewDialog/EntityViewDialog';
-import { MaterialCard } from './styles';
 import {
   RacaCard,
   RacaImageFrame,
@@ -48,7 +46,6 @@ const Materiais = () => {
   const { confirmDelete, deleteConfirmationDialog } = useDeleteConfirmation();
   const loading = loadingMateriais || loadingUniversos;
   const [filtroNome, setFiltroNome] = useState('');
-  const [filtroRaridade, setFiltroRaridade] = useState('');
   const [filtroUniverso, setFiltroUniverso] = useState('');
   const [ordenacao, setOrdenacao] = useState(ORDEM_ASC);
   const [materialVisualizando, setMaterialVisualizando] = useState(null);
@@ -56,12 +53,11 @@ const Materiais = () => {
   const materiaisFiltrados = useMemo(() => {
     const filtradas = materiais.filter(material => {
       const matchNome = !filtroNome || material.nome?.toLowerCase().includes(filtroNome.toLowerCase());
-      const matchRaridade = !filtroRaridade || material.raridade === filtroRaridade;
       const matchUniverso = !filtroUniverso || material.universo === filtroUniverso;
-      return matchNome && matchRaridade && matchUniverso;
+      return matchNome && matchUniverso;
     });
     return ordenarPorNome(filtradas, ordenacao);
-  }, [materiais, filtroNome, filtroRaridade, filtroUniverso, ordenacao]);
+  }, [materiais, filtroNome, filtroUniverso, ordenacao]);
 
   return (
     <Box className="page-container" id="redungeon-materiais" data-page="materiais">

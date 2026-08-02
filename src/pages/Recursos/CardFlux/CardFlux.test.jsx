@@ -75,6 +75,9 @@ describe('CardFlux (padrão useEntityCRUD + useUniversos + EntityFilters + Entit
       screen.getByLabelText('Remover CardFlux Emboscada Noturna'),
     );
 
+    const dialog = await screen.findByRole('dialog');
+    await user.click(within(dialog).getByRole('button', { name: 'Excluir' }));
+
     await waitFor(() =>
       expect(screen.queryByText('Emboscada Noturna')).not.toBeInTheDocument(),
     );

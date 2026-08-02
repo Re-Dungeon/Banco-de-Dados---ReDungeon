@@ -23,10 +23,16 @@ const DeleteConfirmationDialog = ({
   const cancelButtonRef = useRef(null);
 
   useEffect(() => {
-    if (open) {
-      setSkipConfirmation(!shouldShowDeleteConfirmation());
-      setTimeout(() => cancelButtonRef.current?.focus(), 0);
+    if (!open) {
+      return undefined;
     }
+
+    const timer = setTimeout(() => {
+      setSkipConfirmation(!shouldShowDeleteConfirmation());
+      cancelButtonRef.current?.focus();
+    }, 0);
+
+    return () => clearTimeout(timer);
   }, [open]);
 
   const handleConfirm = () => {

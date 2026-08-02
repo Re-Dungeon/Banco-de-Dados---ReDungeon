@@ -5,7 +5,6 @@ import Typography from '@mui/material/Typography';
 import Button from '@mui/material/Button';
 import IconButton from '@mui/material/IconButton';
 import CircularProgress from '@mui/material/CircularProgress';
-import Divider from '@mui/material/Divider';
 import Dialog from '@mui/material/Dialog';
 import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
@@ -32,8 +31,6 @@ import useDeleteConfirmation from 'hooks/useDeleteConfirmation';
 import useUniversos from 'hooks/useUniversos';
 import { ordenarPorNome, ORDEM_ASC } from 'common/utils/ordenacao';
 import EntityFilters from 'components/EntityFilters/EntityFilters';
-import EntityViewDialog from 'components/EntityViewDialog/EntityViewDialog';
-import { RegraCard } from './styles';
 import {
   RacaCard,
   RacaImageFrame,
@@ -46,7 +43,7 @@ import {
   RacaFooter,
 } from '../Recursos/Racas/styles';
 import CardTokens from 'components/CardTokens/CardTokens';
-import { getRegraUniversos, formatNomesUniversos } from './utils';
+import { getRegraUniversos } from './utils';
 
 const CAMPOS_FUNCIONAMENTO = [
   { key: 'comoFunciona', label: 'Como Funciona' },
@@ -55,11 +52,6 @@ const CAMPOS_FUNCIONAMENTO = [
   { key: 'falha', label: 'Falha' },
 ];
 
-const CAMPOS_RESTRICOES = [
-  { key: 'custo', label: 'Custo' },
-  { key: 'limite', label: 'Limite' },
-  { key: 'requisitos', label: 'Requisitos' },
-];
 
 const Regras = () => {
   const navigate = useNavigate();

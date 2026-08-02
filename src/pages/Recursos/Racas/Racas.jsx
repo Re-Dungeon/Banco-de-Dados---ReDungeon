@@ -1,4 +1,5 @@
 ﻿import React, { useState, useMemo } from 'react';
+import PropTypes from 'prop-types';
 import { useNavigate } from 'react-router-dom';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
@@ -49,10 +50,6 @@ import {
   RacaAbilityCard,
   RacaAbilityHeader,
   RacaAbilityTitle,
-  RacaAbilityLabel,
-  RacaAbilityDescription,
-  RacaAbilityMeta,
-  RacaAbilityBadge,
   AbilityHeaderCore,
   AbilityBadge,
   AbilityStatsBar,
@@ -85,14 +82,6 @@ const ATRIBUTO_ORDEM = [
   'limiteMaximoAtributo',
 ];
 
-const HAB_META_FIELDS = [
-  { key: 'alvo', label: 'Alvo' },
-  { key: 'alcance', label: 'Alcance' },
-  { key: 'custo', label: 'Custo' },
-  { key: 'recarga', label: 'Recarga' },
-  { key: 'duracao', label: 'Duração' },
-  { key: 'dados', label: 'Dados' },
-];
 
 const Racas = () => {
   const navigate = useNavigate();
@@ -580,5 +569,31 @@ function AbilityCardView({ hab }) {
     </RacaAbilityCard>
   );
 }
+
+AbilitiesTabs.propTypes = {
+  raca: PropTypes.shape({
+    habilidadesRaciais: PropTypes.shape({
+      habilidadesBasicas: PropTypes.arrayOf(PropTypes.object),
+      habilidadesAvancadas: PropTypes.arrayOf(PropTypes.object),
+    }),
+  }),
+};
+
+AbilityCardView.propTypes = {
+  hab: PropTypes.shape({
+    bonus: PropTypes.arrayOf(PropTypes.string),
+    nome: PropTypes.string,
+    nucleo: PropTypes.string,
+    tipo: PropTypes.string,
+    passiva: PropTypes.bool,
+    recarga: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+    acao: PropTypes.string,
+    duracao: PropTypes.string,
+    alcance: PropTypes.string,
+    alvo: PropTypes.string,
+    custo: PropTypes.string,
+    descricao: PropTypes.string,
+  }).isRequired,
+};
 
 export default Racas;

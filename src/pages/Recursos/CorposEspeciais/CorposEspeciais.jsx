@@ -6,7 +6,6 @@ import Button from '@mui/material/Button';
 import Paper from '@mui/material/Paper';
 import IconButton from '@mui/material/IconButton';
 import CircularProgress from '@mui/material/CircularProgress';
-import Divider from '@mui/material/Divider';
 import Dialog from '@mui/material/Dialog';
 import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
@@ -25,8 +24,6 @@ import useDeleteConfirmation from 'hooks/useDeleteConfirmation';
 import useUniversos from 'hooks/useUniversos';
 import { ordenarPorNome, ORDEM_ASC } from 'common/utils/ordenacao';
 import EntityFilters from 'components/EntityFilters/EntityFilters';
-import EntityViewDialog from 'components/EntityViewDialog/EntityViewDialog';
-import { CorpoEspecialCard } from './styles';
 import {
   RacaCard,
   RacaImageFrame,

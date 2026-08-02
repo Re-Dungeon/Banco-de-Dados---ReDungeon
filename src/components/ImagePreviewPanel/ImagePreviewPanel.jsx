@@ -1,4 +1,4 @@
-import React, { useMemo, useState, useEffect } from 'react';
+import React, { useMemo, useState } from 'react';
 import PropTypes from 'prop-types';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
@@ -12,13 +12,8 @@ import Typography from '@mui/material/Typography';
  * para "adjusting state when a prop changes").
  */
 const ImagePreviewPanel = ({ src, alt }) => {
-  const [imgError, setImgError] = useState(false);
-
-  // Resetar o estado interno de erro sempre que a prop `src` mudar.
-  useEffect(() => {
-    setImgError(false);
-  }, [src]);
-
+  const [failedSrc, setFailedSrc] = useState('');
+  const imgError = Boolean(src?.trim() && failedSrc === src);
   const hasPreview = Boolean(src?.trim()) && !imgError;
   const statusText = useMemo(() => {
     if (!src?.trim()) return 'Aguardando imagem';
@@ -73,7 +68,7 @@ const ImagePreviewPanel = ({ src, alt }) => {
             <img
               src={src}
               alt={alt}
-              onError={() => setImgError(true)}
+              onError={() => setFailedSrc(src)}
               style={{
                 width: '100%',
                 height: '100%',

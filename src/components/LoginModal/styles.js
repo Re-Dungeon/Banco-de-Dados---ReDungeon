@@ -161,7 +161,7 @@ export const ModalSubtitle = styled(Typography)`
   max-width: 360px;
 `;
 
-export const StyledTextField = muiStyled(TextField)(({ theme }) => ({
+export const StyledTextField = muiStyled(TextField)(() => ({
   width: '100%',
   maxWidth: '100%',
   '& .MuiOutlinedInput-root': {

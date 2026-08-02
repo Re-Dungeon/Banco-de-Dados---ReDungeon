@@ -21,7 +21,6 @@ import useUniversos from 'hooks/useUniversos';
 import { ordenarPorNome, ORDEM_ASC } from 'common/utils/ordenacao';
 import EntityFilters from 'components/EntityFilters/EntityFilters';
 import EntityViewDialog from 'components/EntityViewDialog/EntityViewDialog';
-import { CardFluxCard } from './styles';
 import {
   RacaCard,
   RacaImageFrame,

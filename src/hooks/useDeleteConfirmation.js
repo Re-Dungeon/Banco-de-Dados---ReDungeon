@@ -25,7 +25,7 @@ const useDeleteConfirmation = () => {
   const handleConfirm = useCallback(() => {
     dialogState.onConfirm?.();
     closeDialog();
-  }, [closeDialog, dialogState.onConfirm]);
+  }, [closeDialog, dialogState]);
 
   const deleteConfirmationDialog = React.createElement(DeleteConfirmationDialog, {
     open: dialogState.open,
