@@ -94,11 +94,13 @@ const NovoCardFlux = () => {
   };
 
   const menuPropsSx = {
-    PaperProps: {
-      sx: {
-        background: 'var(--bg-card)',
-        color: 'var(--text-primary)',
-        maxHeight: 320,
+    slotProps: {
+      paper: {
+        sx: {
+          background: 'var(--bg-card)',
+          color: 'var(--text-primary)',
+          maxHeight: 320,
+        },
       },
     },
   };
@@ -301,7 +303,7 @@ const NovoCardFlux = () => {
                               label="Intensidade"
                               type="number"
                               fullWidth
-                              inputProps={{ min: 0 }}
+                              slotProps={{ htmlInput: { min: 0 } }}
                               sx={slotInputSx}
                             />
                           )}
@@ -314,7 +316,7 @@ const NovoCardFlux = () => {
                               label="Peso"
                               type="number"
                               fullWidth
-                              inputProps={{ min: 0 }}
+                              slotProps={{ htmlInput: { min: 0 } }}
                               sx={slotInputSx}
                             />
                           )}
@@ -327,7 +329,7 @@ const NovoCardFlux = () => {
                               label="CD"
                               type="number"
                               fullWidth
-                              inputProps={{ min: 0 }}
+                              slotProps={{ htmlInput: { min: 0 } }}
                               sx={slotInputSx}
                             />
                           )}
@@ -681,8 +683,8 @@ const NovoCardFlux = () => {
                             ? 'Nenhum CardFlux encontrado neste universo'
                             : 'Selecione um Universo primeiro'
                         }
-                        renderTags={(tagValue, getTagProps) =>
-                          tagValue.map((option, index) => (
+                        renderValue={(value, getTagProps) =>
+                          value.map((option, index) => (
                             <Chip
                               {...getTagProps({ index })}
                               key={option.id}
@@ -702,6 +704,7 @@ const NovoCardFlux = () => {
                             label="Cartas Vinculadas"
                             placeholder="Buscar CardFlux..."
                             sx={slotInputSx}
+                            fullWidth
                           />
                         )}
                         slotProps={{

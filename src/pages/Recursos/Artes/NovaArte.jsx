@@ -90,8 +90,10 @@ const NovaArte = () => {
   };
 
   const menuPropsSx = {
-    PaperProps: {
-      sx: { background: 'var(--bg-card)', color: 'var(--text-primary)' },
+    slotProps: {
+      paper: {
+        sx: { background: 'var(--bg-card)', color: 'var(--text-primary)' },
+      },
     },
   };
 
@@ -444,8 +446,8 @@ const NovaArte = () => {
                             ? 'Nenhuma condição encontrada neste universo'
                             : 'Selecione um Universo primeiro'
                         }
-                        renderTags={(tagValue, getTagProps) =>
-                          tagValue.map((option, index) => (
+                        renderValue={(value, getTagProps) =>
+                          value.map((option, index) => (
                             <Chip
                               {...getTagProps({ index })}
                               key={option.id}
@@ -465,6 +467,7 @@ const NovaArte = () => {
                             label="Condições Aplicadas"
                             placeholder="Buscar condição..."
                             sx={slotInputSx}
+                            fullWidth
                           />
                         )}
                         slotProps={{

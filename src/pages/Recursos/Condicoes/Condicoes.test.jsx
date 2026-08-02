@@ -73,6 +73,9 @@ describe('Condicoes (padrão useEntityCRUD + useUniversos + EntityFilters + Enti
 
     await user.click(screen.getByLabelText('Remover condição Envenenado'));
 
+    const dialog = await screen.findByRole('dialog');
+    await user.click(within(dialog).getByRole('button', { name: 'Excluir' }));
+
     await waitFor(() =>
       expect(screen.queryByText('Envenenado')).not.toBeInTheDocument(),
     );

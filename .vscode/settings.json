@@ -1,0 +1,12 @@
+{
+    "chat.tools.terminal.autoApprove": {
+        "/^node --eval 'const fs=require\\(\"fs\"\\); const fp=\"c:/Users/HomeUser/Documents/GitHub/Banco-de-Dados---ReDungeon/src/pages/Recursos/Itens/Itens\\.jsx\"; const lines=fs\\.readFileSync\\(fp,\"utf8\"\\)\\.split\\(\"\\\\n\"\\); for \\(let i=88;i<=96;i\\+\\+\\)\\{ console\\.log\\(`\\$\\{i\\+1\\}: \\$\\{lines\\[i\\]\\}`\\);\\} '$/": {
+            "approve": true,
+            "matchCommandLine": true
+        },
+        "/^python -c \"from pathlib import Path; p=Path\\('c:/Users/HomeUser/Documents/GitHub/Banco-de-Dados---ReDungeon/src/pages/Recursos/Itens/Itens\\.jsx'\\); lines=p\\.read_text\\('utf-8'\\)\\.splitlines\\(\\); print\\('\\\\n'\\.join\\(f'\\{i\\+1\\}: \\{lines\\[i\\]\\}' for i in range\\(70,100\\)\\)\\)\"$/": {
+            "approve": true,
+            "matchCommandLine": true
+        }
+    }
+}

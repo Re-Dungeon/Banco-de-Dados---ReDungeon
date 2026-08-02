@@ -1,12 +1,15 @@
 import React, { useState, useMemo } from 'react';
+import PropTypes from 'prop-types';
 import { useNavigate } from 'react-router-dom';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import Button from '@mui/material/Button';
 import IconButton from '@mui/material/IconButton';
 import CircularProgress from '@mui/material/CircularProgress';
-import Divider from '@mui/material/Divider';
 import Tooltip from '@mui/material/Tooltip';
+import Tabs from '@mui/material/Tabs';
+import Tab from '@mui/material/Tab';
+import Fade from '@mui/material/Fade';
 import DeleteOutlineIcon from '@mui/icons-material/DeleteOutlined';
 import EditOutlinedIcon from '@mui/icons-material/EditOutlined';
 import VisibilityOutlinedIcon from '@mui/icons-material/VisibilityOutlined';
@@ -15,11 +18,47 @@ import { ROUTE_PATHS } from 'common/constants/routes';
 import { useAuth } from 'context/AuthContext';
 import { RARIDADES, TIPOS_PERSONAGEM } from 'common/constants/constants';
 import useEntityCRUD from 'hooks/useEntityCRUD';
+import useDeleteConfirmation from 'hooks/useDeleteConfirmation';
 import useUniversos from 'hooks/useUniversos';
 import { ordenarPorNome, ORDEM_ASC } from 'common/utils/ordenacao';
 import EntityFilters from 'components/EntityFilters/EntityFilters';
 import EntityViewDialog from 'components/EntityViewDialog/EntityViewDialog';
-import { ClasseCard } from './styles';
+import {
+  RacaCard,
+  RacaImageFrame,
+  RacaImageOverlay,
+  RacaActionBar,
+  RacaContent,
+  RacaTitle,
+  RacaSubtitle,
+  RacaDescription,
+  RacaFooter,
+  RacaModalHeader,
+  RacaModalHeroBadges,
+  RacaModalBadge,
+  RacaModalImage,
+  RacaDescriptionPanel,
+  RacaSectionTitle,
+  RacaAttributeGrid,
+  RacaAttributeCard,
+  RacaAttributeLabel,
+  RacaAttributeValue,
+  RacaAbilityList,
+  RacaAbilityCard,
+  RacaAbilityHeader,
+  RacaAbilityTitle,
+  AbilityHeaderCore,
+  AbilityBadge,
+  AbilityStatsBar,
+  AbilityStat,
+  AbilityStatLabel,
+  AbilityStatValue,
+  AbilityTabNav,
+  AbilityTabButton,
+  AbilityContentArea,
+  AbilityBonusItem,
+} from '../Racas/styles';
+import CardTokens from 'components/CardTokens/CardTokens';
 
 const ATRIBUTO_LABELS = {
   forca: 'Força',
@@ -28,15 +67,6 @@ const ATRIBUTO_LABELS = {
   inteligencia: 'Inteligência',
   percepcao: 'Percepção',
 };
-
-const HAB_META_FIELDS = [
-  { key: 'alvo', label: 'Alvo' },
-  { key: 'alcance', label: 'Alcance' },
-  { key: 'custo', label: 'Custo' },
-  { key: 'recarga', label: 'Recarga' },
-  { key: 'duracao', label: 'Duração' },
-  { key: 'dados', label: 'Dados' },
-];
 
 const Classes = () => {
   const navigate = useNavigate();
@@ -47,6 +77,7 @@ const Classes = () => {
     remove: handleRemove,
   } = useEntityCRUD({ getAll: getClasses, remove: removeClasse });
   const { universos, loadingUniversos } = useUniversos();
+  const { confirmDelete, deleteConfirmationDialog } = useDeleteConfirmation();
   const loading = loadingClasses || loadingUniversos;
   const [filtroNome, setFiltroNome] = useState('');
   const [filtroRaridade, setFiltroRaridade] = useState('');
@@ -167,133 +198,94 @@ const Classes = () => {
               }}
             >
               {classesFiltradas.map(classe => (
-                <ClasseCard key={classe.id} elevation={0}>
-                  <Box
-                    sx={{
-                      display: 'flex',
-                      justifyContent: 'flex-end',
-                      gap: 0.5,
-                      mb: 1,
-                    }}
-                  >
-                    <Tooltip title="Visualizar detalhes">
-                      <IconButton
-                        size="small"
-                        onClick={() => setClasseVisualizando(classe)}
-                        sx={{
-                          color: 'var(--text-secondary)',
-                          '&:hover': { color: 'var(--color-accent)' },
+                <RacaCard key={classe.id} elevation={0}>
+                  <RacaImageFrame>
+                    {classe.linkImagem && !/discordapp\.net\/attachments/.test(classe.linkImagem) && (
+                      <Box
+                        component="img"
+                        className="raca-card-image"
+                        src={classe.linkImagem}
+                        alt={classe.nome}
+                        onError={e => {
+                          e.currentTarget.style.display = 'none';
                         }}
-                        aria-label={`Visualizar classe ${classe.nome}`}
-                      >
-                        <VisibilityOutlinedIcon fontSize="small" />
-                      </IconButton>
-                    </Tooltip>
-                    {canWrite(classe.universo) && (
-                      <>
-                        <IconButton
-                          size="small"
-                          onClick={() =>
-                            navigate(ROUTE_PATHS.NOVA_CLASSE, {
-                              state: { classe },
-                            })
-                          }
-                          sx={{
-                            color: 'var(--color-accent)',
-                            '&:hover': {
-                              color: 'var(--color-accent)',
-                              opacity: 0.8,
-                            },
-                          }}
-                          aria-label={`Editar classe ${classe.nome}`}
-                        >
-                          <EditOutlinedIcon fontSize="small" />
-                        </IconButton>
-                        <IconButton
-                          size="small"
-                          onClick={() => handleRemove(classe.id)}
-                          sx={{
-                            color: '#ef4444',
-                            '&:hover': { color: '#ef4444' },
-                          }}
-                          aria-label={`Remover classe ${classe.nome}`}
-                        >
-                          <DeleteOutlineIcon fontSize="small" />
-                        </IconButton>
-                      </>
+                      />
                     )}
-                  </Box>
-                  {classe.linkImagem && (
-                    <Box
-                      component="img"
-                      src={classe.linkImagem}
-                      alt={classe.nome}
-                      sx={{
-                        width: '100%',
-                        height: 180,
-                        borderRadius: 2,
-                        objectFit: 'cover',
-                        display: 'block',
-                        border: '1px solid var(--border-primary)',
-                        mb: 1.5,
-                      }}
-                      onError={e => {
-                        e.currentTarget.style.display = 'none';
-                      }}
-                    />
-                  )}
-                  <Typography
-                    variant="h6"
-                    sx={{
-                      color: 'var(--text-primary)',
-                      fontWeight: 600,
-                      lineHeight: 1.2,
-                    }}
-                  >
-                    {classe.nome}
-                  </Typography>
-                  {classe.raridade && (
-                    <Typography
-                      variant="caption"
-                      sx={{
-                        color: 'var(--color-accent)',
-                        fontWeight: 600,
-                        display: 'block',
-                        mb: 1,
-                      }}
-                    >
-                      {`${universos.find(u => u.id === classe.universo)?.Nome || 'Universo Desconhecido'} - ${classe.raridade}`}
-                    </Typography>
-                  )}
-                  {classe.descricao && (
-                    <Typography
-                      variant="body2"
-                      sx={{
-                        color: 'var(--text-secondary)',
-                        mt: 0.5,
-                        display: '-webkit-box',
-                        WebkitLineClamp: 3,
-                        WebkitBoxOrient: 'vertical',
-                        overflow: 'hidden',
-                      }}
-                    >
-                      {classe.descricao}
-                    </Typography>
-                  )}
-                  {classe.habilidades?.length > 0 && (
-                    <Typography
-                      variant="caption"
-                      sx={{
-                        color: 'var(--text-muted)',
-                        mt: 1,
-                        display: 'block',
-                      }}
-                    >
-                      {classe.habilidades.length} habilidade
-                      {classe.habilidades.length !== 1 ? 's' : ''}
-                    </Typography>
-                  )}
-                </ClasseCard>
+
+                    <RacaImageOverlay />
+
+                    <RacaActionBar>
+                      <Tooltip title="Visualizar detalhes">
+                        <IconButton
+                          size="small"
+                          onClick={() => setClasseVisualizando(classe)}
+                          sx={{
+                            color: 'var(--text-secondary)',
+                            padding: '14px',
+                            minWidth: '16px',
+                            width: '16px',
+                            height: '16px',
+                            '&:hover': { color: 'var(--color-accent)' },
+                          }}
+                          aria-label={`Visualizar classe ${classe.nome}`}
+                        >
+                          <VisibilityOutlinedIcon fontSize="small" />
+                        </IconButton>
+                      </Tooltip>
+
+                      {canWrite(classe.universo) && (
+                        <>
+                          <IconButton
+                            size="small"
+                            onClick={() =>
+                              navigate(ROUTE_PATHS.NOVA_CLASSE, { state: { classe } })
+                            }
+                            sx={{
+                              color: 'var(--color-accent)',
+                              padding: '4px',
+                              minWidth: '32px',
+                              width: '32px',
+                              height: '32px',
+                              '&:hover': { color: 'var(--color-accent)', opacity: 0.8 },
+                            }}
+                            aria-label={`Editar classe ${classe.nome}`}
+                          >
+                            <EditOutlinedIcon fontSize="small" />
+                          </IconButton>
+                          <IconButton
+                            size="small"
+                            onClick={() => confirmDelete(classe.nome, () => handleRemove(classe.id))}
+                            sx={{ color: '#ef4444', padding: '4px', minWidth: '32px', width: '32px', height: '32px', '&:hover': { color: '#ef4444' } }}
+                            aria-label={`Remover classe ${classe.nome}`}
+                          >
+                            <DeleteOutlineIcon fontSize="small" />
+                          </IconButton>
+                        </>
+                      )}
+                    </RacaActionBar>
+                  </RacaImageFrame>
+
+                  <RacaContent>
+                    <RacaTitle variant="h6">{classe.nome}</RacaTitle>
+                    {classe.raridade && (
+                      <RacaSubtitle variant="caption">
+                        {`${universos.find(u => u.id === classe.universo)?.Nome || 'Universo Desconhecido'} - ${classe.raridade}`}
+                      </RacaSubtitle>
+                    )}
+
+                    {classe.descricao && <RacaDescription variant="body2">{classe.descricao}</RacaDescription>}
+
+                    <RacaFooter>
+                      <CardTokens
+                        items={[
+                          `📖 ${universos.find(u => u.id === classe.universo)?.Nome || 'Universo Desconhecido'}`,
+                          ...(classe.raridade ? [`⭐ ${classe.raridade}`] : []),
+                          ...(classe.tiposDisponiveis?.length > 0 ? [`🧬 ${classe.tiposDisponiveis[0]}`] : []),
+                        ]}
+                      />
+                    </RacaFooter>
+                  </RacaContent>
+                </RacaCard>
               ))}
             </Box>
           )}
@@ -303,348 +295,259 @@ const Classes = () => {
       <EntityViewDialog
         open={Boolean(classeVisualizando)}
         onClose={() => setClasseVisualizando(null)}
-        titulo={classeVisualizando?.nome}
-        subtitulo={
-          classeVisualizando?.raridade &&
-          `${universos.find(u => u.id === classeVisualizando?.universo)?.Nome || 'Universo Desconhecido'} — ${classeVisualizando.raridade}`
-        }
-        imagem={classeVisualizando?.linkImagem}
-        descricao={classeVisualizando?.descricao}
       >
+        <RacaModalHeader>
+          <Typography
+            variant="h4"
+            sx={{
+              color: 'var(--text-primary)',
+              fontWeight: 800,
+              letterSpacing: '-0.02em',
+              lineHeight: 1.05,
+            }}
+          >
+            {classeVisualizando?.nome}
+          </Typography>
+
+          {classeVisualizando?.linkImagem &&
+            !/discordapp\.net\/attachments/.test(classeVisualizando.linkImagem) && (
+              <RacaModalImage>
+                <img
+                  src={classeVisualizando.linkImagem}
+                  alt={classeVisualizando.nome}
+                  onError={e => {
+                    e.currentTarget.style.display = 'none';
+                  }}
+                />
+              </RacaModalImage>
+            )}
+
+          <RacaModalHeroBadges>
+            {classeVisualizando?.raridade && (
+              <RacaModalBadge>⭐ {classeVisualizando.raridade}</RacaModalBadge>
+            )}
+            {classeVisualizando?.tiposDisponiveis?.[0] && (
+              <RacaModalBadge>🧬 {classeVisualizando.tiposDisponiveis[0]}</RacaModalBadge>
+            )}
+          </RacaModalHeroBadges>
+        </RacaModalHeader>
+
+        {classeVisualizando?.descricao && (
+          <RacaDescriptionPanel>
+            <RacaSectionTitle>📖 Descrição</RacaSectionTitle>
+            <Typography
+              variant="body2"
+              sx={{ color: 'var(--text-secondary)', lineHeight: 1.85 }}
+            >
+              {classeVisualizando.descricao}
+            </Typography>
+          </RacaDescriptionPanel>
+        )}
+
         {classeVisualizando?.atributosBasicos &&
           Object.values(classeVisualizando.atributosBasicos).some(v => v) && (
             <>
-              <Divider sx={{ borderColor: 'var(--border-primary)', mb: 1.5 }} />
-              <Typography
-                variant="subtitle2"
+              <RacaSectionTitle>Atributos</RacaSectionTitle>
+              <RacaAttributeGrid
                 sx={{
-                  color: 'var(--color-accent)',
-                  fontWeight: 700,
-                  mb: 1,
-                  textTransform: 'uppercase',
-                  letterSpacing: 1,
-                  fontSize: '0.72rem',
-                }}
-              >
-                Atributos Básicos
-              </Typography>
-              <Box
-                sx={{
-                  display: 'grid',
-                  gridTemplateColumns: 'repeat(auto-fill, minmax(90px, 1fr))',
-                  gap: 1,
-                  mb: 2,
+                  gridTemplateColumns: 'repeat(5, minmax(0, 1fr))',
+                  '@media (max-width: 900px)': {
+                    gridTemplateColumns: 'repeat(3, minmax(0, 1fr))',
+                  },
+                  '@media (max-width: 600px)': {
+                    gridTemplateColumns: '1fr',
+                  },
                 }}
               >
                 {Object.entries(classeVisualizando.atributosBasicos).map(
                   ([key, value]) =>
                     value ? (
-                      <Box
-                        key={key}
-                        sx={{
-                          background: 'var(--bg-secondary)',
-                          borderRadius: 1,
-                          p: 1,
-                          textAlign: 'center',
-                        }}
-                      >
-                        <Typography
-                          variant="caption"
-                          sx={{
-                            color: 'var(--text-muted)',
-                            display: 'block',
-                          }}
-                        >
+                      <RacaAttributeCard key={key}>
+                        <RacaAttributeLabel>
                           {ATRIBUTO_LABELS[key] ?? key}
-                        </Typography>
-                        <Typography
-                          variant="body2"
-                          sx={{
-                            color: 'var(--text-primary)',
-                            fontWeight: 600,
-                          }}
-                        >
-                          {value}
-                        </Typography>
-                      </Box>
+                        </RacaAttributeLabel>
+                        <RacaAttributeValue>{value}</RacaAttributeValue>
+                      </RacaAttributeCard>
                     ) : null,
                 )}
+              </RacaAttributeGrid>
+            </>
+          )}
+
+        {(classeVisualizando?.habilidadesBasicas?.length > 0 ||
+          classeVisualizando?.habilidadesAvancadas?.length > 0) && (
+          <>
+            <RacaSectionTitle>Habilidades</RacaSectionTitle>
+            <Box sx={{ mt: 1 }}>
+                <ClassesAbilitiesTabs
+                  key={classeVisualizando?.id ?? 'classe'}
+                  classe={classeVisualizando}
+                />
               </Box>
             </>
           )}
-        {classeVisualizando?.habilidadesBasicas?.length > 0 && (
-          <>
-            <Divider sx={{ borderColor: 'var(--border-primary)', mb: 1.5 }} />
-            <Typography
-              variant="subtitle2"
-              sx={{
-                color: 'var(--color-accent)',
-                fontWeight: 700,
-                mb: 1,
-                textTransform: 'uppercase',
-                letterSpacing: 1,
-                fontSize: '0.72rem',
-              }}
-            >
-              Habilidades Básicas
-            </Typography>
-            {classeVisualizando.habilidadesBasicas.map((hab, i) => (
-              <Box
-                key={`${hab.nome}-${i}`}
-                sx={{
-                  mb: 1,
-                  p: 1.5,
-                  background: 'var(--bg-secondary)',
-                  borderRadius: 1,
-                  border: '1px solid var(--border-primary)',
-                }}
-              >
-                <Box
-                  sx={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'space-between',
-                    mb: 0.5,
-                  }}
-                >
-                  <Typography
-                    variant="body2"
-                    sx={{ color: 'var(--text-primary)', fontWeight: 600 }}
-                  >
-                    {hab.nome}
-                  </Typography>
-                  {hab.acao && (
-                    <Typography
-                      variant="caption"
-                      sx={{ color: 'var(--color-accent)', fontWeight: 600 }}
-                    >
-                      {hab.acao}
-                    </Typography>
-                  )}
-                </Box>
-                {hab.descricao && (
-                  <Typography
-                    variant="caption"
-                    sx={{
-                      color: 'var(--text-secondary)',
-                      display: 'block',
-                      mb: 0.75,
-                    }}
-                  >
-                    {hab.descricao}
-                  </Typography>
-                )}
-                {HAB_META_FIELDS.filter(f => hab[f.key]).length > 0 && (
-                  <Box
-                    sx={{
-                      display: 'flex',
-                      flexWrap: 'wrap',
-                      gap: 0.75,
-                      mt: 0.5,
-                    }}
-                  >
-                    {HAB_META_FIELDS.filter(f => hab[f.key]).map(f => (
-                      <Box
-                        key={f.key}
-                        sx={{
-                          background: 'var(--bg-primary)',
-                          borderRadius: 1,
-                          px: 1,
-                          py: 0.5,
-                        }}
-                      >
-                        <Typography
-                          variant="caption"
-                          sx={{
-                            color: 'var(--text-muted)',
-                            display: 'block',
-                            fontSize: '0.65rem',
-                          }}
-                        >
-                          {f.label}
-                        </Typography>
-                        <Typography
-                          variant="caption"
-                          sx={{
-                            color: 'var(--text-primary)',
-                            fontWeight: 600,
-                          }}
-                        >
-                          {hab[f.key]}
-                        </Typography>
-                      </Box>
-                    ))}
-                  </Box>
-                )}
-                {hab.bonus?.filter(Boolean).length > 0 && (
-                  <Box sx={{ mt: 0.75 }}>
-                    <Typography
-                      variant="caption"
-                      sx={{
-                        color: 'var(--text-muted)',
-                        display: 'block',
-                        fontSize: '0.65rem',
-                        mb: 0.25,
-                      }}
-                    >
-                      Bônus
-                    </Typography>
-                    {hab.bonus.filter(Boolean).map((b, bi) => (
-                      <Typography
-                        key={bi}
-                        variant="caption"
-                        sx={{
-                          color: 'var(--color-accent)',
-                          display: 'block',
-                        }}
-                      >
-                        • {b}
-                      </Typography>
-                    ))}
-                  </Box>
-                )}
-              </Box>
-            ))}
-          </>
-        )}
-        {classeVisualizando?.habilidadesAvancadas?.length > 0 && (
-          <>
-            <Divider sx={{ borderColor: 'var(--border-primary)', mb: 1.5 }} />
-            <Typography
-              variant="subtitle2"
-              sx={{
-                color: 'var(--color-accent)',
-                fontWeight: 700,
-                mb: 1,
-                textTransform: 'uppercase',
-                letterSpacing: 1,
-                fontSize: '0.72rem',
-              }}
-            >
-              Habilidades Avançadas
-            </Typography>
-            {classeVisualizando.habilidadesAvancadas.map((hab, i) => (
-              <Box
-                key={`${hab.nome}-${i}`}
-                sx={{
-                  mb: 1,
-                  p: 1.5,
-                  background: 'var(--bg-secondary)',
-                  borderRadius: 1,
-                  border: '1px solid var(--border-primary)',
-                }}
-              >
-                <Box
-                  sx={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'space-between',
-                    mb: 0.5,
-                  }}
-                >
-                  <Typography
-                    variant="body2"
-                    sx={{ color: 'var(--text-primary)', fontWeight: 600 }}
-                  >
-                    {hab.nome}
-                  </Typography>
-                  {hab.acao && (
-                    <Typography
-                      variant="caption"
-                      sx={{ color: 'var(--color-accent)', fontWeight: 600 }}
-                    >
-                      {hab.acao}
-                    </Typography>
-                  )}
-                </Box>
-                {hab.descricao && (
-                  <Typography
-                    variant="caption"
-                    sx={{
-                      color: 'var(--text-secondary)',
-                      display: 'block',
-                      mb: 0.75,
-                    }}
-                  >
-                    {hab.descricao}
-                  </Typography>
-                )}
-                {HAB_META_FIELDS.filter(f => hab[f.key]).length > 0 && (
-                  <Box
-                    sx={{
-                      display: 'flex',
-                      flexWrap: 'wrap',
-                      gap: 0.75,
-                      mt: 0.5,
-                    }}
-                  >
-                    {HAB_META_FIELDS.filter(f => hab[f.key]).map(f => (
-                      <Box
-                        key={f.key}
-                        sx={{
-                          background: 'var(--bg-primary)',
-                          borderRadius: 1,
-                          px: 1,
-                          py: 0.5,
-                        }}
-                      >
-                        <Typography
-                          variant="caption"
-                          sx={{
-                            color: 'var(--text-muted)',
-                            display: 'block',
-                            fontSize: '0.65rem',
-                          }}
-                        >
-                          {f.label}
-                        </Typography>
-                        <Typography
-                          variant="caption"
-                          sx={{
-                            color: 'var(--text-primary)',
-                            fontWeight: 600,
-                          }}
-                        >
-                          {hab[f.key]}
-                        </Typography>
-                      </Box>
-                    ))}
-                  </Box>
-                )}
-                {hab.bonus?.filter(Boolean).length > 0 && (
-                  <Box sx={{ mt: 0.75 }}>
-                    <Typography
-                      variant="caption"
-                      sx={{
-                        color: 'var(--text-muted)',
-                        display: 'block',
-                        fontSize: '0.65rem',
-                        mb: 0.25,
-                      }}
-                    >
-                      Bônus
-                    </Typography>
-                    {hab.bonus.filter(Boolean).map((b, bi) => (
-                      <Typography
-                        key={bi}
-                        variant="caption"
-                        sx={{
-                          color: 'var(--color-accent)',
-                          display: 'block',
-                        }}
-                      >
-                        • {b}
-                      </Typography>
-                    ))}
-                  </Box>
-                )}
-              </Box>
-            ))}
-          </>
-        )}
       </EntityViewDialog>
+      {deleteConfirmationDialog}
     </Box>
   );
+};
+
+function ClassesAbilitiesTabs({ classe }) {
+  const [tab, setTab] = useState(0);
+  const basicas = classe?.habilidadesBasicas || [];
+  const avancadas = classe?.habilidadesAvancadas || [];
+
+  return (
+    <>
+      <Box sx={{ display: 'flex', justifyContent: 'center' }}>
+        <Tabs
+          value={tab}
+          onChange={(event, value) => setTab(value)}
+          sx={{
+            '& .MuiTabs-flexContainer': { gap: 1 },
+            '& .MuiTab-root': {
+              textTransform: 'none',
+              fontWeight: 700,
+              borderRadius: '12px',
+              padding: '6px 14px',
+              minWidth: 160,
+            },
+            '& .MuiTab-root.Mui-selected': {
+              background: 'linear-gradient(90deg, rgba(96,165,250,0.12), rgba(255,215,64,0.06))',
+              color: 'white',
+              boxShadow: '0 6px 18px rgba(0,0,0,0.28)',
+              border: '1px solid rgba(96,165,250,0.16)',
+            },
+            '& .MuiTabs-indicator': { display: 'none' },
+          }}
+        >
+          <Tab label="Habilidades Básicas" id="tab-basicas" aria-controls="tabpanel-basicas" />
+          <Tab label="Habilidades Avançadas" id="tab-avancadas" aria-controls="tabpanel-avancadas" />
+        </Tabs>
+      </Box>
+
+      <Box sx={{ mt: 2 }}>
+        <Fade in={tab === 0} timeout={200} unmountOnExit>
+          <div role="tabpanel" id="tabpanel-basicas" aria-labelledby="tab-basicas">
+            {basicas.length > 0 ? (
+              <RacaAbilityList>
+                {basicas.map((hab, index) => (
+                  <AbilityCardView key={`${hab.nome}-${index}`} hab={hab} />
+                ))}
+              </RacaAbilityList>
+            ) : (
+              <Typography variant="body2" sx={{ color: 'var(--text-muted)' }}>
+                Nenhuma habilidade básica.
+              </Typography>
+            )}
+          </div>
+        </Fade>
+
+        <Fade in={tab === 1} timeout={200} unmountOnExit>
+          <div role="tabpanel" id="tabpanel-avancadas" aria-labelledby="tab-avancadas">
+            {avancadas.length > 0 ? (
+              <RacaAbilityList>
+                {avancadas.map((hab, index) => (
+                  <AbilityCardView key={`${hab.nome}-${index}`} hab={hab} />
+                ))}
+              </RacaAbilityList>
+            ) : (
+              <Typography variant="body2" sx={{ color: 'var(--text-muted)' }}>
+                Nenhuma habilidade avançada.
+              </Typography>
+            )}
+          </div>
+        </Fade>
+      </Box>
+    </>
+  );
+}
+
+function AbilityCardView({ hab }) {
+  const bonuses = (hab.bonus || []).filter(Boolean);
+
+  return (
+    <RacaAbilityCard>
+      <RacaAbilityHeader>
+        <div>
+          <RacaAbilityTitle>{hab.nome}</RacaAbilityTitle>
+          {hab.nucleo && <AbilityHeaderCore>{`Núcleo: ${hab.nucleo}`}</AbilityHeaderCore>}
+        </div>
+        <div>
+          <AbilityBadge>{hab.tipo?.toUpperCase() || (hab.passiva ? 'PASSIVA' : 'ATIVA')}</AbilityBadge>
+        </div>
+      </RacaAbilityHeader>
+
+      <AbilityStatsBar>
+        <AbilityStat>
+          <AbilityStatLabel>Recarga</AbilityStatLabel>
+          <AbilityStatValue>{hab.recarga ?? 'N/D'}</AbilityStatValue>
+        </AbilityStat>
+        <AbilityStat>
+          <AbilityStatLabel>Ação</AbilityStatLabel>
+          <AbilityStatValue>{hab.acao ?? (hab.passiva ? 'Passiva' : '—')}</AbilityStatValue>
+        </AbilityStat>
+        <AbilityStat>
+          <AbilityStatLabel>Duração</AbilityStatLabel>
+          <AbilityStatValue>{hab.duracao ?? 'N/D'}</AbilityStatValue>
+        </AbilityStat>
+        <AbilityStat>
+          <AbilityStatLabel>Alcance</AbilityStatLabel>
+          <AbilityStatValue>{hab.alcance ?? 'N/D'}</AbilityStatValue>
+        </AbilityStat>
+        <AbilityStat>
+          <AbilityStatLabel>Alvos</AbilityStatLabel>
+          <AbilityStatValue>{hab.alvo ?? '—'}</AbilityStatValue>
+        </AbilityStat>
+        <AbilityStat>
+          <AbilityStatLabel>Custo</AbilityStatLabel>
+          <AbilityStatValue>{hab.custo ?? '—'}</AbilityStatValue>
+        </AbilityStat>
+      </AbilityStatsBar>
+
+      <AbilityTabNav>
+        <AbilityTabButton className="active">Descrição</AbilityTabButton>
+      </AbilityTabNav>
+
+      <AbilityContentArea>
+        <Typography sx={{ color: 'var(--text-secondary)', fontSize: '16px', lineHeight: 1.6 }}>
+          {hab.descricao}
+        </Typography>
+        {bonuses.length > 0 && (
+          <Box sx={{ mt: 2 }}>
+            {bonuses.map((bonus, idx) => (
+              <AbilityBonusItem key={idx}>✓ {bonus}</AbilityBonusItem>
+            ))}
+          </Box>
+        )}
+      </AbilityContentArea>
+    </RacaAbilityCard>
+  );
+}
+
+ClassesAbilitiesTabs.propTypes = {
+  classe: PropTypes.shape({
+    id: PropTypes.string,
+    habilidadesBasicas: PropTypes.arrayOf(PropTypes.object),
+    habilidadesAvancadas: PropTypes.arrayOf(PropTypes.object),
+  }),
+};
+
+AbilityCardView.propTypes = {
+  hab: PropTypes.shape({
+    bonus: PropTypes.arrayOf(PropTypes.string),
+    nome: PropTypes.string,
+    nucleo: PropTypes.string,
+    tipo: PropTypes.string,
+    passiva: PropTypes.bool,
+    recarga: PropTypes.string,
+    acao: PropTypes.string,
+    duracao: PropTypes.string,
+    alcance: PropTypes.string,
+    alvo: PropTypes.string,
+    custo: PropTypes.string,
+    descricao: PropTypes.string,
+  }).isRequired,
 };
 
 export default Classes;

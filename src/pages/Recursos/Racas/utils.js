@@ -62,6 +62,7 @@ export const HABILIDADE_AVANCADA_INICIAL = {
 };
 
 export const RACA_INITIAL_VALUES = {
+  universo: '',
   nome: '',
   raridade: '',
   linkImagem: '',

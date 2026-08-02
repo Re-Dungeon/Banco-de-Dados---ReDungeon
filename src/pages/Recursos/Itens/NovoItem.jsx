@@ -114,14 +114,17 @@ const NovoItem = () => {
                         gap: 2,
                       }}
                     >
-                      <FastField
-                        as={TextField}
-                        name="nome"
-                        label="Nome do Item"
-                        fullWidth
-                        error={touched.nome && Boolean(errors.nome)}
-                        helperText={touched.nome && errors.nome}
-                      />
+                      <FastField name="nome">
+                        {({ field }) => (
+                          <TextField
+                            {...field}
+                            label="Nome do Item"
+                            fullWidth
+                            error={touched.nome && Boolean(errors.nome)}
+                            helperText={touched.nome && errors.nome}
+                          />
+                        )}
+                      </FastField>
                       <FastField name="qualidade">
                         {({ field }) => (
                           <FormControl fullWidth>
@@ -165,23 +168,29 @@ const NovoItem = () => {
                         )}
                       </Field>
                     </Box>
-                    <FastField
-                      as={TextField}
-                      name="linkImagem"
-                      label="Link da Imagem do Item"
-                      fullWidth
-                      placeholder="https://..."
-                      error={touched.linkImagem && Boolean(errors.linkImagem)}
-                      helperText={touched.linkImagem && errors.linkImagem}
-                    />
-                    <FastField
-                      as={TextField}
-                      name="descricao"
-                      label="Descrição"
-                      fullWidth
-                      multiline
-                      rows={4}
-                    />
+                    <FastField name="linkImagem">
+                      {({ field }) => (
+                        <TextField
+                          {...field}
+                          label="Link da Imagem do Item"
+                          fullWidth
+                          placeholder="https://..."
+                          error={touched.linkImagem && Boolean(errors.linkImagem)}
+                          helperText={touched.linkImagem && errors.linkImagem}
+                        />
+                      )}
+                    </FastField>
+                    <FastField name="descricao">
+                      {({ field }) => (
+                        <TextField
+                          {...field}
+                          label="Descrição"
+                          fullWidth
+                          multiline
+                          rows={4}
+                        />
+                      )}
+                    </FastField>
                     <Field name="mostrarNaLoja">
                       {({ field }) => (
                         <FormControlLabel
@@ -231,74 +240,98 @@ const NovoItem = () => {
                     mt: 1.5,
                   }}
                 >
-                  <FastField
-                    as={TextField}
-                    name="nivelAtual"
-                    label="Nível Atual"
-                    type="number"
-                    fullWidth
-                    size="small"
-                    inputProps={{ min: 0 }}
-                  />
-                  <FastField
-                    as={TextField}
-                    name="nivelMaximo"
-                    label="Nível Máximo"
-                    type="number"
-                    fullWidth
-                    size="small"
-                    inputProps={{ min: 0 }}
-                  />
-                  <FastField
-                    as={TextField}
-                    name="dados"
-                    label="Dados"
-                    fullWidth
-                    size="small"
-                    placeholder="ex: 2d6+3"
-                  />
-                  <FastField
-                    as={TextField}
-                    name="pesoUnitario"
-                    label="Peso Unitário"
-                    type="number"
-                    fullWidth
-                    size="small"
-                    inputProps={{ min: 0, step: 'any' }}
-                  />
-                  <FastField
-                    as={TextField}
-                    name="bonusEspaco"
-                    label="Bônus de Espaço"
-                    type="number"
-                    fullWidth
-                    size="small"
-                  />
-                  <FastField
-                    as={TextField}
-                    name="precoCompra"
-                    label="Preço de Compra"
-                    type="number"
-                    fullWidth
-                    size="small"
-                    inputProps={{ min: 0, step: 'any' }}
-                  />
-                  <FastField
-                    as={TextField}
-                    name="precoVenda"
-                    label="Preço de Venda"
-                    type="number"
-                    fullWidth
-                    size="small"
-                    inputProps={{ min: 0, step: 'any' }}
-                  />
-                  <FastField
-                    as={TextField}
-                    name="extra"
-                    label="Extra"
-                    fullWidth
-                    size="small"
-                  />
+                  <FastField name="nivelAtual">
+                    {({ field }) => (
+                      <TextField
+                        {...field}
+                        label="Nível Atual"
+                        type="number"
+                        fullWidth
+                        size="small"
+                        slotProps={{ htmlInput: { min: 0 } }}
+                      />
+                    )}
+                  </FastField>
+                  <FastField name="nivelMaximo">
+                    {({ field }) => (
+                      <TextField
+                        {...field}
+                        label="Nível Máximo"
+                        type="number"
+                        fullWidth
+                        size="small"
+                        slotProps={{ htmlInput: { min: 0 } }}
+                      />
+                    )}
+                  </FastField>
+                  <FastField name="dados">
+                    {({ field }) => (
+                      <TextField
+                        {...field}
+                        label="Dados"
+                        fullWidth
+                        size="small"
+                        placeholder="ex: 2d6+3"
+                      />
+                    )}
+                  </FastField>
+                  <FastField name="pesoUnitario">
+                    {({ field }) => (
+                      <TextField
+                        {...field}
+                        label="Peso Unitário"
+                        type="number"
+                        fullWidth
+                        size="small"
+                        slotProps={{ htmlInput: { min: 0, step: 'any' } }}
+                      />
+                    )}
+                  </FastField>
+                  <FastField name="bonusEspaco">
+                    {({ field }) => (
+                      <TextField
+                        {...field}
+                        label="Bônus de Espaço"
+                        type="number"
+                        fullWidth
+                        size="small"
+                      />
+                    )}
+                  </FastField>
+                  <FastField name="precoCompra">
+                    {({ field }) => (
+                      <TextField
+                        {...field}
+                        label="Preço de Compra"
+                        type="number"
+                        fullWidth
+                        size="small"
+                        slotProps={{ htmlInput: { min: 0, step: 'any' } }}
+                      />
+                    )}
+                  </FastField>
+                  <FastField name="precoVenda">
+                    {({ field }) => (
+                      <TextField
+                        {...field}
+                        label="Preço de Venda"
+                        type="number"
+                        fullWidth
+                        size="small"
+                        slotProps={{ htmlInput: { min: 0, step: 'any' } }}
+                      />
+                    )}
+                  </FastField>
+                  <FastField name="extra">
+                    {({ field }) => (
+                      <TextField
+                        {...field}
+                        label="Extra"
+                        fullWidth
+                        size="small"
+                      />
+                    )}
+                  </FastField>
                 </Box>
               </Paper>
 
@@ -372,22 +405,28 @@ const NovoItem = () => {
                               gap: 2,
                             }}
                           >
-                            <FastField
-                              as={TextField}
-                              name={`habilidadesEspeciais[${idx}].nome`}
-                              label="Nome da Habilidade"
-                              fullWidth
-                              size="small"
-                            />
-                            <FastField
-                              as={TextField}
-                              name={`habilidadesEspeciais[${idx}].descricao`}
-                              label="Descrição da Habilidade"
-                              fullWidth
-                              multiline
-                              rows={2}
-                              size="small"
-                            />
+                            <FastField name={`habilidadesEspeciais[${idx}].nome`}>
+                              {({ field }) => (
+                                <TextField
+                                  {...field}
+                                  label="Nome da Habilidade"
+                                  fullWidth
+                                  size="small"
+                                />
+                              )}
+                            </FastField>
+                            <FastField name={`habilidadesEspeciais[${idx}].descricao`}>
+                              {({ field }) => (
+                                <TextField
+                                  {...field}
+                                  label="Descrição da Habilidade"
+                                  fullWidth
+                                  multiline
+                                  rows={2}
+                                  size="small"
+                                />
+                              )}
+                            </FastField>
                           </Box>
                         </Box>
                       ))}

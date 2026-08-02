@@ -15,11 +15,24 @@ import { ROUTE_PATHS } from 'common/constants/routes';
 import { useAuth } from 'context/AuthContext';
 import { RARIDADES } from 'common/constants/constants';
 import useEntityCRUD from 'hooks/useEntityCRUD';
+import useDeleteConfirmation from 'hooks/useDeleteConfirmation';
 import useUniversos from 'hooks/useUniversos';
 import { ordenarPorNome, ORDEM_ASC } from 'common/utils/ordenacao';
 import EntityFilters from 'components/EntityFilters/EntityFilters';
 import EntityViewDialog from 'components/EntityViewDialog/EntityViewDialog';
 import { CondicaoCard } from './styles';
+import {
+  RacaCard,
+  RacaImageFrame,
+  RacaImageOverlay,
+  RacaActionBar,
+  RacaContent,
+  RacaTitle,
+  RacaSubtitle,
+  RacaDescription,
+  RacaFooter,
+} from '../Racas/styles';
+import CardTokens from 'components/CardTokens/CardTokens';
 import { getCondicaoUniversos } from './utils';
 
 const Condicoes = () => {
@@ -31,6 +44,7 @@ const Condicoes = () => {
     remove: handleRemove,
   } = useEntityCRUD({ getAll: getCondicoes, remove: removeCondicao });
   const { universos, loadingUniversos } = useUniversos();
+  const { confirmDelete, deleteConfirmationDialog } = useDeleteConfirmation();
   const loading = loadingCondicoes || loadingUniversos;
   const [filtroNome, setFiltroNome] = useState('');
   const [filtroRaridade, setFiltroRaridade] = useState('');
@@ -141,146 +155,89 @@ const Condicoes = () => {
               }}
             >
               {condicoesFiltradas.map(condicao => (
-                <CondicaoCard key={condicao.id} elevation={0}>
-                  <Box
-                    sx={{
-                      display: 'flex',
-                      justifyContent: 'flex-end',
-                      gap: 0.5,
-                      mb: 1,
-                    }}
-                  >
-                    <Tooltip title="Visualizar detalhes">
-                      <IconButton
-                        size="small"
-                        onClick={() => setCondicaoVisualizando(condicao)}
-                        sx={{
-                          color: 'var(--text-secondary)',
-                          '&:hover': { color: 'var(--color-accent)' },
-                        }}
-                        aria-label={`Visualizar condição ${condicao.nome}`}
-                      >
-                        <VisibilityOutlinedIcon fontSize="small" />
-                      </IconButton>
-                    </Tooltip>
-                    {canWrite(getCondicaoUniversos(condicao)) && (
-                      <>
+                <RacaCard key={condicao.id} elevation={0}>
+                  <RacaImageFrame>
+                    <RacaImageOverlay />
+                    <RacaActionBar>
+                      <Tooltip title="Visualizar detalhes">
                         <IconButton
                           size="small"
-                          onClick={() =>
-                            navigate(ROUTE_PATHS.NOVA_CONDICAO, {
-                              state: { condicao },
-                            })
-                          }
+                          onClick={() => setCondicaoVisualizando(condicao)}
                           sx={{
-                            color: 'var(--color-accent)',
-                            '&:hover': {
+                            color: 'var(--text-secondary)',
+                            padding: '14px',
+                            minWidth: '16px',
+                            width: '16px',
+                            height: '16px',
+                            '&:hover': { color: 'var(--color-accent)' },
+                          }}
+                          aria-label={`Visualizar condição ${condicao.nome}`}
+                        >
+                          <VisibilityOutlinedIcon fontSize="small" />
+                        </IconButton>
+                      </Tooltip>
+
+                      {canWrite(getCondicaoUniversos(condicao)) && (
+                        <>
+                          <IconButton
+                            size="small"
+                            onClick={() =>
+                              navigate(ROUTE_PATHS.NOVA_CONDICAO, { state: { condicao } })
+                            }
+                            sx={{
                               color: 'var(--color-accent)',
-                              opacity: 0.8,
-                            },
-                          }}
-                          aria-label={`Editar condição ${condicao.nome}`}
-                        >
-                          <EditOutlinedIcon fontSize="small" />
-                        </IconButton>
-                        <IconButton
-                          size="small"
-                          onClick={() => handleRemove(condicao.id)}
-                          sx={{
-                            color: '#ef4444',
-                            '&:hover': { color: '#ef4444' },
-                          }}
-                          aria-label={`Remover condição ${condicao.nome}`}
-                        >
-                          <DeleteOutlineIcon fontSize="small" />
-                        </IconButton>
-                      </>
+                              padding: '4px',
+                              minWidth: '32px',
+                              width: '32px',
+                              height: '32px',
+                              '&:hover': { color: 'var(--color-accent)', opacity: 0.8 },
+                            }}
+                            aria-label={`Editar condição ${condicao.nome}`}
+                          >
+                            <EditOutlinedIcon fontSize="small" />
+                          </IconButton>
+                          <IconButton
+                            size="small"
+                            onClick={() => confirmDelete(condicao.nome, () => handleRemove(condicao.id))}
+                            sx={{ color: '#ef4444', padding: '4px', minWidth: '32px', width: '32px', height: '32px', '&:hover': { color: '#ef4444' } }}
+                            aria-label={`Remover condição ${condicao.nome}`}
+                          >
+                            <DeleteOutlineIcon fontSize="small" />
+                          </IconButton>
+                        </>
+                      )}
+                    </RacaActionBar>
+
+                    {condicao.linkImagem && (
+                      <Box component="img" className="raca-card-image" src={condicao.linkImagem} alt={condicao.nome} onError={e => { e.currentTarget.style.display = 'none'; }} />
                     )}
-                  </Box>
+                  </RacaImageFrame>
 
-                  {condicao.linkImagem && (
-                    <Box
-                      component="img"
-                      src={condicao.linkImagem}
-                      alt={condicao.nome}
-                      sx={{
-                        width: '100%',
-                        height: 160,
-                        borderRadius: 2,
-                        objectFit: 'cover',
-                        display: 'block',
-                        border: '1px solid var(--border-primary)',
-                        mb: 1.5,
-                      }}
-                      onError={e => {
-                        e.currentTarget.style.display = 'none';
-                      }}
-                    />
-                  )}
+                  <RacaContent>
+                    <RacaTitle variant="h6">{condicao.nome}</RacaTitle>
 
-                  <Typography
-                    variant="h6"
-                    sx={{
-                      color: 'var(--text-primary)',
-                      fontWeight: 600,
-                      lineHeight: 1.2,
-                    }}
-                  >
-                    {condicao.nome}
-                  </Typography>
+                    {(condicao.raridade || condicao.duracao) && (
+                      <RacaSubtitle variant="caption">{[condicao.raridade, condicao.duracao].filter(Boolean).join(' · ')}</RacaSubtitle>
+                    )}
 
-                  {(condicao.raridade || condicao.duracao) && (
-                    <Typography
-                      variant="caption"
-                      sx={{
-                        color: 'var(--color-accent)',
-                        fontWeight: 600,
-                        display: 'block',
-                        mb: 1,
-                      }}
-                    >
-                      {[condicao.raridade, condicao.duracao]
-                        .filter(Boolean)
-                        .join(' · ')}
-                    </Typography>
-                  )}
+                    {condicao.descricao && <RacaDescription variant="body2">{condicao.descricao}</RacaDescription>}
 
-                  {condicao.descricao && (
-                    <Typography
-                      variant="body2"
-                      sx={{
-                        color: 'var(--text-secondary)',
-                        mt: 0.5,
-                        display: '-webkit-box',
-                        WebkitLineClamp: 3,
-                        WebkitBoxOrient: 'vertical',
-                        overflow: 'hidden',
-                      }}
-                    >
-                      {condicao.descricao}
-                    </Typography>
-                  )}
-
-                  {(condicao.efeitos?.filter(Boolean).length > 0 ||
-                    condicao.interacoes?.filter(Boolean).length > 0) && (
-                    <Typography
-                      variant="caption"
-                      sx={{
-                        color: 'var(--text-muted)',
-                        mt: 1,
-                        display: 'block',
-                      }}
-                    >
-                      {condicao.efeitos?.filter(Boolean).length > 0 &&
-                        `${condicao.efeitos.filter(Boolean).length} efeito${condicao.efeitos.filter(Boolean).length !== 1 ? 's' : ''}`}
-                      {condicao.efeitos?.filter(Boolean).length > 0 &&
-                        condicao.interacoes?.filter(Boolean).length > 0 &&
-                        ' · '}
-                      {condicao.interacoes?.filter(Boolean).length > 0 &&
-                        `${condicao.interacoes.filter(Boolean).length} interação${condicao.interacoes.filter(Boolean).length !== 1 ? 'ões' : ''}`}
-                    </Typography>
-                  )}
-                </CondicaoCard>
+                    {(condicao.efeitos?.filter(Boolean).length > 0 || condicao.interacoes?.filter(Boolean).length > 0) && (
+                      <RacaFooter>
+                        <CardTokens
+                          items={[
+                            ...(condicao.efeitos?.filter(Boolean).length > 0
+                              ? [`${condicao.efeitos.filter(Boolean).length} ${condicao.efeitos.filter(Boolean).length === 1 ? 'Efeito' : 'Efeitos'}`]
+                              : []),
+                            ...(condicao.interacoes?.filter(Boolean).length > 0
+                              ? [`${condicao.interacoes.filter(Boolean).length} ${condicao.interacoes.filter(Boolean).length === 1 ? 'Interação' : 'Interações'}`]
+                              : []),
+                          ]}
+                        />
+                      </RacaFooter>
+                    )}
+                  </RacaContent>
+                </RacaCard>
               ))}
             </Box>
           )}
@@ -405,6 +362,7 @@ const Condicoes = () => {
           </>
         )}
       </EntityViewDialog>
+      {deleteConfirmationDialog}
     </Box>
   );
 };

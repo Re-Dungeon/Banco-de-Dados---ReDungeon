@@ -71,6 +71,9 @@ describe('Racas (piloto do padrão useEntityCRUD + useUniversos, item 2)', () =>
 
     await user.click(screen.getByLabelText('Remover raça Elfo'));
 
+    const dialog = await screen.findByRole('dialog');
+    await user.click(within(dialog).getByRole('button', { name: 'Excluir' }));
+
     await waitFor(() =>
       expect(screen.queryByText('Elfo')).not.toBeInTheDocument(),
     );

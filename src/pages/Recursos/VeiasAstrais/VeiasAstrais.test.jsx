@@ -74,6 +74,9 @@ describe('VeiasAstrais (padrão useEntityCRUD + useUniversos + EntityFilters + E
 
     await user.click(screen.getByLabelText('Remover veia astral Bênção Solar'));
 
+    const dialog = await screen.findByRole('dialog');
+    await user.click(within(dialog).getByRole('button', { name: 'Excluir' }));
+
     await waitFor(() =>
       expect(screen.queryByText('Bênção Solar')).not.toBeInTheDocument(),
     );

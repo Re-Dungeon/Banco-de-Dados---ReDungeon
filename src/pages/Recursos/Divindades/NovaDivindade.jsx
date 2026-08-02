@@ -72,8 +72,10 @@ const NovaDivindade = () => {
   };
 
   const menuPropsSx = {
-    PaperProps: {
-      sx: { background: 'var(--bg-card)', color: 'var(--text-primary)' },
+    slotProps: {
+      paper: {
+        sx: { background: 'var(--bg-card)', color: 'var(--text-primary)' },
+      },
     },
   };
 

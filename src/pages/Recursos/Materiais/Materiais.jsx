@@ -16,11 +16,25 @@ import { ROUTE_PATHS } from 'common/constants/routes';
 import { useAuth } from 'context/AuthContext';
 import { RARIDADES } from 'common/constants/constants';
 import useEntityCRUD from 'hooks/useEntityCRUD';
+import useDeleteConfirmation from 'hooks/useDeleteConfirmation';
 import useUniversos from 'hooks/useUniversos';
 import { ordenarPorNome, ORDEM_ASC } from 'common/utils/ordenacao';
 import EntityFilters from 'components/EntityFilters/EntityFilters';
 import EntityViewDialog from 'components/EntityViewDialog/EntityViewDialog';
 import { MaterialCard } from './styles';
+import {
+  RacaCard,
+  RacaImageFrame,
+  RacaImageOverlay,
+  RacaActionBar,
+  RacaContent,
+  RacaTitle,
+  RacaSubtitle,
+  RacaDescription,
+  RacaFooter,
+  RacaMeta,
+  RacaBadge,
+} from '../Racas/styles';
 
 const Materiais = () => {
   const navigate = useNavigate();
@@ -31,6 +45,7 @@ const Materiais = () => {
     remove: handleRemove,
   } = useEntityCRUD({ getAll: getMateriais, remove: removeMaterial });
   const { universos, loadingUniversos } = useUniversos();
+  const { confirmDelete, deleteConfirmationDialog } = useDeleteConfirmation();
   const loading = loadingMateriais || loadingUniversos;
   const [filtroNome, setFiltroNome] = useState('');
   const [filtroRaridade, setFiltroRaridade] = useState('');
@@ -39,53 +54,28 @@ const Materiais = () => {
   const [materialVisualizando, setMaterialVisualizando] = useState(null);
 
   const materiaisFiltrados = useMemo(() => {
-    const filtrados = materiais.filter(material => {
-      const matchNome =
-        !filtroNome ||
-        material.nome?.toLowerCase().includes(filtroNome.toLowerCase());
-      const matchRaridade =
-        !filtroRaridade || material.raridade === filtroRaridade;
-      const matchUniverso =
-        !filtroUniverso || material.universo === filtroUniverso;
+    const filtradas = materiais.filter(material => {
+      const matchNome = !filtroNome || material.nome?.toLowerCase().includes(filtroNome.toLowerCase());
+      const matchRaridade = !filtroRaridade || material.raridade === filtroRaridade;
+      const matchUniverso = !filtroUniverso || material.universo === filtroUniverso;
       return matchNome && matchRaridade && matchUniverso;
     });
-    return ordenarPorNome(filtrados, ordenacao);
+    return ordenarPorNome(filtradas, ordenacao);
   }, [materiais, filtroNome, filtroRaridade, filtroUniverso, ordenacao]);
 
   return (
-    <Box
-      className="page-container"
-      id="redungeon-materiais"
-      data-page="materiais"
-    >
-      <Box
-        sx={{
-          display: 'flex',
-          alignItems: 'flex-start',
-          justifyContent: 'space-between',
-          mb: 3,
-        }}
-      >
+    <Box className="page-container" id="redungeon-materiais" data-page="materiais">
+      <Box sx={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', mb: 3 }}>
         <Box>
-          <Typography
-            variant="h5"
-            sx={{ color: 'var(--text-primary)', fontWeight: 700, mb: 0.5 }}
-          >
+          <Typography variant="h5" sx={{ color: 'var(--text-primary)', fontWeight: 700, mb: 0.5 }}>
             Materiais
           </Typography>
           <Typography variant="body2" sx={{ color: 'var(--text-secondary)' }}>
-            Gerencie os materiais disponíveis na campanha.
+            Gerencie os materiais e recursos do jogo.
           </Typography>
         </Box>
         {canCreate() && (
-          <Button
-            variant="contained"
-            onClick={() => navigate(ROUTE_PATHS.NOVO_MATERIAL)}
-            sx={{
-              background: 'var(--color-primary)',
-              '&:hover': { background: '#5a2090' },
-            }}
-          >
+          <Button variant="contained" onClick={() => navigate(ROUTE_PATHS.NOVO_MATERIAL)} sx={{ background: 'var(--color-primary)', '&:hover': { background: '#5a2090' } }}>
             + Novo Material
           </Button>
         )}
@@ -100,15 +90,7 @@ const Materiais = () => {
           <EntityFilters
             nomeValue={filtroNome}
             onNomeChange={setFiltroNome}
-            extraFilters={[
-              {
-                label: 'Raridade',
-                value: filtroRaridade,
-                onChange: setFiltroRaridade,
-                options: RARIDADES,
-                allLabel: 'Todas',
-              },
-            ]}
+            extraFilters={[]}
             universos={universos}
             universoValue={filtroUniverso}
             onUniversoChange={setFiltroUniverso}
@@ -117,255 +99,87 @@ const Materiais = () => {
           />
 
           {materiaisFiltrados.length === 0 ? (
-            <Box
-              sx={{ textAlign: 'center', py: 8, color: 'var(--text-muted)' }}
-            >
-              <Typography variant="h2" sx={{ mb: 1 }}>
-                💎
-              </Typography>
-              <Typography variant="body1">
-                Nenhum material encontrado
-              </Typography>
+            <Box sx={{ textAlign: 'center', py: 8, color: 'var(--text-muted)' }}>
+              <Typography variant="h2" sx={{ mb: 1 }}>🪨</Typography>
+              <Typography variant="body1">Nenhum material encontrado</Typography>
             </Box>
           ) : (
-            <Box
-              sx={{
-                display: 'grid',
-                gridTemplateColumns: {
-                  xs: '1fr',
-                  sm: 'repeat(auto-fill, minmax(300px, 1fr))',
-                  md: 'repeat(auto-fill, minmax(340px, 1fr))',
-                },
-                gap: 2,
-              }}
-            >
+            <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: 'repeat(auto-fill, minmax(300px, 1fr))', md: 'repeat(auto-fill, minmax(340px, 1fr))' }, gap: 2 }}>
               {materiaisFiltrados.map(material => (
-                <MaterialCard key={material.id} elevation={0}>
-                  <Box
-                    sx={{
-                      display: 'flex',
-                      justifyContent: 'flex-end',
-                      gap: 0.5,
-                      mb: 1,
-                    }}
-                  >
-                    <Tooltip title="Visualizar detalhes">
-                      <IconButton
-                        size="small"
-                        onClick={() => setMaterialVisualizando(material)}
-                        sx={{
-                          color: 'var(--text-secondary)',
-                          '&:hover': { color: 'var(--color-accent)' },
-                        }}
-                        aria-label={`Visualizar material ${material.nome}`}
-                      >
-                        <VisibilityOutlinedIcon fontSize="small" />
-                      </IconButton>
-                    </Tooltip>
-                    {canWrite(material.universo) && (
-                      <>
-                        <IconButton
-                          size="small"
-                          onClick={() =>
-                            navigate(ROUTE_PATHS.NOVO_MATERIAL, {
-                              state: { material },
-                            })
-                          }
-                          sx={{
-                            color: 'var(--color-accent)',
-                            '&:hover': {
-                              color: 'var(--color-accent)',
-                              opacity: 0.8,
-                            },
-                          }}
-                          aria-label={`Editar material ${material.nome}`}
-                        >
-                          <EditOutlinedIcon fontSize="small" />
+                <RacaCard key={material.id} elevation={0}>
+                  <RacaImageFrame>
+                    <RacaImageOverlay />
+                    <RacaActionBar>
+                      <Tooltip title="Visualizar detalhes">
+                        <IconButton size="small" onClick={() => setMaterialVisualizando(material)} sx={{ color: 'var(--text-secondary)', padding: '14px', minWidth: '16px', width: '16px', height: '16px', '&:hover': { color: 'var(--color-accent)' } }} aria-label={`Visualizar material ${material.nome}`}>
+                          <VisibilityOutlinedIcon fontSize="small" />
                         </IconButton>
-                        <IconButton
-                          size="small"
-                          onClick={() => handleRemove(material.id)}
-                          sx={{
-                            color: '#ef4444',
-                            '&:hover': { color: '#ef4444' },
-                          }}
-                          aria-label={`Remover material ${material.nome}`}
-                        >
-                          <DeleteOutlineIcon fontSize="small" />
-                        </IconButton>
-                      </>
+                      </Tooltip>
+
+                      {canWrite(material.universo) && (
+                        <>
+                          <IconButton size="small" onClick={() => navigate(ROUTE_PATHS.NOVO_MATERIAL, { state: { material } })} sx={{ color: 'var(--color-accent)', padding: '4px', minWidth: '32px', width: '32px', height: '32px', '&:hover': { color: 'var(--color-accent)', opacity: 0.8 } }} aria-label={`Editar material ${material.nome}`}>
+                            <EditOutlinedIcon fontSize="small" />
+                          </IconButton>
+                          <IconButton size="small" onClick={() => confirmDelete(material.nome, () => handleRemove(material.id))} sx={{ color: '#ef4444', padding: '4px', minWidth: '32px', width: '32px', height: '32px', '&:hover': { color: '#ef4444' } }} aria-label={`Remover material ${material.nome}`}>
+                            <DeleteOutlineIcon fontSize="small" />
+                          </IconButton>
+                        </>
+                      )}
+                    </RacaActionBar>
+
+                    {material.linkImagem && (
+                      <Box component="img" className="raca-card-image" src={material.linkImagem} alt={material.nome} onError={e => { e.currentTarget.style.display = 'none'; }} />
                     )}
-                  </Box>
+                  </RacaImageFrame>
 
-                  {material.linkImagem && (
-                    <Box
-                      component="img"
-                      src={material.linkImagem}
-                      alt={material.nome}
-                      sx={{
-                        width: '100%',
-                        height: 160,
-                        borderRadius: 2,
-                        objectFit: 'cover',
-                        display: 'block',
-                        border: '1px solid var(--border-primary)',
-                        mb: 1.5,
-                      }}
-                      onError={e => {
-                        e.currentTarget.style.display = 'none';
-                      }}
-                    />
-                  )}
+                  <RacaContent>
+                    <RacaTitle variant="h6">{material.nome}</RacaTitle>
 
-                  <Typography
-                    variant="h6"
-                    sx={{
-                      color: 'var(--text-primary)',
-                      fontWeight: 600,
-                      lineHeight: 1.2,
-                    }}
-                  >
-                    {material.nome}
-                  </Typography>
+                    {(material.raridade || material.tipo) && (
+                      <RacaSubtitle variant="caption">{[material.tipo, material.raridade].filter(Boolean).join(' · ')}</RacaSubtitle>
+                    )}
 
-                  {(material.raridade || material.tipo) && (
-                    <Typography
-                      variant="caption"
-                      sx={{
-                        color: 'var(--color-accent)',
-                        fontWeight: 600,
-                        display: 'block',
-                        mb: 1,
-                      }}
-                    >
-                      {[material.tipo, material.raridade]
-                        .filter(Boolean)
-                        .join(' · ')}
-                    </Typography>
-                  )}
+                    {(material.valorMercado || material.quantidadeBase) && (
+                      <Box sx={{ display: 'flex', gap: 2 }}>
+                        {material.valorMercado && <RacaBadge>💰 {material.valorMercado}</RacaBadge>}
+                        {material.quantidadeBase && <RacaBadge>📦 {material.quantidadeBase}</RacaBadge>}
+                      </Box>
+                    )}
 
-                  {(material.valorMercado || material.quantidadeBase) && (
-                    <Box sx={{ display: 'flex', gap: 2, mb: 1 }}>
-                      {material.valorMercado && (
-                        <Typography
-                          variant="caption"
-                          sx={{ color: 'var(--text-secondary)' }}
-                        >
-                          💰 {material.valorMercado}
-                        </Typography>
-                      )}
-                      {material.quantidadeBase && (
-                        <Typography
-                          variant="caption"
-                          sx={{ color: 'var(--text-secondary)' }}
-                        >
-                          📦 {material.quantidadeBase}
-                        </Typography>
-                      )}
-                    </Box>
-                  )}
-
-                  {(material.pureza !== undefined ||
-                    material.taxaDrop !== undefined) && (
-                    <Box
-                      sx={{
-                        display: 'flex',
-                        flexDirection: 'column',
-                        gap: 1,
-                        mb: 1,
-                      }}
-                    >
-                      {material.pureza !== undefined && (
-                        <Box>
-                          <Box
-                            sx={{
-                              display: 'flex',
-                              justifyContent: 'space-between',
-                              mb: 0.3,
-                            }}
-                          >
-                            <Typography
-                              variant="caption"
-                              sx={{ color: 'var(--text-muted)' }}
-                            >
-                              Pureza
-                            </Typography>
-                            <Typography
-                              variant="caption"
-                              sx={{ color: 'var(--color-accent)' }}
-                            >
-                              {material.pureza}%
-                            </Typography>
+                    {(material.pureza !== undefined || material.taxaDrop !== undefined) && (
+                      <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+                        {material.pureza !== undefined && (
+                          <Box>
+                            <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 0.3 }}>
+                              <Typography variant="caption" sx={{ color: 'var(--text-muted)' }}>Pureza</Typography>
+                              <Typography variant="caption" sx={{ color: 'var(--color-accent)' }}>{material.pureza}%</Typography>
+                            </Box>
+                            <LinearProgress variant="determinate" value={material.pureza} sx={{ height: 4, borderRadius: 2, background: 'var(--border-primary)', '& .MuiLinearProgress-bar': { background: 'var(--color-accent)' } }} />
                           </Box>
-                          <LinearProgress
-                            variant="determinate"
-                            value={material.pureza}
-                            sx={{
-                              height: 4,
-                              borderRadius: 2,
-                              background: 'var(--border-primary)',
-                              '& .MuiLinearProgress-bar': {
-                                background: 'var(--color-accent)',
-                              },
-                            }}
-                          />
-                        </Box>
-                      )}
-                      {material.taxaDrop !== undefined && (
-                        <Box>
-                          <Box
-                            sx={{
-                              display: 'flex',
-                              justifyContent: 'space-between',
-                              mb: 0.3,
-                            }}
-                          >
-                            <Typography
-                              variant="caption"
-                              sx={{ color: 'var(--text-muted)' }}
-                            >
-                              Taxa de Drop
-                            </Typography>
-                            <Typography
-                              variant="caption"
-                              sx={{ color: 'var(--color-accent)' }}
-                            >
-                              {material.taxaDrop}%
-                            </Typography>
+                        )}
+                        {material.taxaDrop !== undefined && (
+                          <Box>
+                            <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 0.3 }}>
+                              <Typography variant="caption" sx={{ color: 'var(--text-muted)' }}>Taxa de Drop</Typography>
+                              <Typography variant="caption" sx={{ color: '#a855f7' }}>{material.taxaDrop}%</Typography>
+                            </Box>
+                            <LinearProgress variant="determinate" value={material.taxaDrop} sx={{ height: 4, borderRadius: 2, background: 'var(--border-primary)', '& .MuiLinearProgress-bar': { background: '#a855f7' } }} />
                           </Box>
-                          <LinearProgress
-                            variant="determinate"
-                            value={material.taxaDrop}
-                            sx={{
-                              height: 4,
-                              borderRadius: 2,
-                              background: 'var(--border-primary)',
-                              '& .MuiLinearProgress-bar': {
-                                background: '#a855f7',
-                              },
-                            }}
-                          />
-                        </Box>
-                      )}
-                    </Box>
-                  )}
+                        )}
+                      </Box>
+                    )}
 
-                  {material.descricao && (
-                    <Typography
-                      variant="body2"
-                      sx={{
-                        color: 'var(--text-secondary)',
-                        mt: 0.5,
-                        display: '-webkit-box',
-                        WebkitLineClamp: 3,
-                        WebkitBoxOrient: 'vertical',
-                        overflow: 'hidden',
-                      }}
-                    >
-                      {material.descricao}
-                    </Typography>
-                  )}
-                </MaterialCard>
+                    {material.descricao && <RacaDescription variant="body2">{material.descricao}</RacaDescription>}
+
+                    <RacaFooter>
+                      <RacaMeta>
+                        <RacaBadge>📖 {universos.find(u => u.id === material.universo)?.Nome || 'Universo Desconhecido'}</RacaBadge>
+                        {material.raridade && <RacaBadge>⭐ {material.raridade}</RacaBadge>}
+                      </RacaMeta>
+                    </RacaFooter>
+                  </RacaContent>
+                </RacaCard>
               ))}
             </Box>
           )}
@@ -376,154 +190,49 @@ const Materiais = () => {
         open={Boolean(materialVisualizando)}
         onClose={() => setMaterialVisualizando(null)}
         titulo={materialVisualizando?.nome}
-        subtitulo={
-          materialVisualizando?.raridade &&
-          [materialVisualizando.tipo, materialVisualizando.raridade]
-            .filter(Boolean)
-            .join(' · ')
-        }
+        subtitulo={materialVisualizando?.raridade && [materialVisualizando.tipo, materialVisualizando.raridade].filter(Boolean).join(' · ')}
         imagem={materialVisualizando?.linkImagem}
         imagemSx={{ height: 'auto', maxHeight: 220 }}
-        actions={
-          canWrite(materialVisualizando?.universo) && (
-            <Button
-              variant="contained"
-              onClick={() => {
-                navigate(ROUTE_PATHS.NOVO_MATERIAL, {
-                  state: { material: materialVisualizando },
-                });
-                setMaterialVisualizando(null);
-              }}
-              sx={{
-                background: 'var(--color-primary)',
-                '&:hover': { background: '#5a2090' },
-              }}
-            >
-              Editar
-            </Button>
-          )
-        }
+        actions={canWrite(materialVisualizando?.universo) && (
+          <Button variant="contained" onClick={() => { navigate(ROUTE_PATHS.NOVO_MATERIAL, { state: { material: materialVisualizando } }); setMaterialVisualizando(null); }} sx={{ background: 'var(--color-primary)', '&:hover': { background: '#5a2090' } }}>Editar</Button>
+        )}
       >
-        {(materialVisualizando?.valorMercado ||
-          materialVisualizando?.quantidadeBase) && (
+        {(materialVisualizando?.valorMercado || materialVisualizando?.quantidadeBase) && (
           <Box sx={{ display: 'flex', gap: 3, mb: 2 }}>
             {materialVisualizando.valorMercado && (
               <Box>
-                <Typography
-                  variant="caption"
-                  sx={{
-                    color: 'var(--text-muted)',
-                    display: 'block',
-                    mb: 0.3,
-                  }}
-                >
-                  Valor de Mercado
-                </Typography>
-                <Typography
-                  variant="body2"
-                  sx={{ color: 'var(--text-primary)', fontWeight: 600 }}
-                >
-                  {materialVisualizando.valorMercado}
-                </Typography>
+                <Typography variant="caption" sx={{ color: 'var(--text-muted)', display: 'block', mb: 0.3 }}>Valor de Mercado</Typography>
+                <Typography variant="body2" sx={{ color: 'var(--text-primary)', fontWeight: 600 }}>{materialVisualizando.valorMercado}</Typography>
               </Box>
             )}
             {materialVisualizando.quantidadeBase && (
               <Box>
-                <Typography
-                  variant="caption"
-                  sx={{
-                    color: 'var(--text-muted)',
-                    display: 'block',
-                    mb: 0.3,
-                  }}
-                >
-                  Quantidade Base
-                </Typography>
-                <Typography
-                  variant="body2"
-                  sx={{ color: 'var(--text-primary)', fontWeight: 600 }}
-                >
-                  {materialVisualizando.quantidadeBase}
-                </Typography>
+                <Typography variant="caption" sx={{ color: 'var(--text-muted)', display: 'block', mb: 0.3 }}>Quantidade Base</Typography>
+                <Typography variant="body2" sx={{ color: 'var(--text-primary)', fontWeight: 600 }}>{materialVisualizando.quantidadeBase}</Typography>
               </Box>
             )}
           </Box>
         )}
 
-        {(materialVisualizando?.pureza !== undefined ||
-          materialVisualizando?.taxaDrop !== undefined) && (
-          <Box
-            sx={{ mb: 2, display: 'flex', flexDirection: 'column', gap: 1.5 }}
-          >
+        {(materialVisualizando?.pureza !== undefined || materialVisualizando?.taxaDrop !== undefined) && (
+          <Box sx={{ mb: 2, display: 'flex', flexDirection: 'column', gap: 1.5 }}>
             <Divider sx={{ borderColor: 'var(--border-primary)' }} />
             {materialVisualizando.pureza !== undefined && (
               <Box>
-                <Box
-                  sx={{
-                    display: 'flex',
-                    justifyContent: 'space-between',
-                    mb: 0.5,
-                  }}
-                >
-                  <Typography
-                    variant="body2"
-                    sx={{ color: 'var(--text-secondary)', fontWeight: 600 }}
-                  >
-                    Pureza
-                  </Typography>
-                  <Typography
-                    variant="body2"
-                    sx={{ color: 'var(--color-accent)', fontWeight: 700 }}
-                  >
-                    {materialVisualizando.pureza}%
-                  </Typography>
+                <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 0.5 }}>
+                  <Typography variant="body2" sx={{ color: 'var(--text-secondary)', fontWeight: 600 }}>Pureza</Typography>
+                  <Typography variant="body2" sx={{ color: 'var(--color-accent)', fontWeight: 700 }}>{materialVisualizando.pureza}%</Typography>
                 </Box>
-                <LinearProgress
-                  variant="determinate"
-                  value={materialVisualizando.pureza}
-                  sx={{
-                    height: 6,
-                    borderRadius: 3,
-                    background: 'var(--border-primary)',
-                    '& .MuiLinearProgress-bar': {
-                      background: 'var(--color-accent)',
-                    },
-                  }}
-                />
+                <LinearProgress variant="determinate" value={materialVisualizando.pureza} sx={{ height: 6, borderRadius: 3, background: 'var(--border-primary)', '& .MuiLinearProgress-bar': { background: 'var(--color-accent)' } }} />
               </Box>
             )}
             {materialVisualizando.taxaDrop !== undefined && (
               <Box>
-                <Box
-                  sx={{
-                    display: 'flex',
-                    justifyContent: 'space-between',
-                    mb: 0.5,
-                  }}
-                >
-                  <Typography
-                    variant="body2"
-                    sx={{ color: 'var(--text-secondary)', fontWeight: 600 }}
-                  >
-                    Taxa de Drop
-                  </Typography>
-                  <Typography
-                    variant="body2"
-                    sx={{ color: '#a855f7', fontWeight: 700 }}
-                  >
-                    {materialVisualizando.taxaDrop}%
-                  </Typography>
+                <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 0.5 }}>
+                  <Typography variant="body2" sx={{ color: 'var(--text-secondary)', fontWeight: 600 }}>Taxa de Drop</Typography>
+                  <Typography variant="body2" sx={{ color: '#a855f7', fontWeight: 700 }}>{materialVisualizando.taxaDrop}%</Typography>
                 </Box>
-                <LinearProgress
-                  variant="determinate"
-                  value={materialVisualizando.taxaDrop}
-                  sx={{
-                    height: 6,
-                    borderRadius: 3,
-                    background: 'var(--border-primary)',
-                    '& .MuiLinearProgress-bar': { background: '#a855f7' },
-                  }}
-                />
+                <LinearProgress variant="determinate" value={materialVisualizando.taxaDrop} sx={{ height: 6, borderRadius: 3, background: 'var(--border-primary)', '& .MuiLinearProgress-bar': { background: '#a855f7' } }} />
               </Box>
             )}
           </Box>
@@ -532,47 +241,20 @@ const Materiais = () => {
         {materialVisualizando?.descricao && (
           <>
             <Divider sx={{ borderColor: 'var(--border-primary)', mb: 1.5 }} />
-            <Typography
-              variant="caption"
-              sx={{
-                color: 'var(--text-muted)',
-                textTransform: 'uppercase',
-                letterSpacing: 0.5,
-                display: 'block',
-                mb: 0.5,
-              }}
-            >
-              Descrição
-            </Typography>
-            <Typography variant="body2" sx={{ color: 'var(--text-secondary)' }}>
-              {materialVisualizando.descricao}
-            </Typography>
+            <Typography variant="caption" sx={{ color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: 0.5, display: 'block', mb: 0.5 }}>Descrição</Typography>
+            <Typography variant="body2" sx={{ color: 'var(--text-secondary)' }}>{materialVisualizando.descricao}</Typography>
           </>
         )}
 
         {materialVisualizando?.propriedades && (
           <>
-            <Divider
-              sx={{ borderColor: 'var(--border-primary)', mt: 1.5, mb: 1.5 }}
-            />
-            <Typography
-              variant="caption"
-              sx={{
-                color: 'var(--text-muted)',
-                textTransform: 'uppercase',
-                letterSpacing: 0.5,
-                display: 'block',
-                mb: 0.5,
-              }}
-            >
-              Propriedades
-            </Typography>
-            <Typography variant="body2" sx={{ color: 'var(--text-secondary)' }}>
-              {materialVisualizando.propriedades}
-            </Typography>
+            <Divider sx={{ borderColor: 'var(--border-primary)', mt: 1.5, mb: 1.5 }} />
+            <Typography variant="caption" sx={{ color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: 0.5, display: 'block', mb: 0.5 }}>Propriedades</Typography>
+            <Typography variant="body2" sx={{ color: 'var(--text-secondary)' }}>{materialVisualizando.propriedades}</Typography>
           </>
         )}
       </EntityViewDialog>
+      {deleteConfirmationDialog}
     </Box>
   );
 };

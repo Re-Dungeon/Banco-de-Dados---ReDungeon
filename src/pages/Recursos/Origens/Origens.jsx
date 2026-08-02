@@ -16,12 +16,25 @@ import { ROUTE_PATHS } from 'common/constants/routes';
 import { useAuth } from 'context/AuthContext';
 import { RARIDADES, TIPOS_ORIGEM } from 'common/constants/constants';
 import useEntityCRUD from 'hooks/useEntityCRUD';
+import useDeleteConfirmation from 'hooks/useDeleteConfirmation';
 import useUniversos from 'hooks/useUniversos';
 import { ordenarPorNome, ORDEM_ASC } from 'common/utils/ordenacao';
 import EntityFilters from 'components/EntityFilters/EntityFilters';
 import EntityViewDialog from 'components/EntityViewDialog/EntityViewDialog';
 import { CAMPOS_POR_TIPO } from './utils';
 import { OrigemCard } from './styles';
+import {
+  RacaCard,
+  RacaImageFrame,
+  RacaImageOverlay,
+  RacaActionBar,
+  RacaContent,
+  RacaTitle,
+  RacaSubtitle,
+  RacaDescription,
+  RacaFooter,
+} from '../Racas/styles';
+import CardTokens from 'components/CardTokens/CardTokens';
 
 const parseTags = tags =>
   (tags || '')
@@ -38,6 +51,7 @@ const Origens = () => {
     remove: handleRemove,
   } = useEntityCRUD({ getAll: getOrigens, remove: removeOrigem });
   const { universos, loadingUniversos } = useUniversos();
+  const { confirmDelete, deleteConfirmationDialog } = useDeleteConfirmation();
   const loading = loadingOrigens || loadingUniversos;
   const [filtroNome, setFiltroNome] = useState('');
   const [filtroTipo, setFiltroTipo] = useState('');
@@ -164,150 +178,57 @@ const Origens = () => {
               }}
             >
               {origensFiltradas.map(origem => (
-                <OrigemCard key={origem.id} elevation={0}>
-                  <Box
-                    sx={{
-                      display: 'flex',
-                      justifyContent: 'flex-end',
-                      gap: 0.5,
-                      mb: 1,
-                    }}
-                  >
-                    <Tooltip title="Visualizar detalhes">
-                      <IconButton
-                        size="small"
-                        onClick={() => setOrigemVisualizando(origem)}
-                        sx={{
-                          color: 'var(--text-secondary)',
-                          '&:hover': { color: 'var(--color-accent)' },
-                        }}
-                        aria-label={`Visualizar origem ${origem.nome}`}
-                      >
-                        <VisibilityOutlinedIcon fontSize="small" />
-                      </IconButton>
-                    </Tooltip>
-                    {canWrite(origem.universo) && (
-                      <>
+                <RacaCard key={origem.id} elevation={0}>
+                  <RacaImageFrame>
+                    <RacaImageOverlay />
+                    <RacaActionBar>
+                      <Tooltip title="Visualizar detalhes">
                         <IconButton
                           size="small"
-                          onClick={() =>
-                            navigate(ROUTE_PATHS.NOVA_ORIGEM, {
-                              state: { origem },
-                            })
-                          }
-                          sx={{
-                            color: 'var(--color-accent)',
-                            '&:hover': {
-                              color: 'var(--color-accent)',
-                              opacity: 0.8,
-                            },
-                          }}
-                          aria-label={`Editar origem ${origem.nome}`}
+                          onClick={() => setOrigemVisualizando(origem)}
+                          sx={{ color: 'var(--text-secondary)', padding: '14px', minWidth: '16px', width: '16px', height: '16px', '&:hover': { color: 'var(--color-accent)' } }}
+                          aria-label={`Visualizar origem ${origem.nome}`}
                         >
-                          <EditOutlinedIcon fontSize="small" />
+                          <VisibilityOutlinedIcon fontSize="small" />
                         </IconButton>
-                        <IconButton
-                          size="small"
-                          onClick={() => handleRemove(origem.id)}
-                          sx={{
-                            color: '#ef4444',
-                            '&:hover': { color: '#ef4444' },
-                          }}
-                          aria-label={`Remover origem ${origem.nome}`}
-                        >
-                          <DeleteOutlineIcon fontSize="small" />
-                        </IconButton>
-                      </>
+                      </Tooltip>
+
+                      {canWrite(origem.universo) && (
+                        <>
+                          <IconButton size="small" onClick={() => navigate(ROUTE_PATHS.NOVA_ORIGEM, { state: { origem } })} sx={{ color: 'var(--color-accent)', padding: '4px', minWidth: '32px', width: '32px', height: '32px', '&:hover': { color: 'var(--color-accent)', opacity: 0.8 } }} aria-label={`Editar origem ${origem.nome}`}>
+                            <EditOutlinedIcon fontSize="small" />
+                          </IconButton>
+                          <IconButton size="small" onClick={() => confirmDelete(origem.nome, () => handleRemove(origem.id))} sx={{ color: '#ef4444', padding: '4px', minWidth: '32px', width: '32px', height: '32px', '&:hover': { color: '#ef4444' } }} aria-label={`Remover origem ${origem.nome}`}>
+                            <DeleteOutlineIcon fontSize="small" />
+                          </IconButton>
+                        </>
+                      )}
+                    </RacaActionBar>
+
+                    {origem.linkImagem && (
+                      <Box component="img" className="raca-card-image" src={origem.linkImagem} alt={origem.nome} onError={e => { e.currentTarget.style.display = 'none'; }} />
                     )}
-                  </Box>
+                  </RacaImageFrame>
 
-                  {origem.linkImagem && (
-                    <Box
-                      component="img"
-                      src={origem.linkImagem}
-                      alt={origem.nome}
-                      sx={{
-                        width: '100%',
-                        height: 160,
-                        borderRadius: 2,
-                        objectFit: 'cover',
-                        display: 'block',
-                        border: '1px solid var(--border-primary)',
-                        mb: 1.5,
-                      }}
-                      onError={e => {
-                        e.currentTarget.style.display = 'none';
-                      }}
-                    />
-                  )}
+                  <RacaContent>
+                    <RacaTitle variant="h6">{origem.nome}</RacaTitle>
 
-                  <Typography
-                    variant="h6"
-                    sx={{
-                      color: 'var(--text-primary)',
-                      fontWeight: 600,
-                      lineHeight: 1.2,
-                    }}
-                  >
-                    {origem.nome}
-                  </Typography>
+                    {(origem.tipo || origem.raridade) && (
+                      <RacaSubtitle variant="caption">{[origem.tipo, origem.raridade].filter(Boolean).join(' · ')}</RacaSubtitle>
+                    )}
 
-                  {(origem.tipo || origem.raridade) && (
-                    <Typography
-                      variant="caption"
-                      sx={{
-                        color: 'var(--color-accent)',
-                        fontWeight: 600,
-                        display: 'block',
-                        mb: 1,
-                      }}
-                    >
-                      {[origem.tipo, origem.raridade]
-                        .filter(Boolean)
-                        .join(' · ')}
-                    </Typography>
-                  )}
+                    {origem.descricao && <RacaDescription variant="body2">{origem.descricao}</RacaDescription>}
 
-                  {parseTags(origem.tags).length > 0 && (
-                    <Box
-                      sx={{
-                        display: 'flex',
-                        flexWrap: 'wrap',
-                        gap: 0.5,
-                        mb: 1,
-                      }}
-                    >
-                      {parseTags(origem.tags).map(tag => (
-                        <Chip
-                          key={tag}
-                          label={tag}
-                          size="small"
-                          sx={{
-                            background: 'var(--bg-secondary)',
-                            color: 'var(--text-secondary)',
-                            border: '1px solid var(--border-primary)',
-                          }}
-                        />
-                      ))}
-                    </Box>
-                  )}
-
-                  {origem.descricao && (
-                    <Typography
-                      variant="body2"
-                      sx={{
-                        color: 'var(--text-secondary)',
-                        mt: 0.5,
-                        display: '-webkit-box',
-                        WebkitLineClamp: 3,
-                        WebkitBoxOrient: 'vertical',
-                        overflow: 'hidden',
-                      }}
-                    >
-                      {origem.descricao}
-                    </Typography>
-                  )}
-                </OrigemCard>
+                    <RacaFooter>
+                      <CardTokens
+                        items={[
+                          `📖 ${universos.find(u => u.id === origem.universo)?.Nome || 'Universo Desconhecido'}`,
+                          ...parseTags(origem.tags).map(tag => `🏷️ ${tag}`),
+                        ]}
+                      />
+                    </RacaFooter>
+                  </RacaContent>
+                </RacaCard>
               ))}
             </Box>
           )}
@@ -489,6 +410,7 @@ const Origens = () => {
           </>
         )}
       </EntityViewDialog>
+      {deleteConfirmationDialog}
     </Box>
   );
 };

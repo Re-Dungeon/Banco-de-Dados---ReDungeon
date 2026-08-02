@@ -13,11 +13,23 @@ import { getReinosCultivo, removeReinoCultivo } from 'service/storage';
 import { ROUTE_PATHS } from 'common/constants/routes';
 import { useAuth } from 'context/AuthContext';
 import useEntityCRUD from 'hooks/useEntityCRUD';
+import useDeleteConfirmation from 'hooks/useDeleteConfirmation';
 import useUniversos from 'hooks/useUniversos';
 import { ordenarPorNome, ORDEM_ASC } from 'common/utils/ordenacao';
 import EntityFilters from 'components/EntityFilters/EntityFilters';
 import EntityViewDialog from 'components/EntityViewDialog/EntityViewDialog';
-import { ReinoCultivoCard } from './styles';
+import {
+  RacaCard,
+  RacaImageFrame,
+  RacaImageOverlay,
+  RacaActionBar,
+  RacaContent,
+  RacaTitle,
+  RacaSubtitle,
+  RacaDescription,
+  RacaFooter,
+} from '../Racas/styles';
+import CardTokens from 'components/CardTokens/CardTokens';
 
 const ReinosCultivo = () => {
   const navigate = useNavigate();
@@ -28,6 +40,7 @@ const ReinosCultivo = () => {
     remove: handleRemove,
   } = useEntityCRUD({ getAll: getReinosCultivo, remove: removeReinoCultivo });
   const { universos, loadingUniversos } = useUniversos();
+  const { confirmDelete, deleteConfirmationDialog } = useDeleteConfirmation();
   const loading = loadingReinosCultivo || loadingUniversos;
   const [filtroNome, setFiltroNome] = useState('');
   const [filtroSubUniverso, setFiltroSubUniverso] = useState('');
@@ -152,162 +165,117 @@ const ReinosCultivo = () => {
               }}
             >
               {reinosCultivoFiltrados.map(reinoCultivo => (
-                <ReinoCultivoCard key={reinoCultivo.id} elevation={0}>
-                  <Box
-                    sx={{
-                      display: 'flex',
-                      justifyContent: 'flex-end',
-                      gap: 0.5,
-                      mb: 1,
-                    }}
-                  >
-                    <Tooltip title="Visualizar detalhes">
-                      <IconButton
-                        size="small"
-                        onClick={() =>
-                          setReinoCultivoVisualizando(reinoCultivo)
-                        }
+                <RacaCard key={reinoCultivo.id} elevation={0}>
+                  <RacaImageFrame>
+                    {reinoCultivo.linkImagem && (
+                      <Box
+                        component="img"
+                        className="raca-card-image"
+                        src={reinoCultivo.linkImagem}
+                        alt={reinoCultivo.nome}
+                        onError={e => {
+                          e.currentTarget.style.display = 'none';
+                        }}
+                      />
+                    )}
+
+                    <RacaImageOverlay />
+
+                    <RacaActionBar>
+                      <Tooltip title="Visualizar detalhes">
+                        <IconButton
+                          size="small"
+                          onClick={() => setReinoCultivoVisualizando(reinoCultivo)}
+                          sx={{
+                            color: 'var(--text-secondary)',
+                            padding: '14px',
+                            minWidth: '16px',
+                            width: '16px',
+                            height: '16px',
+                            '&:hover': { color: 'var(--color-accent)' },
+                          }}
+                          aria-label={`Visualizar reino de cultivo ${reinoCultivo.nome}`}
+                        >
+                          <VisibilityOutlinedIcon fontSize="small" />
+                        </IconButton>
+                      </Tooltip>
+
+                      {canWrite(reinoCultivo.universo) && (
+                        <>
+                          <IconButton
+                            size="small"
+                            onClick={() =>
+                              navigate(ROUTE_PATHS.NOVO_REINO_CULTIVO, {
+                                state: { reinoCultivo },
+                              })
+                            }
+                            sx={{
+                              color: 'var(--color-accent)',
+                              padding: '4px',
+                              minWidth: '32px',
+                              width: '32px',
+                              height: '32px',
+                              '&:hover': { color: 'var(--color-accent)', opacity: 0.8 },
+                            }}
+                            aria-label={`Editar reino de cultivo ${reinoCultivo.nome}`}
+                          >
+                            <EditOutlinedIcon fontSize="small" />
+                          </IconButton>
+                          <IconButton
+                            size="small"
+                            onClick={() => confirmDelete(reinoCultivo.nome, () => handleRemove(reinoCultivo.id))}
+                            sx={{ color: '#ef4444', padding: '4px', minWidth: '32px', width: '32px', height: '32px', '&:hover': { color: '#ef4444' } }}
+                            aria-label={`Remover reino de cultivo ${reinoCultivo.nome}`}
+                          >
+                            <DeleteOutlineIcon fontSize="small" />
+                          </IconButton>
+                        </>
+                      )}
+                    </RacaActionBar>
+                  </RacaImageFrame>
+
+                  <RacaContent>
+                    <RacaTitle variant="h6">{reinoCultivo.nome}</RacaTitle>
+
+                    <RacaSubtitle variant="caption">
+                      {[getUniversoNome(reinoCultivo), reinoCultivo.subUniverso].filter(Boolean).join(' · ')}
+                    </RacaSubtitle>
+
+                    {(reinoCultivo.quantidadeSubReinos || reinoCultivo.experienciaPorSubReino) && (
+                      <RacaDescription
+                        variant="caption"
                         sx={{
                           color: 'var(--text-secondary)',
-                          '&:hover': { color: 'var(--color-accent)' },
+                          display: 'block',
+                          mb: 0.5,
+                          minHeight: 'auto',
+                          lineHeight: 1.4,
                         }}
-                        aria-label={`Visualizar reino de cultivo ${reinoCultivo.nome}`}
                       >
-                        <VisibilityOutlinedIcon fontSize="small" />
-                      </IconButton>
-                    </Tooltip>
-                    {canWrite(reinoCultivo.universo) && (
-                      <>
-                        <IconButton
-                          size="small"
-                          onClick={() =>
-                            navigate(ROUTE_PATHS.NOVO_REINO_CULTIVO, {
-                              state: { reinoCultivo },
-                            })
-                          }
-                          sx={{
-                            color: 'var(--color-accent)',
-                            '&:hover': {
-                              color: 'var(--color-accent)',
-                              opacity: 0.8,
-                            },
-                          }}
-                          aria-label={`Editar reino de cultivo ${reinoCultivo.nome}`}
-                        >
-                          <EditOutlinedIcon fontSize="small" />
-                        </IconButton>
-                        <IconButton
-                          size="small"
-                          onClick={() => handleRemove(reinoCultivo.id)}
-                          sx={{
-                            color: '#ef4444',
-                            '&:hover': { color: '#ef4444' },
-                          }}
-                          aria-label={`Remover reino de cultivo ${reinoCultivo.nome}`}
-                        >
-                          <DeleteOutlineIcon fontSize="small" />
-                        </IconButton>
-                      </>
+                        {[ 
+                          reinoCultivo.quantidadeSubReinos ? `${reinoCultivo.quantidadeSubReinos} sub-reinos` : null,
+                          reinoCultivo.experienciaPorSubReino ? `${reinoCultivo.experienciaPorSubReino} XP/sub-reino` : null,
+                        ].filter(Boolean).join(' · ')}
+                      </RacaDescription>
                     )}
-                  </Box>
 
-                  {reinoCultivo.linkImagem && (
-                    <Box
-                      component="img"
-                      src={reinoCultivo.linkImagem}
-                      alt={reinoCultivo.nome}
-                      sx={{
-                        width: '100%',
-                        height: 160,
-                        borderRadius: 2,
-                        objectFit: 'cover',
-                        display: 'block',
-                        border: '1px solid var(--border-primary)',
-                        mb: 1.5,
-                      }}
-                      onError={e => {
-                        e.currentTarget.style.display = 'none';
-                      }}
-                    />
-                  )}
+                    {reinoCultivo.descricao && (
+                      <RacaDescription variant="body2" sx={{ mt: 0.001 }}>
+                        {reinoCultivo.descricao}
+                      </RacaDescription>
+                    )}
 
-                  <Typography
-                    variant="h6"
-                    sx={{
-                      color: 'var(--text-primary)',
-                      fontWeight: 600,
-                      lineHeight: 1.2,
-                    }}
-                  >
-                    {reinoCultivo.nome}
-                  </Typography>
-
-                  <Typography
-                    variant="caption"
-                    sx={{
-                      color: 'var(--color-accent)',
-                      fontWeight: 600,
-                      display: 'block',
-                      mb: 1,
-                    }}
-                  >
-                    {[getUniversoNome(reinoCultivo), reinoCultivo.subUniverso]
-                      .filter(Boolean)
-                      .join(' · ')}
-                  </Typography>
-
-                  {(reinoCultivo.quantidadeSubReinos ||
-                    reinoCultivo.experienciaPorSubReino) && (
-                    <Typography
-                      variant="caption"
-                      sx={{
-                        color: 'var(--text-secondary)',
-                        display: 'block',
-                        mb: 1,
-                      }}
-                    >
-                      {[
-                        reinoCultivo.quantidadeSubReinos
-                          ? `${reinoCultivo.quantidadeSubReinos} sub-reinos`
-                          : null,
-                        reinoCultivo.experienciaPorSubReino
-                          ? `${reinoCultivo.experienciaPorSubReino} XP/sub-reino`
-                          : null,
-                      ]
-                        .filter(Boolean)
-                        .join(' · ')}
-                    </Typography>
-                  )}
-
-                  {reinoCultivo.reinoAnterior && (
-                    <Typography
-                      variant="caption"
-                      sx={{
-                        color: 'var(--text-secondary)',
-                        display: 'block',
-                        mb: 1,
-                      }}
-                    >
-                      🔗 Sucede: {getReinoAnteriorNome(reinoCultivo)}
-                    </Typography>
-                  )}
-
-                  {reinoCultivo.descricao && (
-                    <Typography
-                      variant="body2"
-                      sx={{
-                        color: 'var(--text-secondary)',
-                        mt: 0.5,
-                        display: '-webkit-box',
-                        WebkitLineClamp: 3,
-                        WebkitBoxOrient: 'vertical',
-                        overflow: 'hidden',
-                      }}
-                    >
-                      {reinoCultivo.descricao}
-                    </Typography>
-                  )}
-                </ReinoCultivoCard>
+                    <RacaFooter>
+                      <CardTokens
+                        items={[
+                          `📖 ${getUniversoNome(reinoCultivo)}`,
+                          ...(reinoCultivo.subUniverso ? [`🌱 ${reinoCultivo.subUniverso}`] : []),
+                          ...(reinoCultivo.reinoAnterior ? [`🔗 ${getReinoAnteriorNome(reinoCultivo)}`] : []),
+                        ]}
+                      />
+                    </RacaFooter>
+                  </RacaContent>
+                </RacaCard>
               ))}
             </Box>
           )}
@@ -430,6 +398,7 @@ const ReinosCultivo = () => {
           </Box>
         )}
       </EntityViewDialog>
+      {deleteConfirmationDialog}
     </Box>
   );
 };

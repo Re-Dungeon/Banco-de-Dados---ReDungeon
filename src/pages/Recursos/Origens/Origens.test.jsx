@@ -73,6 +73,9 @@ describe('Origens (padrão useEntityCRUD + useUniversos + EntityFilters + Entity
 
     await user.click(screen.getByLabelText('Remover origem Floresta Sombria'));
 
+    const dialog = await screen.findByRole('dialog');
+    await user.click(within(dialog).getByRole('button', { name: 'Excluir' }));
+
     await waitFor(() =>
       expect(screen.queryByText('Floresta Sombria')).not.toBeInTheDocument(),
     );

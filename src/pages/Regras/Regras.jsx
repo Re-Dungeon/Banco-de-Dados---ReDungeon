@@ -6,6 +6,16 @@ import Button from '@mui/material/Button';
 import IconButton from '@mui/material/IconButton';
 import CircularProgress from '@mui/material/CircularProgress';
 import Divider from '@mui/material/Divider';
+import Dialog from '@mui/material/Dialog';
+import DialogActions from '@mui/material/DialogActions';
+import DialogContent from '@mui/material/DialogContent';
+import DialogTitle from '@mui/material/DialogTitle';
+import Paper from '@mui/material/Paper';
+import DescriptionOutlinedIcon from '@mui/icons-material/DescriptionOutlined';
+import ListAltOutlinedIcon from '@mui/icons-material/ListAltOutlined';
+import TrendingUpOutlinedIcon from '@mui/icons-material/TrendingUpOutlined';
+import LightbulbOutlinedIcon from '@mui/icons-material/LightbulbOutlined';
+import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
 import Tooltip from '@mui/material/Tooltip';
 import DeleteOutlineIcon from '@mui/icons-material/DeleteOutlined';
 import EditOutlinedIcon from '@mui/icons-material/EditOutlined';
@@ -18,12 +28,25 @@ import {
   COMPLEXIDADES_REGRA,
 } from 'common/constants/constants';
 import useEntityCRUD from 'hooks/useEntityCRUD';
+import useDeleteConfirmation from 'hooks/useDeleteConfirmation';
 import useUniversos from 'hooks/useUniversos';
 import { ordenarPorNome, ORDEM_ASC } from 'common/utils/ordenacao';
 import EntityFilters from 'components/EntityFilters/EntityFilters';
 import EntityViewDialog from 'components/EntityViewDialog/EntityViewDialog';
 import { RegraCard } from './styles';
-import { getRegraUniversos } from './utils';
+import {
+  RacaCard,
+  RacaImageFrame,
+  RacaImageOverlay,
+  RacaActionBar,
+  RacaContent,
+  RacaTitle,
+  RacaSubtitle,
+  RacaDescription,
+  RacaFooter,
+} from '../Recursos/Racas/styles';
+import CardTokens from 'components/CardTokens/CardTokens';
+import { getRegraUniversos, formatNomesUniversos } from './utils';
 
 const CAMPOS_FUNCIONAMENTO = [
   { key: 'comoFunciona', label: 'Como Funciona' },
@@ -47,6 +70,7 @@ const Regras = () => {
     remove: handleRemove,
   } = useEntityCRUD({ getAll: getRegras, remove: removeRegra });
   const { universos, loadingUniversos } = useUniversos();
+  const { confirmDelete, deleteConfirmationDialog } = useDeleteConfirmation();
   const loading = loadingRegras || loadingUniversos;
   const [filtroNome, setFiltroNome] = useState('');
   const [filtroCategoria, setFiltroCategoria] = useState('');
@@ -174,339 +198,157 @@ const Regras = () => {
               }}
             >
               {regrasFiltradas.map(regra => (
-                <RegraCard key={regra.id} elevation={0}>
-                  <Box
-                    sx={{
-                      display: 'flex',
-                      justifyContent: 'flex-end',
-                      gap: 0.5,
-                      mb: 1,
-                    }}
-                  >
-                    <Tooltip title="Visualizar detalhes">
-                      <IconButton
-                        size="small"
-                        onClick={() => setRegraVisualizando(regra)}
-                        sx={{
-                          color: 'var(--text-secondary)',
-                          '&:hover': { color: 'var(--color-accent)' },
-                        }}
-                        aria-label={`Visualizar regra ${regra.nome}`}
-                      >
-                        <VisibilityOutlinedIcon fontSize="small" />
-                      </IconButton>
-                    </Tooltip>
-                    {canWrite(getRegraUniversos(regra)) && (
-                      <>
-                        <IconButton
-                          size="small"
-                          onClick={() =>
-                            navigate(ROUTE_PATHS.NOVA_REGRA, {
-                              state: { regra },
-                            })
-                          }
-                          sx={{
-                            color: 'var(--color-accent)',
-                            '&:hover': {
-                              color: 'var(--color-accent)',
-                              opacity: 0.8,
-                            },
-                          }}
-                          aria-label={`Editar regra ${regra.nome}`}
-                        >
-                          <EditOutlinedIcon fontSize="small" />
+                <RacaCard key={regra.id} elevation={0}>
+                  <RacaImageFrame>
+                    <RacaImageOverlay />
+                    <RacaActionBar>
+                      <Tooltip title="Visualizar detalhes">
+                        <IconButton size="small" onClick={() => setRegraVisualizando(regra)} sx={{ color: 'var(--text-secondary)', padding: '14px', minWidth: '16px', width: '16px', height: '16px', '&:hover': { color: 'var(--color-accent)' } }} aria-label={`Visualizar regra ${regra.nome}`}>
+                          <VisibilityOutlinedIcon fontSize="small" />
                         </IconButton>
-                        <IconButton
-                          size="small"
-                          onClick={() => handleRemove(regra.id)}
-                          sx={{
-                            color: '#ef4444',
-                            '&:hover': { color: '#ef4444' },
-                          }}
-                          aria-label={`Remover regra ${regra.nome}`}
-                        >
-                          <DeleteOutlineIcon fontSize="small" />
-                        </IconButton>
-                      </>
+                      </Tooltip>
+
+                      {canWrite(getRegraUniversos(regra)) && (
+                        <>
+                          <IconButton size="small" onClick={() => navigate(ROUTE_PATHS.NOVA_REGRA, { state: { regra } })} sx={{ color: 'var(--color-accent)', padding: '4px', minWidth: '32px', width: '32px', height: '32px', '&:hover': { color: 'var(--color-accent)', opacity: 0.8 } }} aria-label={`Editar regra ${regra.nome}`}>
+                            <EditOutlinedIcon fontSize="small" />
+                          </IconButton>
+                          <IconButton size="small" onClick={() => confirmDelete(regra.nome, () => handleRemove(regra.id))} sx={{ color: '#ef4444', padding: '4px', minWidth: '32px', width: '32px', height: '32px', '&:hover': { color: '#ef4444' } }} aria-label={`Remover regra ${regra.nome}`}>
+                            <DeleteOutlineIcon fontSize="small" />
+                          </IconButton>
+                        </>
+                      )}
+                    </RacaActionBar>
+
+                    {regra.linkImagem && (
+                      <Box component="img" className="raca-card-image" src={regra.linkImagem} alt={regra.nome} onError={e => { e.currentTarget.style.display = 'none'; }} />
                     )}
-                  </Box>
+                  </RacaImageFrame>
 
-                  {regra.linkImagem && (
-                    <Box
-                      component="img"
-                      src={regra.linkImagem}
-                      alt={regra.nome}
-                      sx={{
-                        width: '100%',
-                        height: 160,
-                        borderRadius: 2,
-                        objectFit: 'cover',
-                        display: 'block',
-                        border: '1px solid var(--border-primary)',
-                        mb: 1.5,
-                      }}
-                      onError={e => {
-                        e.currentTarget.style.display = 'none';
-                      }}
-                    />
-                  )}
+                  <RacaContent>
+                    <RacaTitle variant="h6">{regra.nome}</RacaTitle>
 
-                  <Typography
-                    variant="h6"
-                    sx={{
-                      color: 'var(--text-primary)',
-                      fontWeight: 600,
-                      lineHeight: 1.2,
-                    }}
-                  >
-                    {regra.nome}
-                  </Typography>
+                    {(regra.categoria || regra.complexidade) && <RacaSubtitle variant="caption">{[regra.categoria, regra.complexidade].filter(Boolean).join(' · ')}</RacaSubtitle>}
 
-                  {(regra.categoria || regra.complexidade) && (
-                    <Typography
-                      variant="caption"
-                      sx={{
-                        color: 'var(--color-accent)',
-                        fontWeight: 600,
-                        display: 'block',
-                        mb: regra.tipo ? 0.25 : 1,
-                      }}
-                    >
-                      {[regra.categoria, regra.complexidade]
-                        .filter(Boolean)
-                        .join(' · ')}
-                    </Typography>
-                  )}
+                    {regra.tipo && <RacaSubtitle variant="caption" sx={{ color: 'var(--text-muted)' }}>{regra.tipo}</RacaSubtitle>}
 
-                  {regra.tipo && (
-                    <Typography
-                      variant="caption"
-                      sx={{
-                        color: 'var(--text-muted)',
-                        display: 'block',
-                        mb: 1,
-                      }}
-                    >
-                      {regra.tipo}
-                    </Typography>
-                  )}
+                    {regra.descricaoCurta && <RacaDescription variant="body2">{regra.descricaoCurta}</RacaDescription>}
 
-                  {regra.descricaoCurta && (
-                    <Typography
-                      variant="body2"
-                      sx={{
-                        color: 'var(--text-secondary)',
-                        mt: 0.5,
-                        display: '-webkit-box',
-                        WebkitLineClamp: 3,
-                        WebkitBoxOrient: 'vertical',
-                        overflow: 'hidden',
-                      }}
-                    >
-                      {regra.descricaoCurta}
-                    </Typography>
-                  )}
-                </RegraCard>
+                    <RacaFooter>
+                      <CardTokens
+                        items={
+                          getRegraUniversos(regra).length > 0
+                            ? getRegraUniversos(regra).map(universoId => {
+                                const universo = universos.find(u => u.id === universoId);
+                                return `📖 ${universo?.Nome || 'Universo Desconhecido'}`;
+                              })
+                            : ['📖 Universo Desconhecido']
+                        }
+                      />
+                    </RacaFooter>
+                  </RacaContent>
+                </RacaCard>
               ))}
             </Box>
           )}
         </>
       )}
 
-      <EntityViewDialog
+      <Dialog
         open={Boolean(regraVisualizando)}
         onClose={() => setRegraVisualizando(null)}
-        titulo={regraVisualizando?.nome}
-        subtitulo={
-          (regraVisualizando?.categoria || regraVisualizando?.complexidade) &&
-          [regraVisualizando.categoria, regraVisualizando.complexidade]
-            .filter(Boolean)
-            .join(' · ')
-        }
-        imagem={regraVisualizando?.linkImagem}
-        imagemSx={{ height: 'auto', maxHeight: 220 }}
-        actions={
-          canWrite(getRegraUniversos(regraVisualizando)) && (
-            <Button
-              variant="contained"
-              onClick={() => {
-                navigate(ROUTE_PATHS.NOVA_REGRA, {
-                  state: { regra: regraVisualizando },
-                });
-                setRegraVisualizando(null);
-              }}
-              sx={{
-                background: 'var(--color-primary)',
-                '&:hover': { background: '#5a2090' },
-              }}
-            >
-              Editar
-            </Button>
-          )
-        }
+        maxWidth="lg"
+        fullWidth
+        slotProps={{ paper: { sx: { background: 'linear-gradient(180deg, rgba(6,10,20,0.98), rgba(3,6,12,0.98))', borderRadius: 3, border: '1px solid rgba(255,255,255,0.04)', boxShadow: '0 40px 80px rgba(0,0,0,0.6)', overflow: 'hidden' } } }}
       >
-        {regraVisualizando?.descricaoCurta && (
-          <Typography
-            variant="body2"
-            sx={{
-              color: 'var(--text-primary)',
-              fontWeight: 600,
-              mb: 2,
-              fontStyle: 'italic',
-            }}
-          >
-            {regraVisualizando.descricaoCurta}
-          </Typography>
-        )}
-
-        {regraVisualizando?.explicacaoCompleta && (
-          <>
-            <Typography
-              variant="caption"
-              sx={{
-                color: 'var(--text-muted)',
-                textTransform: 'uppercase',
-                letterSpacing: 0.5,
-                display: 'block',
-                mb: 0.5,
-              }}
-            >
-              Explicação Completa
-            </Typography>
-            <Typography
-              variant="body2"
-              sx={{ color: 'var(--text-secondary)', mb: 2 }}
-            >
-              {regraVisualizando.explicacaoCompleta}
-            </Typography>
-          </>
-        )}
-
-        {CAMPOS_FUNCIONAMENTO.filter(f => regraVisualizando?.[f.key]).length >
-          0 && (
-          <>
-            <Divider sx={{ borderColor: 'var(--border-primary)', mb: 1.5 }} />
-            <Typography
-              variant="subtitle2"
-              sx={{
-                color: 'var(--color-accent)',
-                fontWeight: 700,
-                mb: 1,
-                textTransform: 'uppercase',
-                letterSpacing: 1,
-                fontSize: '0.72rem',
-              }}
-            >
-              Funcionamento
-            </Typography>
-            {CAMPOS_FUNCIONAMENTO.filter(f => regraVisualizando[f.key]).map(
-              f => (
-                <Box key={f.key} sx={{ mb: 1.25 }}>
-                  <Typography
-                    variant="caption"
-                    sx={{
-                      color: 'var(--text-muted)',
-                      display: 'block',
-                      fontSize: '0.7rem',
-                    }}
-                  >
-                    {f.label}
-                  </Typography>
-                  <Typography
-                    variant="body2"
-                    sx={{ color: 'var(--text-secondary)' }}
-                  >
-                    {regraVisualizando[f.key]}
-                  </Typography>
-                </Box>
-              ),
-            )}
-          </>
-        )}
-
-        {CAMPOS_RESTRICOES.filter(f => regraVisualizando?.[f.key]).length >
-          0 && (
-          <>
-            <Divider sx={{ borderColor: 'var(--border-primary)', mb: 1.5 }} />
-            <Typography
-              variant="subtitle2"
-              sx={{
-                color: 'var(--color-accent)',
-                fontWeight: 700,
-                mb: 1,
-                textTransform: 'uppercase',
-                letterSpacing: 1,
-                fontSize: '0.72rem',
-              }}
-            >
-              Restrições
-            </Typography>
-            <Box
-              sx={{
-                display: 'flex',
-                flexWrap: 'wrap',
-                gap: 0.75,
-                mb: 2,
-              }}
-            >
-              {CAMPOS_RESTRICOES.filter(f => regraVisualizando[f.key]).map(
-                f => (
-                  <Box
-                    key={f.key}
-                    sx={{
-                      background: 'var(--bg-secondary)',
-                      borderRadius: 1,
-                      px: 1,
-                      py: 0.5,
-                    }}
-                  >
-                    <Typography
-                      variant="caption"
-                      sx={{
-                        color: 'var(--text-muted)',
-                        display: 'block',
-                        fontSize: '0.65rem',
-                      }}
-                    >
-                      {f.label}
-                    </Typography>
-                    <Typography
-                      variant="body2"
-                      sx={{ color: 'var(--text-primary)', fontWeight: 600 }}
-                    >
-                      {regraVisualizando[f.key]}
-                    </Typography>
-                  </Box>
-                ),
+        <DialogTitle sx={{ px: { xs: 2.4, md: 3 }, py: { xs: 2, md: 3 } }}>
+          <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 2, flexWrap: 'wrap' }}>
+            <Box sx={{ flex: 1, minWidth: 0 }}>
+              <Typography variant="h3" sx={{ color: '#fff', fontWeight: 900, fontSize: { xs: '1.5rem', md: '2.2rem' }, lineHeight: 1 }}>{regraVisualizando?.nome}</Typography>
+              <Typography variant="subtitle2" sx={{ color: 'var(--text-muted)', mt: 0.6 }}>{(regraVisualizando?.categoria || regraVisualizando?.complexidade) && [regraVisualizando.categoria, regraVisualizando.complexidade].filter(Boolean).join(' · ')}</Typography>
+            </Box>
+            <Box sx={{ ml: 'auto', display: 'flex', alignItems: 'center', gap: 1 }}>
+              {canWrite(getRegraUniversos(regraVisualizando)) && (
+                <Button variant="contained" onClick={() => { navigate(ROUTE_PATHS.NOVA_REGRA, { state: { regra: regraVisualizando } }); setRegraVisualizando(null); }} sx={{ background: 'var(--color-primary)', '&:hover': { background: '#5a2090' } }}>Editar</Button>
               )}
             </Box>
-          </>
-        )}
+          </Box>
+          <Box sx={{ mt: 2, height: 6, width: 220, borderRadius: 2, background: 'linear-gradient(90deg, rgba(111,45,168,0.9), rgba(0,217,255,0.6))' }} />
+        </DialogTitle>
 
-        {regraVisualizando?.exemplo && (
-          <>
-            <Divider sx={{ borderColor: 'var(--border-primary)', mb: 1.5 }} />
-            <Typography
-              variant="caption"
-              sx={{
-                color: 'var(--text-muted)',
-                textTransform: 'uppercase',
-                letterSpacing: 0.5,
-                display: 'block',
-                mb: 0.5,
-              }}
-            >
-              Exemplo
-            </Typography>
-            <Typography
-              variant="body2"
-              sx={{ color: 'var(--text-secondary)', fontStyle: 'italic' }}
-            >
-              {regraVisualizando.exemplo}
-            </Typography>
-          </>
-        )}
-      </EntityViewDialog>
+        <DialogContent dividers sx={{ display: 'flex', gap: 3, px: { xs: 2.2, md: 3.2 }, py: 2 }}>
+          {/* barra lateral decorativa */}
+          <Box sx={{ width: 8, borderRadius: 2, background: 'linear-gradient(180deg, rgba(111,45,168,0.9), rgba(0,217,255,0.6))' }} />
+
+          <Box sx={{ flex: 1, display: 'grid', gap: 2 }}>
+            {/* Descrição card */}
+            <Paper sx={{ p: 3, borderRadius: 2, background: 'rgba(255,255,255,0.02)', boxShadow: '0 8px 30px rgba(0,0,0,0.18)' }}>
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
+                <DescriptionOutlinedIcon sx={{ color: 'var(--color-accent)' }} />
+                <Typography variant="h6" sx={{ color: 'var(--text-primary)', fontWeight: 800 }}>Descrição</Typography>
+              </Box>
+              <Typography variant="body2" sx={{ color: 'var(--text-secondary)', lineHeight: 1.8 }}>{regraVisualizando?.descricaoCurta || 'Nenhuma descrição disponível.'}</Typography>
+            </Paper>
+
+            {/* Regras Gerais card */}
+            <Paper sx={{ p: 3, borderRadius: 2, background: 'linear-gradient(180deg, rgba(10,10,20,0.02), rgba(6,6,12,0.02))', boxShadow: '0 8px 30px rgba(0,0,0,0.12)' }}>
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
+                <ListAltOutlinedIcon sx={{ color: '#9be3ff' }} />
+                <Typography variant="h6" sx={{ color: 'var(--text-primary)', fontWeight: 800 }}>Regras Gerais</Typography>
+              </Box>
+              <Typography variant="body2" sx={{ color: 'var(--text-secondary)', mb: 1.5 }}>{regraVisualizando?.explicacaoCompleta || 'Sem informações adicionais.'}</Typography>
+
+              {/* Transform lists into elegant bullets if any list-like fields exist */}
+              {Array.isArray(regraVisualizando?.regras) && regraVisualizando.regras.length > 0 && (
+                <Box component="ul" sx={{ pl: 3, m: 0 }}>
+                  {regraVisualizando.regras.map((r, i) => (
+                    <Box component="li" key={i} sx={{ mb: 1, listStyle: 'none', display: 'flex', gap: 2 }}>
+                      <Box sx={{ width: 8, height: 8, background: 'var(--color-accent)', borderRadius: '50%', mt: '6px' }} />
+                      <Typography variant="body2" sx={{ color: 'var(--text-secondary)' }}>{r}</Typography>
+                    </Box>
+                  ))}
+                </Box>
+              )}
+            </Paper>
+
+            <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' }, gap: 2 }}>
+              <Paper sx={{ p: 2.5, borderRadius: 2, background: 'rgba(20,40,20,0.02)', boxShadow: '0 6px 22px rgba(0,0,0,0.12)' }}>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
+                  <TrendingUpOutlinedIcon sx={{ color: '#5ee19a' }} />
+                  <Typography variant="subtitle1" sx={{ color: 'var(--text-primary)', fontWeight: 800 }}>Funcionamento</Typography>
+                </Box>
+                {CAMPOS_FUNCIONAMENTO.filter(f => regraVisualizando?.[f.key]).map(f => (
+                  <Box key={f.key} sx={{ mb: 1 }}>
+                    <Typography variant="caption" sx={{ color: 'var(--text-muted)', display: 'block', fontSize: '0.7rem' }}>{f.label}</Typography>
+                    <Typography variant="body2" sx={{ color: 'var(--text-secondary)' }}>{regraVisualizando[f.key]}</Typography>
+                  </Box>
+                ))}
+              </Paper>
+
+              <Paper sx={{ p: 2.5, borderRadius: 2, background: 'rgba(40,20,20,0.02)', boxShadow: '0 6px 22px rgba(0,0,0,0.12)' }}>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
+                  <LightbulbOutlinedIcon sx={{ color: '#ffd97a' }} />
+                  <Typography variant="subtitle1" sx={{ color: 'var(--text-primary)', fontWeight: 800 }}>Exemplos</Typography>
+                </Box>
+                <Typography variant="body2" sx={{ color: 'var(--text-secondary)', fontStyle: 'italic' }}>{regraVisualizando?.exemplo || 'Nenhum exemplo registrado.'}</Typography>
+              </Paper>
+            </Box>
+
+            <Paper sx={{ p: 2.5, borderRadius: 2, background: 'rgba(12,12,20,0.02)', boxShadow: '0 6px 22px rgba(0,0,0,0.12)' }}>
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
+                <InfoOutlinedIcon sx={{ color: '#9fb6ff' }} />
+                <Typography variant="subtitle1" sx={{ color: 'var(--text-primary)', fontWeight: 800 }}>Observações</Typography>
+              </Box>
+              <Typography variant="body2" sx={{ color: 'var(--text-secondary)' }}>{regraVisualizando?.observacoes || 'Sem observações.'}</Typography>
+            </Paper>
+          </Box>
+        </DialogContent>
+
+        <DialogActions sx={{ px: { xs: 2.2, md: 3.2 }, py: 2, borderTop: '1px solid rgba(255,255,255,0.04)', justifyContent: 'flex-end', background: 'rgba(3,7,15,0.92)' }}>
+          <Button onClick={() => setRegraVisualizando(null)} sx={{ color: 'var(--text-primary)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 2, px: 2.4, py: 1 }}>Fechar</Button>
+        </DialogActions>
+      </Dialog>
+      {deleteConfirmationDialog}
     </Box>
   );
 };

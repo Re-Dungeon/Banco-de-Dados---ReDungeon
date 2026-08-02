@@ -7,7 +7,6 @@ import IconButton from '@mui/material/IconButton';
 import CircularProgress from '@mui/material/CircularProgress';
 import Divider from '@mui/material/Divider';
 import Tooltip from '@mui/material/Tooltip';
-import Chip from '@mui/material/Chip';
 import DeleteOutlineIcon from '@mui/icons-material/DeleteOutlined';
 import EditOutlinedIcon from '@mui/icons-material/EditOutlined';
 import VisibilityOutlinedIcon from '@mui/icons-material/VisibilityOutlined';
@@ -16,12 +15,25 @@ import { ROUTE_PATHS } from 'common/constants/routes';
 import { useAuth } from 'context/AuthContext';
 import { RARIDADES } from 'common/constants/constants';
 import useEntityCRUD from 'hooks/useEntityCRUD';
+import useDeleteConfirmation from 'hooks/useDeleteConfirmation';
 import useUniversos from 'hooks/useUniversos';
 import { ordenarPorNome, ORDEM_ASC } from 'common/utils/ordenacao';
 import EntityFilters from 'components/EntityFilters/EntityFilters';
 import EntityViewDialog from 'components/EntityViewDialog/EntityViewDialog';
 import { TIPOS_ITEM } from './utils';
-import { ItemCard } from './styles';
+import {
+  RacaCard,
+  RacaImageFrame,
+  RacaImageOverlay,
+  RacaActionBar,
+  RacaContent,
+  RacaTitle,
+  RacaSubtitle,
+  RacaDescription,
+  RacaFooter,
+  RacaMeta,
+  RacaBadge,
+} from '../Racas/styles';
 
 const Itens = () => {
   const navigate = useNavigate();
@@ -31,6 +43,7 @@ const Itens = () => {
     loading: loadingItens,
     remove: handleRemove,
   } = useEntityCRUD({ getAll: getItens, remove: removeIten });
+  const { confirmDelete, deleteConfirmationDialog } = useDeleteConfirmation();
   const { universos, loadingUniversos } = useUniversos();
   const loading = loadingItens || loadingUniversos;
   const [filtroNome, setFiltroNome] = useState('');
@@ -149,164 +162,118 @@ const Itens = () => {
                 gap: 2,
               }}
             >
-              {itensFiltrados.map(item => (
-                <ItemCard key={item.id} elevation={0}>
-                  <Box
-                    sx={{
-                      display: 'flex',
-                      justifyContent: 'flex-end',
-                      gap: 0.5,
-                      mb: 1,
-                    }}
-                  >
-                    <Tooltip title="Visualizar detalhes">
-                      <IconButton
-                        size="small"
-                        onClick={() => setItemVisualizando(item)}
-                        sx={{
-                          color: 'var(--text-secondary)',
-                          '&:hover': { color: 'var(--color-accent)' },
-                        }}
-                        aria-label={`Visualizar item ${item.nome}`}
-                      >
-                        <VisibilityOutlinedIcon fontSize="small" />
-                      </IconButton>
-                    </Tooltip>
-                    {canWrite(item.universo) && (
-                      <>
-                        <IconButton
-                          size="small"
-                          onClick={() =>
-                            navigate(ROUTE_PATHS.NOVO_ITEM, {
-                              state: { item },
-                            })
-                          }
-                          sx={{
-                            color: 'var(--color-accent)',
-                            '&:hover': {
-                              color: 'var(--color-accent)',
-                              opacity: 0.8,
-                            },
-                          }}
-                          aria-label={`Editar item ${item.nome}`}
-                        >
-                          <EditOutlinedIcon fontSize="small" />
-                        </IconButton>
-                        <IconButton
-                          size="small"
-                          onClick={() => handleRemove(item.id)}
-                          sx={{
-                            color: '#ef4444',
-                            '&:hover': { color: '#ef4444' },
-                          }}
-                          aria-label={`Remover item ${item.nome}`}
-                        >
-                          <DeleteOutlineIcon fontSize="small" />
-                        </IconButton>
-                      </>
-                    )}
-                  </Box>
+              {itensFiltrados.map(item => {
+                const universoNome =
+                  universos.find(u => u.id === item.universo)?.Nome ||
+                  'Universo Desconhecido';
 
-                  {item.linkImagem && (
-                    <Box
-                      component="img"
-                      src={item.linkImagem}
-                      alt={item.nome}
-                      sx={{
-                        width: '100%',
-                        height: 180,
-                        borderRadius: 2,
-                        objectFit: 'cover',
-                        display: 'block',
-                        border: '1px solid var(--border-primary)',
-                        mb: 1.5,
-                      }}
-                      onError={e => {
-                        e.currentTarget.style.display = 'none';
-                      }}
-                    />
-                  )}
-                  <Box
-                    sx={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: 1,
-                      flexWrap: 'wrap',
-                    }}
-                  >
-                    <Typography
-                      variant="h6"
-                      sx={{
-                        color: 'var(--text-primary)',
-                        fontWeight: 600,
-                        lineHeight: 1.2,
-                      }}
-                    >
-                      {item.nome}
-                    </Typography>
-                    {item.mostrarNaLoja && (
-                      <Chip
-                        label="Na Loja"
-                        size="small"
-                        sx={{
-                          background: 'var(--color-accent)',
-                          color: 'var(--bg-primary)',
-                          fontWeight: 600,
-                        }}
-                      />
-                    )}
-                  </Box>
-                  {(item.qualidade || item.tipo) && (
-                    <Typography
-                      variant="caption"
-                      sx={{
-                        color: 'var(--color-accent)',
-                        fontWeight: 600,
-                        display: 'block',
-                        mb: 0.5,
-                      }}
-                    >
-                      {[
-                        universos.find(u => u.id === item.universo)?.Nome,
-                        item.tipo,
-                        item.qualidade,
-                      ]
-                        .filter(Boolean)
-                        .join(' — ')}
-                    </Typography>
-                  )}
-                  {(item.nivelAtual !== '' || item.nivelMaximo !== '') && (
-                    <Typography
-                      variant="caption"
-                      sx={{
-                        color: 'var(--text-muted)',
-                        display: 'block',
-                        mb: 0.5,
-                      }}
-                    >
-                      Nível{' '}
-                      {[item.nivelAtual, item.nivelMaximo]
-                        .filter(v => v !== '' && v !== null && v !== undefined)
-                        .join(' / ')}
-                    </Typography>
-                  )}
-                  {item.descricao && (
-                    <Typography
-                      variant="body2"
-                      sx={{
-                        color: 'var(--text-secondary)',
-                        mt: 0.5,
-                        display: '-webkit-box',
-                        WebkitLineClamp: 3,
-                        WebkitBoxOrient: 'vertical',
-                        overflow: 'hidden',
-                      }}
-                    >
-                      {item.descricao}
-                    </Typography>
-                  )}
-                </ItemCard>
-              ))}
+                return (
+                  <RacaCard key={item.id} elevation={0}>
+                    <RacaImageFrame>
+                      {item.linkImagem && (
+                        <Box
+                          component="img"
+                          className="raca-card-image"
+                          src={item.linkImagem}
+                          alt={item.nome}
+                          onError={e => {
+                            e.currentTarget.style.display = 'none';
+                          }}
+                        />
+                      )}
+                      <RacaImageOverlay />
+                      <RacaActionBar>
+                        <Tooltip title="Visualizar detalhes">
+                          <IconButton
+                            size="small"
+                            onClick={() => setItemVisualizando(item)}
+                            sx={{
+                              color: 'var(--text-secondary)',
+                              padding: '14px',
+                              minWidth: '16px',
+                              width: '16px',
+                              height: '16px',
+                              '&:hover': { color: 'var(--color-accent)' },
+                            }}
+                            aria-label={`Visualizar item ${item.nome}`}
+                          >
+                            <VisibilityOutlinedIcon fontSize="small" />
+                          </IconButton>
+                        </Tooltip>
+                        {canWrite(item.universo) && (
+                          <>
+                            <IconButton
+                              size="small"
+                              onClick={() =>
+                                navigate(ROUTE_PATHS.NOVO_ITEM, {
+                                  state: { item },
+                                })
+                              }
+                              sx={{
+                                color: 'var(--color-accent)',
+                                padding: '4px',
+                                minWidth: '32px',
+                                width: '32px',
+                                height: '32px',
+                                '&:hover': {
+                                  color: 'var(--color-accent)',
+                                  opacity: 0.8,
+                                },
+                              }}
+                              aria-label={`Editar item ${item.nome}`}
+                            >
+                              <EditOutlinedIcon fontSize="small" />
+                            </IconButton>
+                            <IconButton
+                              size="small"
+                              onClick={() =>
+                                confirmDelete(item.nome, () =>
+                                  handleRemove(item.id),
+                                )
+                              }
+                              sx={{
+                                color: '#ef4444',
+                                padding: '4px',
+                                minWidth: '32px',
+                                width: '32px',
+                                height: '32px',
+                                '&:hover': { color: '#ef4444' },
+                              }}
+                              aria-label={`Remover item ${item.nome}`}
+                            >
+                              <DeleteOutlineIcon fontSize="small" />
+                            </IconButton>
+                          </>
+                        )}
+                      </RacaActionBar>
+                    </RacaImageFrame>
+
+                    <RacaContent>
+                      <RacaTitle variant="h6">{item.nome}</RacaTitle>
+                      <RacaSubtitle variant="caption">
+                        {universoNome}
+                      </RacaSubtitle>
+                      {item.descricao && (
+                        <RacaDescription variant="body2">
+                          {item.descricao}
+                        </RacaDescription>
+                      )}
+                      <RacaFooter>
+                        <RacaMeta>
+                          <RacaBadge>📖 {universoNome}</RacaBadge>
+                          {item.tipo && <RacaBadge>🗡️ {item.tipo}</RacaBadge>}
+                          {item.qualidade && (
+                            <RacaBadge>⭐ {item.qualidade}</RacaBadge>
+                          )}
+                          {item.mostrarNaLoja && (
+                            <RacaBadge>🛒 Na Loja</RacaBadge>
+                          )}
+                        </RacaMeta>
+                      </RacaFooter>
+                    </RacaContent>
+                  </RacaCard>
+                );
+              })}
             </Box>
           )}
         </>
@@ -327,6 +294,7 @@ const Itens = () => {
             .join(' — ')
         }
         imagem={itemVisualizando?.linkImagem}
+        imagemSx={{ height: 'auto', maxHeight: 220 }}
       >
         {/* Atributos */}
         {[
@@ -495,6 +463,7 @@ const Itens = () => {
           </>
         )}
       </EntityViewDialog>
+      {deleteConfirmationDialog}
     </Box>
   );
 };

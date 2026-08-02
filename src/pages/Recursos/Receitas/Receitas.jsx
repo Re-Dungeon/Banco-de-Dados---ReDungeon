@@ -16,11 +16,24 @@ import { ROUTE_PATHS } from 'common/constants/routes';
 import { useAuth } from 'context/AuthContext';
 import { RARIDADES, CATEGORIAS_RECEITA } from 'common/constants/constants';
 import useEntityCRUD from 'hooks/useEntityCRUD';
+import useDeleteConfirmation from 'hooks/useDeleteConfirmation';
 import useUniversos from 'hooks/useUniversos';
 import { ordenarPorNome, ORDEM_ASC } from 'common/utils/ordenacao';
 import EntityFilters from 'components/EntityFilters/EntityFilters';
 import EntityViewDialog from 'components/EntityViewDialog/EntityViewDialog';
-import { ReceitaCard } from './styles';
+import {
+  RacaCard,
+  RacaImageFrame,
+  RacaImageOverlay,
+  RacaActionBar,
+  RacaContent,
+  RacaTitle,
+  RacaSubtitle,
+  RacaDescription,
+  RacaFooter,
+  RacaMeta,
+  RacaBadge,
+} from '../Racas/styles';
 
 const Receitas = () => {
   const navigate = useNavigate();
@@ -31,6 +44,7 @@ const Receitas = () => {
     remove: handleRemove,
   } = useEntityCRUD({ getAll: getReceitas, remove: removeReceita });
   const { universos, loadingUniversos } = useUniversos();
+  const { confirmDelete, deleteConfirmationDialog } = useDeleteConfirmation();
   const loading = loadingReceitas || loadingUniversos;
   const [filtroNome, setFiltroNome] = useState('');
   const [filtroRaridade, setFiltroRaridade] = useState('');
@@ -164,171 +178,78 @@ const Receitas = () => {
               }}
             >
               {receitasFiltradas.map(receita => (
-                <ReceitaCard key={receita.id} elevation={0}>
-                  <Box
-                    sx={{
-                      display: 'flex',
-                      justifyContent: 'flex-end',
-                      gap: 0.5,
-                      mb: 1,
-                    }}
-                  >
-                    <Tooltip title="Visualizar detalhes">
-                      <IconButton
-                        size="small"
-                        onClick={() => setReceitaVisualizando(receita)}
-                        sx={{
-                          color: 'var(--text-secondary)',
-                          '&:hover': { color: 'var(--color-accent)' },
+                <RacaCard key={receita.id} elevation={0}>
+                  <RacaImageFrame>
+                    {receita.linkImagem && (
+                      <Box
+                        component="img"
+                        className="raca-card-image"
+                        src={receita.linkImagem}
+                        alt={receita.nome}
+                        onError={e => {
+                          e.currentTarget.style.display = 'none';
                         }}
-                        aria-label={`Visualizar receita ${receita.nome}`}
-                      >
-                        <VisibilityOutlinedIcon fontSize="small" />
-                      </IconButton>
-                    </Tooltip>
-                    {canWrite(receita.universo) && (
-                      <>
-                        <IconButton
-                          size="small"
-                          onClick={() =>
-                            navigate(ROUTE_PATHS.NOVA_RECEITA, {
-                              state: { receita },
-                            })
-                          }
-                          sx={{
-                            color: 'var(--color-accent)',
-                            '&:hover': {
-                              color: 'var(--color-accent)',
-                              opacity: 0.8,
-                            },
-                          }}
-                          aria-label={`Editar receita ${receita.nome}`}
-                        >
-                          <EditOutlinedIcon fontSize="small" />
-                        </IconButton>
-                        <IconButton
-                          size="small"
-                          onClick={() => handleRemove(receita.id)}
-                          sx={{
-                            color: '#ef4444',
-                            '&:hover': { color: '#ef4444' },
-                          }}
-                          aria-label={`Remover receita ${receita.nome}`}
-                        >
-                          <DeleteOutlineIcon fontSize="small" />
-                        </IconButton>
-                      </>
+                      />
                     )}
-                  </Box>
 
-                  {receita.linkImagem && (
-                    <Box
-                      component="img"
-                      src={receita.linkImagem}
-                      alt={receita.nome}
-                      sx={{
-                        width: '100%',
-                        height: 160,
-                        borderRadius: 2,
-                        objectFit: 'cover',
-                        display: 'block',
-                        border: '1px solid var(--border-primary)',
-                        mb: 1.5,
-                      }}
-                      onError={e => {
-                        e.currentTarget.style.display = 'none';
-                      }}
-                    />
-                  )}
+                    <RacaImageOverlay />
 
-                  <Typography
-                    variant="h6"
-                    sx={{
-                      color: 'var(--text-primary)',
-                      fontWeight: 600,
-                      lineHeight: 1.2,
-                    }}
-                  >
-                    {receita.nome}
-                  </Typography>
-
-                  {(receita.categoria || receita.raridade) && (
-                    <Typography
-                      variant="caption"
-                      sx={{
-                        color: 'var(--color-accent)',
-                        fontWeight: 600,
-                        display: 'block',
-                        mb: 1,
-                      }}
-                    >
-                      {[receita.categoria, receita.raridade]
-                        .filter(Boolean)
-                        .join(' · ')}
-                    </Typography>
-                  )}
-
-                  {(receita.valorCompra || receita.valorVenda) && (
-                    <Box sx={{ display: 'flex', gap: 2, mb: 1 }}>
-                      {receita.valorCompra && (
-                        <Typography
-                          variant="caption"
-                          sx={{ color: 'var(--text-secondary)' }}
-                        >
-                          🛒 {receita.valorCompra}
-                        </Typography>
-                      )}
-                      {receita.valorVenda && (
-                        <Typography
-                          variant="caption"
-                          sx={{ color: 'var(--text-secondary)' }}
-                        >
-                          💰 {receita.valorVenda}
-                        </Typography>
-                      )}
-                    </Box>
-                  )}
-
-                  {receita.materiais?.length > 0 && (
-                    <Box
-                      sx={{
-                        display: 'flex',
-                        flexWrap: 'wrap',
-                        gap: 0.5,
-                        mb: 1,
-                      }}
-                    >
-                      {receita.materiais.map(m => (
-                        <Chip
-                          key={m.id}
-                          label={m.nome}
+                    <RacaActionBar>
+                      <Tooltip title="Visualizar detalhes">
+                        <IconButton
                           size="small"
-                          sx={{
-                            background: 'var(--bg-secondary)',
-                            color: 'var(--text-secondary)',
-                            border: '1px solid var(--border-primary)',
-                          }}
-                        />
-                      ))}
-                    </Box>
-                  )}
+                          onClick={() => setReceitaVisualizando(receita)}
+                          sx={{ color: 'var(--text-secondary)', padding: '14px', minWidth: '16px', width: '16px', height: '16px', '&:hover': { color: 'var(--color-accent)' } }}
+                          aria-label={`Visualizar receita ${receita.nome}`}
+                        >
+                          <VisibilityOutlinedIcon fontSize="small" />
+                        </IconButton>
+                      </Tooltip>
 
-                  {receita.descricao && (
-                    <Typography
-                      variant="body2"
-                      sx={{
-                        color: 'var(--text-secondary)',
-                        mt: 0.5,
-                        display: '-webkit-box',
-                        WebkitLineClamp: 3,
-                        WebkitBoxOrient: 'vertical',
-                        overflow: 'hidden',
-                      }}
-                    >
-                      {receita.descricao}
-                    </Typography>
-                  )}
-                </ReceitaCard>
+                      {canWrite(receita.universo) && (
+                        <>
+                          <IconButton size="small" onClick={() => navigate(ROUTE_PATHS.NOVA_RECEITA, { state: { receita } })} sx={{ color: 'var(--color-accent)', padding: '4px', minWidth: '32px', width: '32px', height: '32px', '&:hover': { color: 'var(--color-accent)', opacity: 0.8 } }} aria-label={`Editar receita ${receita.nome}`}>
+                            <EditOutlinedIcon fontSize="small" />
+                          </IconButton>
+                          <IconButton size="small" onClick={() => confirmDelete(receita.nome, () => handleRemove(receita.id))} sx={{ color: '#ef4444', padding: '4px', minWidth: '32px', width: '32px', height: '32px', '&:hover': { color: '#ef4444' } }} aria-label={`Remover receita ${receita.nome}`}>
+                            <DeleteOutlineIcon fontSize="small" />
+                          </IconButton>
+                        </>
+                      )}
+                    </RacaActionBar>
+                  </RacaImageFrame>
+
+                  <RacaContent>
+                    <RacaTitle variant="h6">{receita.nome}</RacaTitle>
+
+                    {(receita.categoria || receita.raridade) && (
+                      <RacaSubtitle variant="caption">{[receita.categoria, receita.raridade].filter(Boolean).join(' · ')}</RacaSubtitle>
+                    )}
+
+                    {(receita.valorCompra || receita.valorVenda) && (
+                      <Box sx={{ display: 'flex', gap: 2, mb: 1 }}>
+                        {receita.valorCompra && <Typography variant="caption" sx={{ color: 'var(--text-secondary)' }}>🛒 {receita.valorCompra}</Typography>}
+                        {receita.valorVenda && <Typography variant="caption" sx={{ color: 'var(--text-secondary)' }}>💰 {receita.valorVenda}</Typography>}
+                      </Box>
+                    )}
+
+                    {receita.materiais?.length > 0 && (
+                      <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5, mb: 1 }}>
+                        {receita.materiais.map(m => (
+                          <Chip key={m.id} label={m.nome} size="small" sx={{ background: 'var(--bg-secondary)', color: 'var(--text-secondary)', border: '1px solid var(--border-primary)' }} />
+                        ))}
+                      </Box>
+                    )}
+
+                    {receita.descricao && <RacaDescription variant="body2">{receita.descricao}</RacaDescription>}
+
+                    <RacaFooter>
+                      <RacaMeta>
+                        <RacaBadge>📖 {universos.find(u => u.id === receita.universo)?.Nome || 'Universo Desconhecido'}</RacaBadge>
+                      </RacaMeta>
+                    </RacaFooter>
+                  </RacaContent>
+                </RacaCard>
               ))}
             </Box>
           )}
@@ -466,6 +387,7 @@ const Receitas = () => {
           </>
         )}
       </EntityViewDialog>
+      {deleteConfirmationDialog}
     </Box>
   );
 };

@@ -73,6 +73,9 @@ describe('Classes (padrão useEntityCRUD + useUniversos + EntityFilters + Entity
 
     await user.click(screen.getByLabelText('Remover classe Guerreiro'));
 
+    const dialog = await screen.findByRole('dialog');
+    await user.click(within(dialog).getByRole('button', { name: 'Excluir' }));
+
     await waitFor(() =>
       expect(screen.queryByText('Guerreiro')).not.toBeInTheDocument(),
     );
