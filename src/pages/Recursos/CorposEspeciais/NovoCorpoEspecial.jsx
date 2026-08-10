@@ -210,16 +210,23 @@ const NovoCorpoEspecial = () => {
                             }
                           />
                           <Field name={`bonus[${idx}].tipo`}>
-                            {({ field }) => (
-                              <FormControl size="small" sx={{ minWidth: 140 }}>
-                                <InputLabel>Tipo</InputLabel>
-                                <Select {...field} label="Tipo">
-                                  <MenuItem value="vantagem">Vantagem</MenuItem>
-                                  <MenuItem value="desvantagem">
-                                    Desvantagem
-                                  </MenuItem>
-                                </Select>
-                              </FormControl>
+                            {({ field, form }) => (
+                              <FormSelect
+                                field={field}
+                                form={form}
+                                label="Tipo"
+                                size="small"
+                                fullWidth={false}
+                                disableClearable
+                                sx={{ minWidth: 140 }}
+                                options={[
+                                  { value: 'vantagem', label: 'Vantagem' },
+                                  {
+                                    value: 'desvantagem',
+                                    label: 'Desvantagem',
+                                  },
+                                ]}
+                              />
                             )}
                           </Field>
                           <IconButton
