@@ -15,7 +15,11 @@ import FormSelect from 'components/FormSelect/FormSelect';
 import ImagePreviewPanel from 'components/ImagePreviewPanel/ImagePreviewPanel';
 import FormActions from 'components/FormActions/FormActions';
 import SectionTitle from 'components/SectionTitle/SectionTitle';
-import { CORPO_ESPECIAL_SCHEMA, CORPO_ESPECIAL_INITIAL_VALUES } from './utils';
+import {
+  CORPO_ESPECIAL_SCHEMA,
+  CORPO_ESPECIAL_INITIAL_VALUES,
+  normalizeBonusEntries,
+} from './utils';
 
 const NovoCorpoEspecial = () => {
   const navigate = useNavigate();
@@ -32,15 +36,20 @@ const NovoCorpoEspecial = () => {
     ? {
         ...CORPO_ESPECIAL_INITIAL_VALUES,
         ...corpoEspecialParaEditar,
-        bonus: corpoEspecialParaEditar.bonus || [],
+        bonus: normalizeBonusEntries(corpoEspecialParaEditar.bonus),
       }
     : CORPO_ESPECIAL_INITIAL_VALUES;
 
   const handleSubmit = async (values, { setSubmitting }) => {
+    const normalizedValues = {
+      ...values,
+      bonus: normalizeBonusEntries(values.bonus),
+    };
+
     if (isEditing) {
-      await updateCorpoEspecial(corpoEspecialParaEditar.id, values);
+      await updateCorpoEspecial(corpoEspecialParaEditar.id, normalizedValues);
     } else {
-      await addCorpoEspecial(values);
+      await addCorpoEspecial(normalizedValues);
     }
     setSubmitting(false);
     navigate(ROUTE_PATHS.CORPOS_ESPECIAIS);
@@ -176,9 +185,9 @@ const NovoCorpoEspecial = () => {
                           Nenhum bônus adicionado.
                         </Typography>
                       )}
-                      {values.bonus.map((_, idx) => (
+                      {values.bonus.map((bonusEntry, idx) => (
                         <Box
-                          key={idx}
+                          key={`${bonusEntry.tipo ?? 'vantagem'}-${idx}`}
                           sx={{
                             display: 'flex',
                             gap: 1,
@@ -187,11 +196,32 @@ const NovoCorpoEspecial = () => {
                         >
                           <FastField
                             as={TextField}
-                            name={`bonus[${idx}]`}
+                            name={`bonus[${idx}].texto`}
                             label={`Bônus ${idx + 1}`}
                             fullWidth
                             size="small"
+                            error={
+                              touched.bonus?.[idx]?.texto &&
+                              Boolean(errors.bonus?.[idx]?.texto)
+                            }
+                            helperText={
+                              touched.bonus?.[idx]?.texto &&
+                              errors.bonus?.[idx]?.texto
+                            }
                           />
+                          <Field name={`bonus[${idx}].tipo`}>
+                            {({ field }) => (
+                              <FormControl size="small" sx={{ minWidth: 140 }}>
+                                <InputLabel>Tipo</InputLabel>
+                                <Select {...field} label="Tipo">
+                                  <MenuItem value="vantagem">Vantagem</MenuItem>
+                                  <MenuItem value="desvantagem">
+                                    Desvantagem
+                                  </MenuItem>
+                                </Select>
+                              </FormControl>
+                            )}
+                          </Field>
                           <IconButton
                             size="small"
                             onClick={() => remove(idx)}
@@ -207,7 +237,7 @@ const NovoCorpoEspecial = () => {
                       ))}
                       <Button
                         variant="outlined"
-                        onClick={() => push('')}
+                        onClick={() => push({ texto: '', tipo: 'vantagem' })}
                         sx={{
                           alignSelf: 'flex-start',
                           borderColor: 'var(--border-primary)',

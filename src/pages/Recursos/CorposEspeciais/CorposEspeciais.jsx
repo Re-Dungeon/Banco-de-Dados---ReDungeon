@@ -17,6 +17,7 @@ import DeleteOutlineIcon from '@mui/icons-material/DeleteOutlined';
 import EditOutlinedIcon from '@mui/icons-material/EditOutlined';
 import VisibilityOutlinedIcon from '@mui/icons-material/VisibilityOutlined';
 import { getCorposEspeciais, removeCorpoEspecial } from 'service/storage';
+import { getBonusEntriesByTipo } from './utils';
 import { ROUTE_PATHS } from 'common/constants/routes';
 import { useAuth } from 'context/AuthContext';
 import useEntityCRUD from 'hooks/useEntityCRUD';
@@ -205,41 +206,48 @@ const CorposEspeciais = () => {
               </Paper>
             </Box>
 
-            <Paper sx={{ p: 2, borderRadius: 2, background: 'linear-gradient(180deg, rgba(10,40,10,0.02), rgba(8,18,8,0.02))', boxShadow: '0 8px 30px rgba(0,0,0,0.18)' }}>
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
-                <Box sx={{ color: '#1ec15a', display: 'inline-flex', alignItems: 'center' }}><CheckCircleOutlinedIcon /></Box>
-                <Typography variant="subtitle2" sx={{ color: '#9ff1b8', fontWeight: 800 }}>Vantagens</Typography>
-              </Box>
-              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
-                {corpoEspecialVisualizando?.bonus?.filter(Boolean).length > 0 ? (
-                  corpoEspecialVisualizando.bonus.filter(Boolean).map((b, i) => (
-                    <Box key={`${b}-${i}`} sx={{ p: 1.25, borderRadius: 1.5, background: 'rgba(30,193,90,0.04)', color: 'var(--text-secondary)' }}>
-                      • {b}
+            {(() => {
+              const { vantagens, desvantagens } = getBonusEntriesByTipo(corpoEspecialVisualizando?.bonus);
+              return (
+                <>
+                  <Paper sx={{ p: 2, borderRadius: 2, background: 'linear-gradient(180deg, rgba(10,40,10,0.02), rgba(8,18,8,0.02))', boxShadow: '0 8px 30px rgba(0,0,0,0.18)' }}>
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
+                      <Box sx={{ color: '#1ec15a', display: 'inline-flex', alignItems: 'center' }}><CheckCircleOutlinedIcon /></Box>
+                      <Typography variant="subtitle2" sx={{ color: '#9ff1b8', fontWeight: 800 }}>Vantagens</Typography>
                     </Box>
-                  ))
-                ) : (
-                  <Typography variant="body2" sx={{ color: 'var(--text-secondary)' }}>Nenhuma vantagem registrada.</Typography>
-                )}
-              </Box>
-            </Paper>
+                    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+                      {vantagens.length > 0 ? (
+                        vantagens.map((b, i) => (
+                          <Box key={`${b.texto}-${i}`} sx={{ p: 1.25, borderRadius: 1.5, background: 'rgba(30,193,90,0.04)', color: 'var(--text-secondary)' }}>
+                            {b.texto}
+                          </Box>
+                        ))
+                      ) : (
+                        <Typography variant="body2" sx={{ color: 'var(--text-secondary)' }}>Nenhuma vantagem registrada.</Typography>
+                      )}
+                    </Box>
+                  </Paper>
 
-            <Paper sx={{ p: 2, borderRadius: 2, background: 'linear-gradient(180deg, rgba(40,10,10,0.02), rgba(18,8,8,0.02))', boxShadow: '0 8px 30px rgba(0,0,0,0.18)' }}>
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
-                <Box sx={{ color: '#ff6b6b', display: 'inline-flex', alignItems: 'center' }}><CancelOutlinedIcon /></Box>
-                <Typography variant="subtitle2" sx={{ color: '#ffb3b3', fontWeight: 800 }}>Desvantagens</Typography>
-              </Box>
-              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
-                {corpoEspecialVisualizando?.desvantagens?.filter(Boolean).length > 0 ? (
-                  corpoEspecialVisualizando.desvantagens.filter(Boolean).map((d, i) => (
-                    <Box key={`${d}-${i}`} sx={{ p: 1.25, borderRadius: 1.5, background: 'rgba(255,80,80,0.03)', color: 'var(--text-secondary)' }}>
-                      • {d}
+                  <Paper sx={{ p: 2, borderRadius: 2, background: 'linear-gradient(180deg, rgba(40,10,10,0.02), rgba(18,8,8,0.02))', boxShadow: '0 8px 30px rgba(0,0,0,0.18)' }}>
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
+                      <Box sx={{ color: '#ff6b6b', display: 'inline-flex', alignItems: 'center' }}><CancelOutlinedIcon /></Box>
+                      <Typography variant="subtitle2" sx={{ color: '#ffb3b3', fontWeight: 800 }}>Desvantagens</Typography>
                     </Box>
-                  ))
-                ) : (
-                  <Typography variant="body2" sx={{ color: 'var(--text-secondary)' }}>Nenhuma desvantagem registrada.</Typography>
-                )}
-              </Box>
-            </Paper>
+                    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+                      {desvantagens.length > 0 ? (
+                        desvantagens.map((d, i) => (
+                          <Box key={`${d.texto}-${i}`} sx={{ p: 1.25, borderRadius: 1.5, background: 'rgba(255,80,80,0.03)', color: 'var(--text-secondary)' }}>
+                            {d.texto}
+                          </Box>
+                        ))
+                      ) : (
+                        <Typography variant="body2" sx={{ color: 'var(--text-secondary)' }}>Nenhuma desvantagem registrada.</Typography>
+                      )}
+                    </Box>
+                  </Paper>
+                </>
+              );
+            })()}
           </Box>
         </DialogContent>
 
