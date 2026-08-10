@@ -5,15 +5,9 @@ import Typography from '@mui/material/Typography';
 import Button from '@mui/material/Button';
 import TextField from '@mui/material/TextField';
 import IconButton from '@mui/material/IconButton';
-import Select from '@mui/material/Select';
-import MenuItem from '@mui/material/MenuItem';
-import FormControl from '@mui/material/FormControl';
 import InputAdornment from '@mui/material/InputAdornment';
-import InputLabel from '@mui/material/InputLabel';
 import Divider from '@mui/material/Divider';
 import Paper from '@mui/material/Paper';
-import Checkbox from '@mui/material/Checkbox';
-import ListItemText from '@mui/material/ListItemText';
 import ShieldOutlinedIcon from '@mui/icons-material/ShieldOutlined';
 import FitnessCenterIcon from '@mui/icons-material/FitnessCenter';
 import DirectionsRunIcon from '@mui/icons-material/DirectionsRun';
@@ -28,6 +22,7 @@ import { ROUTE_PATHS } from 'common/constants/routes';
 import useEntityFormGuard from 'hooks/useEntityFormGuard';
 import useStableListKeys from 'hooks/useStableListKeys';
 import FormPageHeader from 'components/FormPageHeader/FormPageHeader';
+import FormSelect from 'components/FormSelect/FormSelect';
 import ImagePreviewPanel from 'components/ImagePreviewPanel/ImagePreviewPanel';
 import FormActions from 'components/FormActions/FormActions';
 import SectionTitle from 'components/SectionTitle/SectionTitle';
@@ -140,42 +135,6 @@ const NovaRaca = () => {
     },
   };
 
-  const selectSx = {
-    color: 'var(--text-primary)',
-    background:
-      'linear-gradient(180deg, rgba(22, 33, 54, 0.95), rgba(15, 23, 42, 0.95))',
-    borderRadius: '14px',
-    '& .MuiOutlinedInput-notchedOutline': {
-      borderColor: 'rgba(43, 57, 85, 0.9)',
-      borderWidth: '1px',
-      transition: 'all 0.2s ease',
-    },
-    '&:hover .MuiOutlinedInput-notchedOutline': {
-      borderColor: 'rgba(41, 182, 246, 0.7)',
-      boxShadow: '0 0 0 1px rgba(41, 182, 246, 0.14)',
-    },
-    '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
-      borderColor: '#29B6F6',
-      boxShadow: '0 0 0 4px rgba(41, 182, 246, 0.14)',
-    },
-    '& .MuiSvgIcon-root': { color: 'var(--text-secondary)' },
-  };
-
-  const menuPropsSx = {
-    slotProps: {
-      paper: {
-        sx: {
-          background: 'linear-gradient(145deg, #10182b 0%, #0f172a 100%)',
-          color: 'var(--text-primary)',
-          border: '1px solid rgba(43, 57, 85, 0.95)',
-          borderRadius: '16px',
-          boxShadow: '0 16px 36px rgba(2, 6, 23, 0.38)',
-          overflow: 'hidden',
-        },
-      },
-    },
-  };
-
   const attributeLabelProps = {
     shrink: true,
   };
@@ -187,15 +146,18 @@ const NovaRaca = () => {
     flexDirection: 'column',
     justifyContent: 'space-between',
 
-    background: 'linear-gradient(180deg, rgba(8, 16, 31, 0.98), rgba(10, 23, 41, 0.96))',
+    background:
+      'linear-gradient(180deg, rgba(8, 16, 31, 0.98), rgba(10, 23, 41, 0.96))',
     borderRadius: '20px',
     border: '1px solid rgba(42, 92, 126, 0.85)',
     boxShadow: 'inset 0 0 0 1px rgba(31, 64, 96, 0.12)',
-    transition: 'transform 200ms ease, box-shadow 200ms ease, border-color 200ms ease',
+    transition:
+      'transform 200ms ease, box-shadow 200ms ease, border-color 200ms ease',
     '&:hover': {
       transform: 'translateY(-2px)',
       borderColor: '#60a5fa',
-      boxShadow: '0 10px 30px rgba(30, 86, 148, 0.12), inset 0 0 0 1px rgba(96, 165, 250, 0.12)',
+      boxShadow:
+        '0 10px 30px rgba(30, 86, 148, 0.12), inset 0 0 0 1px rgba(96, 165, 250, 0.12)',
     },
     '& .MuiOutlinedInput-root': {
       background: 'transparent',
@@ -212,10 +174,11 @@ const NovaRaca = () => {
         border: 'none',
         boxShadow: 'none',
       },
-      '&.Mui-focused fieldset, &.Mui-focused .MuiOutlinedInput-notchedOutline': {
-        border: 'none',
-        boxShadow: 'none',
-      },
+      '&.Mui-focused fieldset, &.Mui-focused .MuiOutlinedInput-notchedOutline':
+        {
+          border: 'none',
+          boxShadow: 'none',
+        },
       '& .MuiInputBase-input': {
         color: '#ffffff',
         fontSize: '1.35rem',
@@ -245,10 +208,10 @@ const NovaRaca = () => {
         width: '100%',
         height: '1px',
         marginTop: '10px',
-        background: 'linear-gradient(90deg, rgba(34, 211, 238, 0.4), rgba(96, 165, 250, 0.15))',
+        background:
+          'linear-gradient(90deg, rgba(34, 211, 238, 0.4), rgba(96, 165, 250, 0.15))',
         opacity: 0.9,
       },
-
     },
   };
 
@@ -263,11 +226,13 @@ const NovaRaca = () => {
       },
       '&:hover fieldset': {
         borderColor: '#facc15',
-        boxShadow: '0 0 0 10px rgba(251, 191, 36, 0.12), inset 0 0 0 1px rgba(251, 191, 36, 0.16)',
+        boxShadow:
+          '0 0 0 10px rgba(251, 191, 36, 0.12), inset 0 0 0 1px rgba(251, 191, 36, 0.16)',
       },
       '&.Mui-focused fieldset': {
         borderColor: '#fbbf24',
-        boxShadow: '0 0 0 10px rgba(251, 191, 36, 0.18), inset 0 0 0 1px rgba(251, 191, 36, 0.16)',
+        boxShadow:
+          '0 0 0 10px rgba(251, 191, 36, 0.18), inset 0 0 0 1px rgba(251, 191, 36, 0.16)',
       },
     },
     '& .MuiInputLabel-root': {
@@ -278,7 +243,8 @@ const NovaRaca = () => {
         width: '100%',
         height: '1px',
         marginTop: '10px',
-        background: 'linear-gradient(90deg, rgba(251, 191, 36, 0.55), rgba(255, 255, 255, 0.1))',
+        background:
+          'linear-gradient(90deg, rgba(251, 191, 36, 0.55), rgba(255, 255, 255, 0.1))',
         opacity: 0.95,
       },
     },
@@ -294,15 +260,19 @@ const NovaRaca = () => {
 
   const skillCardSx = {
     p: 3,
-    background: 'linear-gradient(180deg, rgba(15, 23, 42, 0.96), rgba(22, 33, 54, 0.95))',
+    background:
+      'linear-gradient(180deg, rgba(15, 23, 42, 0.96), rgba(22, 33, 54, 0.95))',
     border: '1px solid rgba(51, 65, 85, 0.95)',
     borderRadius: '16px',
-    boxShadow: '0 12px 28px rgba(0, 0, 0, 0.2), inset 0 0 0 1px rgba(59, 130, 246, 0.08)',
-    transition: 'transform 200ms ease, box-shadow 200ms ease, border-color 200ms ease',
+    boxShadow:
+      '0 12px 28px rgba(0, 0, 0, 0.2), inset 0 0 0 1px rgba(59, 130, 246, 0.08)',
+    transition:
+      'transform 200ms ease, box-shadow 200ms ease, border-color 200ms ease',
     '&:hover': {
       transform: 'translateY(-1px)',
       borderColor: '#3b82f6',
-      boxShadow: '0 18px 40px rgba(59, 130, 246, 0.12), inset 0 0 0 1px rgba(59, 130, 246, 0.12)',
+      boxShadow:
+        '0 18px 40px rgba(59, 130, 246, 0.12), inset 0 0 0 1px rgba(59, 130, 246, 0.12)',
     },
   };
 
@@ -466,9 +436,12 @@ const NovaRaca = () => {
               {/* Seção: Informações Gerais */}
               <RacaFormPanel elevation={0}>
                 <RacaFormHeader>
-                  <RacaFormTitle variant="h4">🜂 Informações da Raça</RacaFormTitle>
+                  <RacaFormTitle variant="h4">
+                    🜂 Informações da Raça
+                  </RacaFormTitle>
                   <RacaFormSubtitle>
-                    Dados básicos utilizados pelo sistema para identificar esta raça.
+                    Dados básicos utilizados pelo sistema para identificar esta
+                    raça.
                   </RacaFormSubtitle>
                   <RacaFormDivider />
                 </RacaFormHeader>
@@ -487,132 +460,42 @@ const NovaRaca = () => {
                           />
                         )}
                       </FastField>
-                      <FastField name="raridade">
-                        {({ field }) => (
-                          <FormControl fullWidth>
-                            <InputLabel sx={{ color: 'var(--text-secondary)' }}>
-                              Raridade
-                            </InputLabel>
-                            <Select
-                              {...field}
-                              label="Raridade"
-                              sx={selectSx}
-                              MenuProps={menuPropsSx}
-                            >
-                              {RARIDADES.map(raridade => (
-                                <MenuItem
-                                  key={raridade}
-                                  value={raridade}
-                                  sx={{
-                                    '&:hover': {
-                                      background: 'rgba(41, 182, 246, 0.16)',
-                                    },
-                                    '&.Mui-selected': {
-                                      background:
-                                        'linear-gradient(90deg, rgba(124, 77, 255, 0.32), rgba(41, 182, 246, 0.18))',
-                                      color: '#fff',
-                                    },
-                                    '&.Mui-selected:hover': {
-                                      background:
-                                        'linear-gradient(90deg, rgba(124, 77, 255, 0.4), rgba(41, 182, 246, 0.24))',
-                                    },
-                                  }}
-                                >
-                                  {raridade}
-                                </MenuItem>
-                              ))}
-                            </Select>
-                          </FormControl>
+                      <Field name="raridade">
+                        {({ field, form }) => (
+                          <FormSelect
+                            field={field}
+                            form={form}
+                            label="Raridade"
+                            options={RARIDADES}
+                            disableClearable
+                          />
                         )}
-                      </FastField>
+                      </Field>
                     </RacaFormFieldGrid>
                     <RacaFormFieldGrid>
                       <Field name="universo">
-                        {({ field }) => (
-                          <FormControl fullWidth>
-                            <InputLabel sx={{ color: 'var(--text-secondary)' }}>
-                              Universo
-                            </InputLabel>
-                            <Select
-                              {...field}
-                              label="Universo"
-                              sx={selectSx}
-                              MenuProps={menuPropsSx}
-                            >
-                              {universos.map(universo => (
-                                <MenuItem
-                                  key={universo.id}
-                                  value={universo.id}
-                                  sx={{
-                                    '&:hover': {
-                                      background: 'rgba(41, 182, 246, 0.16)',
-                                    },
-                                    '&.Mui-selected': {
-                                      background:
-                                        'linear-gradient(90deg, rgba(124, 77, 255, 0.32), rgba(41, 182, 246, 0.18))',
-                                      color: '#fff',
-                                    },
-                                  }}
-                                >
-                                  {universo.Nome}
-                                </MenuItem>
-                              ))}
-                            </Select>
-                          </FormControl>
+                        {({ field, form }) => (
+                          <FormSelect
+                            field={field}
+                            form={form}
+                            label="Universo"
+                            options={universos.map(universo => ({
+                              value: universo.id,
+                              label: universo.Nome,
+                            }))}
+                            disableClearable
+                          />
                         )}
                       </Field>
                       <Field name="tiposDisponiveis">
                         {({ field, form }) => (
-                          <FormControl fullWidth>
-                            <InputLabel sx={{ color: 'var(--text-secondary)' }}>
-                              Disponível Para os Tipos
-                            </InputLabel>
-                            <Select
-                              {...field}
-                              multiple
-                              label="Disponível Para os Tipos"
-                              value={field.value || []}
-                              onChange={e =>
-                                form.setFieldValue(
-                                  'tiposDisponiveis',
-                                  e.target.value,
-                                )
-                              }
-                              renderValue={selecionados =>
-                                selecionados.join(', ')
-                              }
-                              sx={selectSx}
-                              MenuProps={menuPropsSx}
-                            >
-                              {TIPOS_PERSONAGEM.map(tipo => (
-                                <MenuItem
-                                  key={tipo}
-                                  value={tipo}
-                                  sx={{
-                                    '&:hover': {
-                                      background: 'rgba(41, 182, 246, 0.16)',
-                                    },
-                                    '&.Mui-selected': {
-                                      background:
-                                        'linear-gradient(90deg, rgba(124, 77, 255, 0.32), rgba(41, 182, 246, 0.18))',
-                                      color: '#fff',
-                                    },
-                                  }}
-                                >
-                                  <Checkbox
-                                    checked={field.value?.includes(tipo)}
-                                    sx={{
-                                      color: 'rgba(41, 182, 246, 0.7)',
-                                      '&.Mui-checked': {
-                                        color: '#29B6F6',
-                                      },
-                                    }}
-                                  />
-                                  <ListItemText primary={tipo} />
-                                </MenuItem>
-                              ))}
-                            </Select>
-                          </FormControl>
+                          <FormSelect
+                            field={field}
+                            form={form}
+                            multiple
+                            label="Disponível Para os Tipos"
+                            options={TIPOS_PERSONAGEM}
+                          />
                         )}
                       </Field>
                     </RacaFormFieldGrid>
@@ -623,7 +506,9 @@ const NovaRaca = () => {
                           label="Link da Imagem da Raça"
                           fullWidth
                           placeholder="https://..."
-                          error={touched.linkImagem && Boolean(errors.linkImagem)}
+                          error={
+                            touched.linkImagem && Boolean(errors.linkImagem)
+                          }
                           helperText={touched.linkImagem && errors.linkImagem}
                           sx={inputSx}
                           slotProps={{
@@ -679,7 +564,9 @@ const NovaRaca = () => {
               <AtributosCard elevation={0}>
                 <AtributosHeader>
                   <AtributosHeaderRow>
-                    <ShieldOutlinedIcon sx={{ color: '#22d3ee', fontSize: '1.25rem' }} />
+                    <ShieldOutlinedIcon
+                      sx={{ color: '#22d3ee', fontSize: '1.25rem' }}
+                    />
                     <Typography
                       sx={{
                         color: '#22d3ee',
@@ -701,9 +588,25 @@ const NovaRaca = () => {
                     fullWidth
                     size="small"
                     label={
-                      <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 0.75, color: '#f8fafc' }}>
-                        <FitnessCenterIcon sx={{ color: '#22d3ee', fontSize: '1.18rem' }} />
-                        <Typography sx={{ fontSize: '0.92rem', fontWeight: 600, color: '#f8fafc' }}>
+                      <Box
+                        sx={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          gap: 0.75,
+                          color: '#f8fafc',
+                        }}
+                      >
+                        <FitnessCenterIcon
+                          sx={{ color: '#22d3ee', fontSize: '1.18rem' }}
+                        />
+                        <Typography
+                          sx={{
+                            fontSize: '0.92rem',
+                            fontWeight: 600,
+                            color: '#f8fafc',
+                          }}
+                        >
                           Força
                         </Typography>
                       </Box>
@@ -717,9 +620,25 @@ const NovaRaca = () => {
                     fullWidth
                     size="small"
                     label={
-                      <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 0.75, color: '#f8fafc' }}>
-                        <DirectionsRunIcon sx={{ color: '#22d3ee', fontSize: '1.18rem' }} />
-                        <Typography sx={{ fontSize: '0.92rem', fontWeight: 600, color: '#f8fafc' }}>
+                      <Box
+                        sx={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          gap: 0.75,
+                          color: '#f8fafc',
+                        }}
+                      >
+                        <DirectionsRunIcon
+                          sx={{ color: '#22d3ee', fontSize: '1.18rem' }}
+                        />
+                        <Typography
+                          sx={{
+                            fontSize: '0.92rem',
+                            fontWeight: 600,
+                            color: '#f8fafc',
+                          }}
+                        >
                           Agilidade
                         </Typography>
                       </Box>
@@ -733,9 +652,25 @@ const NovaRaca = () => {
                     fullWidth
                     size="small"
                     label={
-                      <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 0.75, color: '#f8fafc' }}>
-                        <VisibilityIcon sx={{ color: '#22d3ee', fontSize: '1.18rem' }} />
-                        <Typography sx={{ fontSize: '0.92rem', fontWeight: 600, color: '#f8fafc' }}>
+                      <Box
+                        sx={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          gap: 0.75,
+                          color: '#f8fafc',
+                        }}
+                      >
+                        <VisibilityIcon
+                          sx={{ color: '#22d3ee', fontSize: '1.18rem' }}
+                        />
+                        <Typography
+                          sx={{
+                            fontSize: '0.92rem',
+                            fontWeight: 600,
+                            color: '#f8fafc',
+                          }}
+                        >
                           Percepção
                         </Typography>
                       </Box>
@@ -749,9 +684,25 @@ const NovaRaca = () => {
                     fullWidth
                     size="small"
                     label={
-                      <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 0.75, color: '#f8fafc' }}>
-                        <FavoriteIcon sx={{ color: '#22d3ee', fontSize: '1.18rem' }} />
-                        <Typography sx={{ fontSize: '0.92rem', fontWeight: 600, color: '#f8fafc' }}>
+                      <Box
+                        sx={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          gap: 0.75,
+                          color: '#f8fafc',
+                        }}
+                      >
+                        <FavoriteIcon
+                          sx={{ color: '#22d3ee', fontSize: '1.18rem' }}
+                        />
+                        <Typography
+                          sx={{
+                            fontSize: '0.92rem',
+                            fontWeight: 600,
+                            color: '#f8fafc',
+                          }}
+                        >
                           Vitalidade
                         </Typography>
                       </Box>
@@ -765,9 +716,25 @@ const NovaRaca = () => {
                     fullWidth
                     size="small"
                     label={
-                      <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 0.75, color: '#f8fafc' }}>
-                        <PsychologyIcon sx={{ color: '#22d3ee', fontSize: '1.18rem' }} />
-                        <Typography sx={{ fontSize: '0.92rem', fontWeight: 600, color: '#f8fafc' }}>
+                      <Box
+                        sx={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          gap: 0.75,
+                          color: '#f8fafc',
+                        }}
+                      >
+                        <PsychologyIcon
+                          sx={{ color: '#22d3ee', fontSize: '1.18rem' }}
+                        />
+                        <Typography
+                          sx={{
+                            fontSize: '0.92rem',
+                            fontWeight: 600,
+                            color: '#f8fafc',
+                          }}
+                        >
                           Inteligência
                         </Typography>
                       </Box>
@@ -781,9 +748,25 @@ const NovaRaca = () => {
                     fullWidth
                     size="small"
                     label={
-                      <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 0.75, color: '#f8fafc' }}>
-                        <CasinoIcon sx={{ color: '#22d3ee', fontSize: '1.18rem' }} />
-                        <Typography sx={{ fontSize: '0.92rem', fontWeight: 600, color: '#f8fafc' }}>
+                      <Box
+                        sx={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          gap: 0.75,
+                          color: '#f8fafc',
+                        }}
+                      >
+                        <CasinoIcon
+                          sx={{ color: '#22d3ee', fontSize: '1.18rem' }}
+                        />
+                        <Typography
+                          sx={{
+                            fontSize: '0.92rem',
+                            fontWeight: 600,
+                            color: '#f8fafc',
+                          }}
+                        >
                           Sorte
                         </Typography>
                       </Box>
@@ -797,9 +780,25 @@ const NovaRaca = () => {
                     fullWidth
                     size="small"
                     label={
-                      <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 0.75, color: '#f8fafc' }}>
-                        <StarBorderIcon sx={{ color: '#fbbf24', fontSize: '1.18rem' }} />
-                        <Typography sx={{ fontSize: '0.92rem', fontWeight: 600, color: '#f8fafc' }}>
+                      <Box
+                        sx={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          gap: 0.75,
+                          color: '#f8fafc',
+                        }}
+                      >
+                        <StarBorderIcon
+                          sx={{ color: '#fbbf24', fontSize: '1.18rem' }}
+                        />
+                        <Typography
+                          sx={{
+                            fontSize: '0.92rem',
+                            fontWeight: 600,
+                            color: '#f8fafc',
+                          }}
+                        >
                           Limite Máximo
                         </Typography>
                       </Box>
@@ -815,82 +814,115 @@ const NovaRaca = () => {
                 <SectionTitle>Habilidades Básicas</SectionTitle>
                 <FieldArray name="habilidadesRaciais.habilidadesBasicas">
                   {({ push, remove }) => (
-                    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, mt: 1.5 }}>
-                      {values.habilidadesRaciais.habilidadesBasicas.map((hab, idx) => (
-                        <Box key={habilidadesBasicasKeys.keys[idx] ?? idx} sx={skillCardSx}>
-                          <Box sx={skillHeaderSx}>
-                            <Typography sx={skillTitleSx}>
-                              Habilidade #{idx + 1}
-                            </Typography>
-                            <IconButton
-                              size="small"
-                              onClick={() => {
-                                habilidadesBasicasKeys.removeKey(idx);
-                                remove(idx);
-                              }}
-                              sx={deleteSkillButtonSx}
-                              aria-label="Remover habilidade básica"
-                            >
-                              ✕
-                            </IconButton>
-                          </Box>
+                    <Box
+                      sx={{
+                        display: 'flex',
+                        flexDirection: 'column',
+                        gap: 2,
+                        mt: 1.5,
+                      }}
+                    >
+                      {values.habilidadesRaciais.habilidadesBasicas.map(
+                        (hab, idx) => (
+                          <Box
+                            key={habilidadesBasicasKeys.keys[idx] ?? idx}
+                            sx={skillCardSx}
+                          >
+                            <Box sx={skillHeaderSx}>
+                              <Typography sx={skillTitleSx}>
+                                Habilidade #{idx + 1}
+                              </Typography>
+                              <IconButton
+                                size="small"
+                                onClick={() => {
+                                  habilidadesBasicasKeys.removeKey(idx);
+                                  remove(idx);
+                                }}
+                                sx={deleteSkillButtonSx}
+                                aria-label="Remover habilidade básica"
+                              >
+                                ✕
+                              </IconButton>
+                            </Box>
 
-                          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-                            <FastField
-                              as={TextField}
-                              name={`habilidadesRaciais.habilidadesBasicas[${idx}].nome`}
-                              label="Nome da Habilidade"
-                              fullWidth
-                              size="small"
-                              sx={skillFieldSx}
-                            />
-                            <FastField
-                              as={TextField}
-                              name={`habilidadesRaciais.habilidadesBasicas[${idx}].descricao`}
-                              label="Descrição da Habilidade"
-                              fullWidth
-                              multiline
-                              rows={2}
-                              size="small"
-                              sx={skillTextareaSx}
-                            />
-                            <FieldArray name={`habilidadesRaciais.habilidadesBasicas[${idx}].bonus`}>
-                              {({ push: pushBonus, remove: removeBonus }) => (
-                                <Box>
-                                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
-                                    <Typography variant="caption" sx={{ color: '#94a3b8' }}>
-                                      Bônus
-                                    </Typography>
-                                    <Button onClick={() => pushBonus('')} sx={addBonusButtonSx}>
-                                      + Adicionar
-                                    </Button>
-                                  </Box>
-                                  {hab.bonus.map((_, bIdx) => (
-                                    <Box key={bIdx} sx={bonusItemSx}>
-                                      <FastField
-                                        as={TextField}
-                                        name={`habilidadesRaciais.habilidadesBasicas[${idx}].bonus[${bIdx}]`}
-                                        label={`Bônus ${bIdx + 1}`}
-                                        fullWidth
-                                        size="small"
-                                        sx={skillFieldSx}
-                                      />
-                                      <IconButton
-                                        size="small"
-                                        onClick={() => removeBonus(bIdx)}
-                                        sx={removeBonusButtonSx}
-                                        aria-label="Remover bônus"
+                            <Box
+                              sx={{
+                                display: 'flex',
+                                flexDirection: 'column',
+                                gap: 2,
+                              }}
+                            >
+                              <FastField
+                                as={TextField}
+                                name={`habilidadesRaciais.habilidadesBasicas[${idx}].nome`}
+                                label="Nome da Habilidade"
+                                fullWidth
+                                size="small"
+                                sx={skillFieldSx}
+                              />
+                              <FastField
+                                as={TextField}
+                                name={`habilidadesRaciais.habilidadesBasicas[${idx}].descricao`}
+                                label="Descrição da Habilidade"
+                                fullWidth
+                                multiline
+                                rows={2}
+                                size="small"
+                                sx={skillTextareaSx}
+                              />
+                              <FieldArray
+                                name={`habilidadesRaciais.habilidadesBasicas[${idx}].bonus`}
+                              >
+                                {({ push: pushBonus, remove: removeBonus }) => (
+                                  <Box>
+                                    <Box
+                                      sx={{
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        gap: 1,
+                                        mb: 1,
+                                      }}
+                                    >
+                                      <Typography
+                                        variant="caption"
+                                        sx={{ color: '#94a3b8' }}
                                       >
-                                        ✕
-                                      </IconButton>
+                                        Bônus
+                                      </Typography>
+                                      <Button
+                                        onClick={() => pushBonus('')}
+                                        sx={addBonusButtonSx}
+                                      >
+                                        + Adicionar
+                                      </Button>
                                     </Box>
-                                  ))}
-                                </Box>
-                              )}
-                            </FieldArray>
+                                    {hab.bonus.map((_, bIdx) => (
+                                      <Box key={bIdx} sx={bonusItemSx}>
+                                        <FastField
+                                          as={TextField}
+                                          name={`habilidadesRaciais.habilidadesBasicas[${idx}].bonus[${bIdx}]`}
+                                          label={`Bônus ${bIdx + 1}`}
+                                          fullWidth
+                                          size="small"
+                                          sx={skillFieldSx}
+                                        />
+                                        <IconButton
+                                          size="small"
+                                          onClick={() => removeBonus(bIdx)}
+                                          sx={removeBonusButtonSx}
+                                          aria-label="Remover bônus"
+                                        >
+                                          ✕
+                                        </IconButton>
+                                      </Box>
+                                    ))}
+                                  </Box>
+                                )}
+                              </FieldArray>
+                            </Box>
                           </Box>
-                        </Box>
-                      ))}
+                        ),
+                      )}
                       <Button
                         variant="outlined"
                         onClick={() => {
@@ -911,148 +943,198 @@ const NovaRaca = () => {
                 <SectionTitle>Habilidades Avançadas</SectionTitle>
                 <FieldArray name="habilidadesRaciais.habilidadesAvancadas">
                   {({ push, remove }) => (
-                    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, mt: 1.5 }}>
-                      {values.habilidadesRaciais.habilidadesAvancadas.map((hab, idx) => (
-                        <Box key={habilidadesAvancadasKeys.keys[idx] ?? idx} sx={skillCardSx}>
-                          <Box sx={skillHeaderSx}>
-                            <Typography sx={skillTitleSx}>
-                              Habilidade Avançada #{idx + 1}
-                            </Typography>
-                            <IconButton
-                              size="small"
-                              onClick={() => {
-                                habilidadesAvancadasKeys.removeKey(idx);
-                                remove(idx);
+                    <Box
+                      sx={{
+                        display: 'flex',
+                        flexDirection: 'column',
+                        gap: 2,
+                        mt: 1.5,
+                      }}
+                    >
+                      {values.habilidadesRaciais.habilidadesAvancadas.map(
+                        (hab, idx) => (
+                          <Box
+                            key={habilidadesAvancadasKeys.keys[idx] ?? idx}
+                            sx={skillCardSx}
+                          >
+                            <Box sx={skillHeaderSx}>
+                              <Typography sx={skillTitleSx}>
+                                Habilidade Avançada #{idx + 1}
+                              </Typography>
+                              <IconButton
+                                size="small"
+                                onClick={() => {
+                                  habilidadesAvancadasKeys.removeKey(idx);
+                                  remove(idx);
+                                }}
+                                sx={deleteSkillButtonSx}
+                                aria-label="Remover habilidade avançada"
+                              >
+                                ✕
+                              </IconButton>
+                            </Box>
+                            <Box
+                              sx={{
+                                display: 'flex',
+                                flexDirection: 'column',
+                                gap: 2,
                               }}
-                              sx={deleteSkillButtonSx}
-                              aria-label="Remover habilidade avançada"
                             >
-                              ✕
-                            </IconButton>
-                          </Box>
-                          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-                            <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 2 }}>
+                              <Box
+                                sx={{
+                                  display: 'grid',
+                                  gridTemplateColumns: '1fr 1fr',
+                                  gap: 2,
+                                }}
+                              >
+                                <FastField
+                                  as={TextField}
+                                  name={`habilidadesRaciais.habilidadesAvancadas[${idx}].nome`}
+                                  label="Nome da Habilidade"
+                                  fullWidth
+                                  size="small"
+                                  sx={skillFieldSx}
+                                />
+                                <Field
+                                  name={`habilidadesRaciais.habilidadesAvancadas[${idx}].acao`}
+                                >
+                                  {({ field, form }) => (
+                                    <FormSelect
+                                      field={field}
+                                      form={form}
+                                      size="small"
+                                      label="Tipo de Ação"
+                                      options={ACAO_HABILIDADE}
+                                      disableClearable
+                                    />
+                                  )}
+                                </Field>
+                              </Box>
                               <FastField
                                 as={TextField}
-                                name={`habilidadesRaciais.habilidadesAvancadas[${idx}].nome`}
-                                label="Nome da Habilidade"
+                                name={`habilidadesRaciais.habilidadesAvancadas[${idx}].descricao`}
+                                label="Descrição da Habilidade"
                                 fullWidth
+                                multiline
+                                rows={2}
                                 size="small"
-                                sx={skillFieldSx}
+                                sx={skillTextareaSx}
                               />
-                              <FastField name={`habilidadesRaciais.habilidadesAvancadas[${idx}].acao`}>
-                                {({ field }) => (
-                                  <FormControl fullWidth size="small">
-                                    <InputLabel>Tipo de Ação</InputLabel>
-                                    <Select {...field} label="Tipo de Ação">
-                                      {ACAO_HABILIDADE.map(acao => (
-                                        <MenuItem key={acao} value={acao}>
-                                          {acao}
-                                        </MenuItem>
-                                      ))}
-                                    </Select>
-                                  </FormControl>
-                                )}
-                              </FastField>
-                            </Box>
-                            <FastField
-                              as={TextField}
-                              name={`habilidadesRaciais.habilidadesAvancadas[${idx}].descricao`}
-                              label="Descrição da Habilidade"
-                              fullWidth
-                              multiline
-                              rows={2}
-                              size="small"
-                              sx={skillTextareaSx}
-                            />
-                            <Divider sx={{ borderColor: 'rgba(148, 163, 184, 0.18)' }} />
-                            <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(6, minmax(0, 1fr))', gap: 2 }}>
-                              <FastField
-                                as={TextField}
-                                name={`habilidadesRaciais.habilidadesAvancadas[${idx}].alvo`}
-                                label="Alvo"
-                                fullWidth
-                                size="small"
-                                sx={skillFieldSx}
+                              <Divider
+                                sx={{
+                                  borderColor: 'rgba(148, 163, 184, 0.18)',
+                                }}
                               />
-                              <FastField
-                                as={TextField}
-                                name={`habilidadesRaciais.habilidadesAvancadas[${idx}].alcance`}
-                                label="Alcance"
-                                fullWidth
-                                size="small"
-                                sx={skillFieldSx}
-                              />
-                              <FastField
-                                as={TextField}
-                                name={`habilidadesRaciais.habilidadesAvancadas[${idx}].recarga`}
-                                label="Recarga"
-                                fullWidth
-                                size="small"
-                                sx={skillFieldSx}
-                              />
-                              <FastField
-                                as={TextField}
-                                name={`habilidadesRaciais.habilidadesAvancadas[${idx}].custo`}
-                                label="Custo"
-                                fullWidth
-                                size="small"
-                                sx={skillFieldSx}
-                              />
-                              <FastField
-                                as={TextField}
-                                name={`habilidadesRaciais.habilidadesAvancadas[${idx}].duracao`}
-                                label="Duração"
-                                fullWidth
-                                size="small"
-                                sx={skillFieldSx}
-                              />
-                              <FastField
-                                as={TextField}
-                                name={`habilidadesRaciais.habilidadesAvancadas[${idx}].dados`}
-                                label="Dados"
-                                fullWidth
-                                size="small"
-                                sx={skillFieldSx}
-                              />
-                            </Box>
-                            <FieldArray name={`habilidadesRaciais.habilidadesAvancadas[${idx}].bonus`}>
-                              {({ push: pushBonus, remove: removeBonus }) => (
-                                <Box>
-                                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
-                                    <Typography variant="caption" sx={{ color: '#94a3b8' }}>
-                                      Bônus
-                                    </Typography>
-                                    <Button onClick={() => pushBonus('')} sx={addBonusButtonSx}>
-                                      + Adicionar
-                                    </Button>
-                                  </Box>
-                                  {hab.bonus.map((_, bIdx) => (
-                                    <Box key={bIdx} sx={bonusItemSx}>
-                                      <FastField
-                                        as={TextField}
-                                        name={`habilidadesRaciais.habilidadesAvancadas[${idx}].bonus[${bIdx}]`}
-                                        label={`Bônus ${bIdx + 1}`}
-                                        fullWidth
-                                        size="small"
-                                        sx={skillFieldSx}
-                                      />
-                                      <IconButton
-                                        size="small"
-                                        onClick={() => removeBonus(bIdx)}
-                                        sx={removeBonusButtonSx}
-                                        aria-label="Remover bônus"
+                              <Box
+                                sx={{
+                                  display: 'grid',
+                                  gridTemplateColumns:
+                                    'repeat(6, minmax(0, 1fr))',
+                                  gap: 2,
+                                }}
+                              >
+                                <FastField
+                                  as={TextField}
+                                  name={`habilidadesRaciais.habilidadesAvancadas[${idx}].alvo`}
+                                  label="Alvo"
+                                  fullWidth
+                                  size="small"
+                                  sx={skillFieldSx}
+                                />
+                                <FastField
+                                  as={TextField}
+                                  name={`habilidadesRaciais.habilidadesAvancadas[${idx}].alcance`}
+                                  label="Alcance"
+                                  fullWidth
+                                  size="small"
+                                  sx={skillFieldSx}
+                                />
+                                <FastField
+                                  as={TextField}
+                                  name={`habilidadesRaciais.habilidadesAvancadas[${idx}].recarga`}
+                                  label="Recarga"
+                                  fullWidth
+                                  size="small"
+                                  sx={skillFieldSx}
+                                />
+                                <FastField
+                                  as={TextField}
+                                  name={`habilidadesRaciais.habilidadesAvancadas[${idx}].custo`}
+                                  label="Custo"
+                                  fullWidth
+                                  size="small"
+                                  sx={skillFieldSx}
+                                />
+                                <FastField
+                                  as={TextField}
+                                  name={`habilidadesRaciais.habilidadesAvancadas[${idx}].duracao`}
+                                  label="Duração"
+                                  fullWidth
+                                  size="small"
+                                  sx={skillFieldSx}
+                                />
+                                <FastField
+                                  as={TextField}
+                                  name={`habilidadesRaciais.habilidadesAvancadas[${idx}].dados`}
+                                  label="Dados"
+                                  fullWidth
+                                  size="small"
+                                  sx={skillFieldSx}
+                                />
+                              </Box>
+                              <FieldArray
+                                name={`habilidadesRaciais.habilidadesAvancadas[${idx}].bonus`}
+                              >
+                                {({ push: pushBonus, remove: removeBonus }) => (
+                                  <Box>
+                                    <Box
+                                      sx={{
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        gap: 1,
+                                        mb: 1,
+                                      }}
+                                    >
+                                      <Typography
+                                        variant="caption"
+                                        sx={{ color: '#94a3b8' }}
                                       >
-                                        ✕
-                                      </IconButton>
+                                        Bônus
+                                      </Typography>
+                                      <Button
+                                        onClick={() => pushBonus('')}
+                                        sx={addBonusButtonSx}
+                                      >
+                                        + Adicionar
+                                      </Button>
                                     </Box>
-                                  ))}
-                                </Box>
-                              )}
-                            </FieldArray>
+                                    {hab.bonus.map((_, bIdx) => (
+                                      <Box key={bIdx} sx={bonusItemSx}>
+                                        <FastField
+                                          as={TextField}
+                                          name={`habilidadesRaciais.habilidadesAvancadas[${idx}].bonus[${bIdx}]`}
+                                          label={`Bônus ${bIdx + 1}`}
+                                          fullWidth
+                                          size="small"
+                                          sx={skillFieldSx}
+                                        />
+                                        <IconButton
+                                          size="small"
+                                          onClick={() => removeBonus(bIdx)}
+                                          sx={removeBonusButtonSx}
+                                          aria-label="Remover bônus"
+                                        >
+                                          ✕
+                                        </IconButton>
+                                      </Box>
+                                    ))}
+                                  </Box>
+                                )}
+                              </FieldArray>
+                            </Box>
                           </Box>
-                        </Box>
-                      ))}
+                        ),
+                      )}
                       <Button
                         variant="outlined"
                         onClick={() => {

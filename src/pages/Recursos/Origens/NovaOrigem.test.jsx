@@ -99,7 +99,7 @@ describe('NovaOrigem (migrado para useEntityFormGuard/FormPageHeader/ImagePrevie
 
     expect(screen.queryByText(/Detalhes de/)).not.toBeInTheDocument();
 
-    await user.click(document.getElementById('mui-component-select-tipo'));
+    await user.click(screen.getByLabelText('Tipo'));
     await user.click(await screen.findByRole('option', { name: 'Região' }));
 
     expect(screen.getByText('Detalhes de Região')).toBeInTheDocument();

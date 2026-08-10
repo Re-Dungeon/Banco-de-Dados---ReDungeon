@@ -5,10 +5,6 @@ import Typography from '@mui/material/Typography';
 import Button from '@mui/material/Button';
 import TextField from '@mui/material/TextField';
 import IconButton from '@mui/material/IconButton';
-import Select from '@mui/material/Select';
-import MenuItem from '@mui/material/MenuItem';
-import FormControl from '@mui/material/FormControl';
-import InputLabel from '@mui/material/InputLabel';
 import Paper from '@mui/material/Paper';
 import { Formik, Form, FastField, Field, FieldArray } from 'formik';
 import { addOrigem, updateOrigem } from 'service/storage';
@@ -16,6 +12,7 @@ import { ROUTE_PATHS } from 'common/constants/routes';
 import useEntityFormGuard from 'hooks/useEntityFormGuard';
 import useStableListKeys from 'hooks/useStableListKeys';
 import FormPageHeader from 'components/FormPageHeader/FormPageHeader';
+import FormSelect from 'components/FormSelect/FormSelect';
 import ImagePreviewPanel from 'components/ImagePreviewPanel/ImagePreviewPanel';
 import FormActions from 'components/FormActions/FormActions';
 import SectionTitle from 'components/SectionTitle/SectionTitle';
@@ -79,33 +76,6 @@ const NovaOrigem = () => {
     '& .MuiInputLabel-root': { color: 'var(--text-secondary)' },
     '& .MuiInputLabel-root.Mui-focused': { color: 'var(--color-accent)' },
     '& .MuiFormHelperText-root': { color: 'var(--text-muted)' },
-  };
-
-  const selectSx = {
-    color: 'var(--text-primary)',
-    '& .MuiOutlinedInput-notchedOutline': {
-      borderColor: 'var(--border-primary)',
-    },
-    '&:hover .MuiOutlinedInput-notchedOutline': {
-      borderColor: 'var(--border-hover)',
-    },
-    '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
-      borderColor: 'var(--color-accent)',
-    },
-    '& .MuiSvgIcon-root': { color: 'var(--text-secondary)' },
-  };
-
-  const menuPropsSx = {
-    slotProps: {
-      paper: {
-        sx: { background: 'var(--bg-card)', color: 'var(--text-primary)' },
-      },
-    },
-  };
-
-  const labelSx = {
-    color: 'var(--text-secondary)',
-    '&.Mui-focused': { color: 'var(--color-accent)' },
   };
 
   if (loadingUniversos) return null;
@@ -174,22 +144,17 @@ const NovaOrigem = () => {
                       </FastField>
 
                       <Field name="universo">
-                        {({ field }) => (
-                          <FormControl fullWidth>
-                            <InputLabel sx={labelSx}>Universo</InputLabel>
-                            <Select
-                              {...field}
-                              label="Universo"
-                              sx={selectSx}
-                              MenuProps={menuPropsSx}
-                            >
-                              {universos.map(universo => (
-                                <MenuItem key={universo.id} value={universo.id}>
-                                  {universo.Nome}
-                                </MenuItem>
-                              ))}
-                            </Select>
-                          </FormControl>
+                        {({ field, form }) => (
+                          <FormSelect
+                            field={field}
+                            form={form}
+                            label="Universo"
+                            options={universos.map(universo => ({
+                              value: universo.id,
+                              label: universo.Nome,
+                            }))}
+                            disableClearable
+                          />
                         )}
                       </Field>
                     </Box>
@@ -203,49 +168,28 @@ const NovaOrigem = () => {
                     >
                       <Field name="tipo">
                         {({ field, form }) => (
-                          <FormControl fullWidth>
-                            <InputLabel sx={labelSx}>Tipo</InputLabel>
-                            <Select
-                              {...field}
-                              label="Tipo"
-                              sx={selectSx}
-                              MenuProps={menuPropsSx}
-                              onChange={e => {
-                                field.onChange(e);
-                                TODOS_CAMPOS_DEPENDENTES.forEach(key =>
-                                  form.setFieldValue(key, ''),
-                                );
-                              }}
-                            >
-                              <MenuItem value="">Nenhum</MenuItem>
-                              {TIPOS_ORIGEM.map(tipo => (
-                                <MenuItem key={tipo} value={tipo}>
-                                  {tipo}
-                                </MenuItem>
-                              ))}
-                            </Select>
-                          </FormControl>
+                          <FormSelect
+                            field={field}
+                            form={form}
+                            label="Tipo"
+                            options={TIPOS_ORIGEM}
+                            onValueChange={() =>
+                              TODOS_CAMPOS_DEPENDENTES.forEach(key =>
+                                form.setFieldValue(key, ''),
+                              )
+                            }
+                          />
                         )}
                       </Field>
 
                       <Field name="raridade">
-                        {({ field }) => (
-                          <FormControl fullWidth>
-                            <InputLabel sx={labelSx}>Raridade</InputLabel>
-                            <Select
-                              {...field}
-                              label="Raridade"
-                              sx={selectSx}
-                              MenuProps={menuPropsSx}
-                            >
-                              <MenuItem value="">Nenhuma</MenuItem>
-                              {RARIDADES.map(raridade => (
-                                <MenuItem key={raridade} value={raridade}>
-                                  {raridade}
-                                </MenuItem>
-                              ))}
-                            </Select>
-                          </FormControl>
+                        {({ field, form }) => (
+                          <FormSelect
+                            field={field}
+                            form={form}
+                            label="Raridade"
+                            options={RARIDADES}
+                          />
                         )}
                       </Field>
                     </Box>
@@ -326,25 +270,13 @@ const NovaOrigem = () => {
                     {CAMPOS_POR_TIPO[values.tipo].map(campo =>
                       campo.key === 'climaPerigo' ? (
                         <Field key={campo.key} name={campo.key}>
-                          {({ field }) => (
-                            <FormControl fullWidth>
-                              <InputLabel sx={labelSx}>
-                                {campo.label}
-                              </InputLabel>
-                              <Select
-                                {...field}
-                                label={campo.label}
-                                sx={selectSx}
-                                MenuProps={menuPropsSx}
-                              >
-                                <MenuItem value="">Nenhum</MenuItem>
-                                {NIVEIS_PERIGO.map(nivel => (
-                                  <MenuItem key={nivel} value={nivel}>
-                                    {nivel}
-                                  </MenuItem>
-                                ))}
-                              </Select>
-                            </FormControl>
+                          {({ field, form }) => (
+                            <FormSelect
+                              field={field}
+                              form={form}
+                              label={campo.label}
+                              options={NIVEIS_PERIGO}
+                            />
                           )}
                         </Field>
                       ) : (

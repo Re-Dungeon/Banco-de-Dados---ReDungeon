@@ -2,10 +2,6 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import Box from '@mui/material/Box';
 import TextField from '@mui/material/TextField';
-import Select from '@mui/material/Select';
-import MenuItem from '@mui/material/MenuItem';
-import FormControl from '@mui/material/FormControl';
-import InputLabel from '@mui/material/InputLabel';
 import Paper from '@mui/material/Paper';
 import { Formik, Form, FastField, Field } from 'formik';
 import {
@@ -16,6 +12,7 @@ import {
 import { ROUTE_PATHS } from 'common/constants/routes';
 import useEntityFormGuard from 'hooks/useEntityFormGuard';
 import FormPageHeader from 'components/FormPageHeader/FormPageHeader';
+import FormSelect from 'components/FormSelect/FormSelect';
 import ImagePreviewPanel from 'components/ImagePreviewPanel/ImagePreviewPanel';
 import FormActions from 'components/FormActions/FormActions';
 import SectionTitle from 'components/SectionTitle/SectionTitle';
@@ -136,27 +133,20 @@ const NovoReinoCultivo = () => {
                         />
                         <Field name="universo">
                           {({ field, form }) => (
-                            <FormControl fullWidth>
-                              <InputLabel>Universo</InputLabel>
-                              <Select
-                                {...field}
-                                label="Universo"
-                                onChange={e => {
-                                  field.onChange(e);
-                                  form.setFieldValue('subUniverso', '');
-                                  form.setFieldValue('reinoAnterior', '');
-                                }}
-                              >
-                                {universos.map(universo => (
-                                  <MenuItem
-                                    key={universo.id}
-                                    value={universo.id}
-                                  >
-                                    {universo.Nome}
-                                  </MenuItem>
-                                ))}
-                              </Select>
-                            </FormControl>
+                            <FormSelect
+                              field={field}
+                              form={form}
+                              label="Universo"
+                              options={universos.map(universo => ({
+                                value: universo.id,
+                                label: universo.Nome,
+                              }))}
+                              disableClearable
+                              onValueChange={() => {
+                                form.setFieldValue('subUniverso', '');
+                                form.setFieldValue('reinoAnterior', '');
+                              }}
+                            />
                           )}
                         </Field>
                       </Box>
@@ -164,44 +154,30 @@ const NovoReinoCultivo = () => {
                       {subUniversosDisponiveis.length > 0 && (
                         <Field name="subUniverso">
                           {({ field, form }) => (
-                            <FormControl fullWidth>
-                              <InputLabel>Subuniverso</InputLabel>
-                              <Select
-                                {...field}
-                                label="Subuniverso"
-                                onChange={e => {
-                                  field.onChange(e);
-                                  form.setFieldValue('reinoAnterior', '');
-                                }}
-                              >
-                                <MenuItem value="">Nenhum</MenuItem>
-                                {subUniversosDisponiveis.map(subUniverso => (
-                                  <MenuItem
-                                    key={subUniverso}
-                                    value={subUniverso}
-                                  >
-                                    {subUniverso}
-                                  </MenuItem>
-                                ))}
-                              </Select>
-                            </FormControl>
+                            <FormSelect
+                              field={field}
+                              form={form}
+                              label="Subuniverso"
+                              options={subUniversosDisponiveis}
+                              onValueChange={() =>
+                                form.setFieldValue('reinoAnterior', '')
+                              }
+                            />
                           )}
                         </Field>
                       )}
 
                       <Field name="reinoAnterior">
-                        {({ field }) => (
-                          <FormControl fullWidth>
-                            <InputLabel>Reino Anterior</InputLabel>
-                            <Select {...field} label="Reino Anterior">
-                              <MenuItem value="">Nenhum</MenuItem>
-                              {reinosAnterioresDisponiveis.map(reino => (
-                                <MenuItem key={reino.id} value={reino.id}>
-                                  {reino.nome}
-                                </MenuItem>
-                              ))}
-                            </Select>
-                          </FormControl>
+                        {({ field, form }) => (
+                          <FormSelect
+                            field={field}
+                            form={form}
+                            label="Reino Anterior"
+                            options={reinosAnterioresDisponiveis.map(reino => ({
+                              value: reino.id,
+                              label: reino.nome,
+                            }))}
+                          />
                         )}
                       </Field>
 

@@ -107,7 +107,7 @@ describe('EntityFilters', () => {
       />,
     );
 
-    expect(screen.getByLabelText('Ordenar')).toHaveTextContent('Nome (A a Z)');
+    expect(screen.getByLabelText('Ordenar')).toHaveValue('Nome (A a Z)');
 
     await user.click(screen.getByLabelText('Ordenar'));
     await user.click(

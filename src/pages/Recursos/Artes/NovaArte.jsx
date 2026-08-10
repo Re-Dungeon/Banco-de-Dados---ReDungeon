@@ -2,10 +2,6 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import Box from '@mui/material/Box';
 import TextField from '@mui/material/TextField';
-import Select from '@mui/material/Select';
-import MenuItem from '@mui/material/MenuItem';
-import FormControl from '@mui/material/FormControl';
-import InputLabel from '@mui/material/InputLabel';
 import Paper from '@mui/material/Paper';
 import Autocomplete from '@mui/material/Autocomplete';
 import Chip from '@mui/material/Chip';
@@ -14,6 +10,7 @@ import { addArte, updateArte, getCondicoes } from 'service/storage';
 import { ROUTE_PATHS } from 'common/constants/routes';
 import useEntityFormGuard from 'hooks/useEntityFormGuard';
 import FormPageHeader from 'components/FormPageHeader/FormPageHeader';
+import FormSelect from 'components/FormSelect/FormSelect';
 import ImagePreviewPanel from 'components/ImagePreviewPanel/ImagePreviewPanel';
 import FormActions from 'components/FormActions/FormActions';
 import SectionTitle from 'components/SectionTitle/SectionTitle';
@@ -73,33 +70,6 @@ const NovaArte = () => {
     '& .MuiInputLabel-root': { color: 'var(--text-secondary)' },
     '& .MuiInputLabel-root.Mui-focused': { color: 'var(--color-accent)' },
     '& .MuiFormHelperText-root': { color: '#ef4444' },
-  };
-
-  const selectSx = {
-    color: 'var(--text-primary)',
-    '& .MuiOutlinedInput-notchedOutline': {
-      borderColor: 'var(--border-primary)',
-    },
-    '&:hover .MuiOutlinedInput-notchedOutline': {
-      borderColor: 'var(--border-hover)',
-    },
-    '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
-      borderColor: 'var(--color-accent)',
-    },
-    '& .MuiSvgIcon-root': { color: 'var(--text-secondary)' },
-  };
-
-  const menuPropsSx = {
-    slotProps: {
-      paper: {
-        sx: { background: 'var(--bg-card)', color: 'var(--text-primary)' },
-      },
-    },
-  };
-
-  const labelSx = {
-    color: 'var(--text-secondary)',
-    '&.Mui-focused': { color: 'var(--color-accent)' },
   };
 
   if (loadingUniversos || loadingCondicoes) return null;
@@ -174,37 +144,27 @@ const NovaArte = () => {
 
                         <Field name="universo">
                           {({ field, form }) => (
-                            <FormControl fullWidth>
-                              <InputLabel sx={labelSx}>Universo</InputLabel>
-                              <Select
-                                {...field}
-                                label="Universo"
-                                sx={selectSx}
-                                MenuProps={menuPropsSx}
-                                onChange={e => {
-                                  field.onChange(e);
-                                  const novoUniverso = e.target.value;
-                                  const permitidas = condicoes.filter(
-                                    c => c.universo === novoUniverso,
-                                  );
-                                  form.setFieldValue(
-                                    'condicoesAplicadas',
-                                    form.values.condicoesAplicadas.filter(sel =>
-                                      permitidas.some(c => c.id === sel.id),
-                                    ),
-                                  );
-                                }}
-                              >
-                                {universos.map(universo => (
-                                  <MenuItem
-                                    key={universo.id}
-                                    value={universo.id}
-                                  >
-                                    {universo.Nome}
-                                  </MenuItem>
-                                ))}
-                              </Select>
-                            </FormControl>
+                            <FormSelect
+                              field={field}
+                              form={form}
+                              label="Universo"
+                              options={universos.map(universo => ({
+                                value: universo.id,
+                                label: universo.Nome,
+                              }))}
+                              disableClearable
+                              onValueChange={novoUniverso => {
+                                const permitidas = condicoes.filter(
+                                  c => c.universo === novoUniverso,
+                                );
+                                form.setFieldValue(
+                                  'condicoesAplicadas',
+                                  form.values.condicoesAplicadas.filter(sel =>
+                                    permitidas.some(c => c.id === sel.id),
+                                  ),
+                                );
+                              }}
+                            />
                           )}
                         </Field>
                       </Box>
@@ -221,92 +181,47 @@ const NovaArte = () => {
                         }}
                       >
                         <Field name="tipo">
-                          {({ field }) => (
-                            <FormControl fullWidth>
-                              <InputLabel sx={labelSx}>Tipo</InputLabel>
-                              <Select
-                                {...field}
-                                label="Tipo"
-                                sx={selectSx}
-                                MenuProps={menuPropsSx}
-                              >
-                                <MenuItem value="">Nenhum</MenuItem>
-                                {TIPOS_ARTE.map(tipo => (
-                                  <MenuItem key={tipo} value={tipo}>
-                                    {tipo}
-                                  </MenuItem>
-                                ))}
-                              </Select>
-                            </FormControl>
+                          {({ field, form }) => (
+                            <FormSelect
+                              field={field}
+                              form={form}
+                              label="Tipo"
+                              options={TIPOS_ARTE}
+                            />
                           )}
                         </Field>
 
                         <Field name="acao">
-                          {({ field }) => (
-                            <FormControl fullWidth>
-                              <InputLabel sx={labelSx}>Ação</InputLabel>
-                              <Select
-                                {...field}
-                                label="Ação"
-                                sx={selectSx}
-                                MenuProps={menuPropsSx}
-                              >
-                                <MenuItem value="">Nenhuma</MenuItem>
-                                {ACAO_ARTE.map(acao => (
-                                  <MenuItem key={acao} value={acao}>
-                                    {acao}
-                                  </MenuItem>
-                                ))}
-                              </Select>
-                            </FormControl>
+                          {({ field, form }) => (
+                            <FormSelect
+                              field={field}
+                              form={form}
+                              label="Ação"
+                              options={ACAO_ARTE}
+                            />
                           )}
                         </Field>
 
                         <Field name="classificacao">
-                          {({ field }) => (
-                            <FormControl fullWidth>
-                              <InputLabel sx={labelSx}>
-                                Classificação
-                              </InputLabel>
-                              <Select
-                                {...field}
-                                label="Classificação"
-                                sx={selectSx}
-                                MenuProps={menuPropsSx}
-                              >
-                                <MenuItem value="">Nenhuma</MenuItem>
-                                {CLASSIFICACOES_ARTE.map(classificacao => (
-                                  <MenuItem
-                                    key={classificacao}
-                                    value={classificacao}
-                                  >
-                                    {classificacao}
-                                  </MenuItem>
-                                ))}
-                              </Select>
-                            </FormControl>
+                          {({ field, form }) => (
+                            <FormSelect
+                              field={field}
+                              form={form}
+                              label="Classificação"
+                              options={CLASSIFICACOES_ARTE}
+                            />
                           )}
                         </Field>
 
                         <Field name="circuloMagico">
-                          {({ field }) => (
-                            <FormControl fullWidth>
-                              <InputLabel sx={labelSx}>
-                                Círculo Mágico
-                              </InputLabel>
-                              <Select
-                                {...field}
-                                label="Círculo Mágico"
-                                sx={selectSx}
-                                MenuProps={menuPropsSx}
-                              >
-                                {CIRCULOS_MAGICOS.map(circulo => (
-                                  <MenuItem key={circulo} value={circulo}>
-                                    {circulo}
-                                  </MenuItem>
-                                ))}
-                              </Select>
-                            </FormControl>
+                          {({ field, form }) => (
+                            <FormSelect
+                              field={field}
+                              form={form}
+                              label="Círculo Mágico"
+                              options={CIRCULOS_MAGICOS}
+                              disableClearable
+                            />
                           )}
                         </Field>
                       </Box>

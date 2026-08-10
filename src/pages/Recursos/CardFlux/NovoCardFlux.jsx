@@ -3,10 +3,6 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import TextField from '@mui/material/TextField';
-import Select from '@mui/material/Select';
-import MenuItem from '@mui/material/MenuItem';
-import FormControl from '@mui/material/FormControl';
-import InputLabel from '@mui/material/InputLabel';
 import Paper from '@mui/material/Paper';
 import Checkbox from '@mui/material/Checkbox';
 import FormControlLabel from '@mui/material/FormControlLabel';
@@ -18,6 +14,7 @@ import { addCardFlux, updateCardFlux, getCardFlux } from 'service/storage';
 import { ROUTE_PATHS } from 'common/constants/routes';
 import useEntityFormGuard from 'hooks/useEntityFormGuard';
 import FormPageHeader from 'components/FormPageHeader/FormPageHeader';
+import FormSelect from 'components/FormSelect/FormSelect';
 import ImagePreviewPanel from 'components/ImagePreviewPanel/ImagePreviewPanel';
 import FormActions from 'components/FormActions/FormActions';
 import SectionTitle from 'components/SectionTitle/SectionTitle';
@@ -77,37 +74,6 @@ const NovoCardFlux = () => {
     '& .MuiInputLabel-root': { color: 'var(--text-secondary)' },
     '& .MuiInputLabel-root.Mui-focused': { color: 'var(--color-accent)' },
     '& .MuiFormHelperText-root': { color: '#ef4444' },
-  };
-
-  const selectSx = {
-    color: 'var(--text-primary)',
-    '& .MuiOutlinedInput-notchedOutline': {
-      borderColor: 'var(--border-primary)',
-    },
-    '&:hover .MuiOutlinedInput-notchedOutline': {
-      borderColor: 'var(--border-hover)',
-    },
-    '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
-      borderColor: 'var(--color-accent)',
-    },
-    '& .MuiSvgIcon-root': { color: 'var(--text-secondary)' },
-  };
-
-  const menuPropsSx = {
-    slotProps: {
-      paper: {
-        sx: {
-          background: 'var(--bg-card)',
-          color: 'var(--text-primary)',
-          maxHeight: 320,
-        },
-      },
-    },
-  };
-
-  const labelSx = {
-    color: 'var(--text-secondary)',
-    '&.Mui-focused': { color: 'var(--color-accent)' },
   };
 
   if (loadingUniversos || loadingCardFlux) return null;
@@ -183,37 +149,27 @@ const NovoCardFlux = () => {
 
                         <Field name="universo">
                           {({ field, form }) => (
-                            <FormControl fullWidth>
-                              <InputLabel sx={labelSx}>Universo</InputLabel>
-                              <Select
-                                {...field}
-                                label="Universo"
-                                sx={selectSx}
-                                MenuProps={menuPropsSx}
-                                onChange={e => {
-                                  field.onChange(e);
-                                  const novoUniverso = e.target.value;
-                                  const permitidas = cardFluxList.filter(
-                                    c => c.universo === novoUniverso,
-                                  );
-                                  form.setFieldValue(
-                                    'cartasVinculadas',
-                                    form.values.cartasVinculadas.filter(sel =>
-                                      permitidas.some(c => c.id === sel.id),
-                                    ),
-                                  );
-                                }}
-                              >
-                                {universos.map(universo => (
-                                  <MenuItem
-                                    key={universo.id}
-                                    value={universo.id}
-                                  >
-                                    {universo.Nome}
-                                  </MenuItem>
-                                ))}
-                              </Select>
-                            </FormControl>
+                            <FormSelect
+                              field={field}
+                              form={form}
+                              label="Universo"
+                              options={universos.map(universo => ({
+                                value: universo.id,
+                                label: universo.Nome,
+                              }))}
+                              disableClearable
+                              onValueChange={novoUniverso => {
+                                const permitidas = cardFluxList.filter(
+                                  c => c.universo === novoUniverso,
+                                );
+                                form.setFieldValue(
+                                  'cartasVinculadas',
+                                  form.values.cartasVinculadas.filter(sel =>
+                                    permitidas.some(c => c.id === sel.id),
+                                  ),
+                                );
+                              }}
+                            />
                           )}
                         </Field>
                       </Box>
@@ -226,65 +182,35 @@ const NovoCardFlux = () => {
                         }}
                       >
                         <Field name="tipo">
-                          {({ field }) => (
-                            <FormControl fullWidth>
-                              <InputLabel sx={labelSx}>Tipo</InputLabel>
-                              <Select
-                                {...field}
-                                label="Tipo"
-                                sx={selectSx}
-                                MenuProps={menuPropsSx}
-                              >
-                                <MenuItem value="">Nenhum</MenuItem>
-                                {TIPOS_CARDFLUX.map(tipo => (
-                                  <MenuItem key={tipo} value={tipo}>
-                                    {tipo}
-                                  </MenuItem>
-                                ))}
-                              </Select>
-                            </FormControl>
+                          {({ field, form }) => (
+                            <FormSelect
+                              field={field}
+                              form={form}
+                              label="Tipo"
+                              options={TIPOS_CARDFLUX}
+                            />
                           )}
                         </Field>
 
                         <Field name="raridade">
-                          {({ field }) => (
-                            <FormControl fullWidth>
-                              <InputLabel sx={labelSx}>Raridade</InputLabel>
-                              <Select
-                                {...field}
-                                label="Raridade"
-                                sx={selectSx}
-                                MenuProps={menuPropsSx}
-                              >
-                                <MenuItem value="">Nenhuma</MenuItem>
-                                {RARIDADES.map(raridade => (
-                                  <MenuItem key={raridade} value={raridade}>
-                                    {raridade}
-                                  </MenuItem>
-                                ))}
-                              </Select>
-                            </FormControl>
+                          {({ field, form }) => (
+                            <FormSelect
+                              field={field}
+                              form={form}
+                              label="Raridade"
+                              options={RARIDADES}
+                            />
                           )}
                         </Field>
 
                         <Field name="deck">
-                          {({ field }) => (
-                            <FormControl fullWidth>
-                              <InputLabel sx={labelSx}>Deck</InputLabel>
-                              <Select
-                                {...field}
-                                label="Deck"
-                                sx={selectSx}
-                                MenuProps={menuPropsSx}
-                              >
-                                <MenuItem value="">Nenhum</MenuItem>
-                                {DECKS_CARDFLUX.map(deck => (
-                                  <MenuItem key={deck} value={deck}>
-                                    {deck}
-                                  </MenuItem>
-                                ))}
-                              </Select>
-                            </FormControl>
+                          {({ field, form }) => (
+                            <FormSelect
+                              field={field}
+                              form={form}
+                              label="Deck"
+                              options={DECKS_CARDFLUX}
+                            />
                           )}
                         </Field>
                       </Box>
@@ -589,25 +515,13 @@ const NovoCardFlux = () => {
                         }}
                       >
                         <Field name="tipoAtivacao">
-                          {({ field }) => (
-                            <FormControl fullWidth>
-                              <InputLabel sx={labelSx}>
-                                Tipo de Ativação
-                              </InputLabel>
-                              <Select
-                                {...field}
-                                label="Tipo de Ativação"
-                                sx={selectSx}
-                                MenuProps={menuPropsSx}
-                              >
-                                <MenuItem value="">Nenhum</MenuItem>
-                                {TIPOS_ATIVACAO_CARDFLUX.map(tipo => (
-                                  <MenuItem key={tipo} value={tipo}>
-                                    {tipo}
-                                  </MenuItem>
-                                ))}
-                              </Select>
-                            </FormControl>
+                          {({ field, form }) => (
+                            <FormSelect
+                              field={field}
+                              form={form}
+                              label="Tipo de Ativação"
+                              options={TIPOS_ATIVACAO_CARDFLUX}
+                            />
                           )}
                         </Field>
 

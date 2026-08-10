@@ -3,10 +3,6 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import TextField from '@mui/material/TextField';
-import Select from '@mui/material/Select';
-import MenuItem from '@mui/material/MenuItem';
-import FormControl from '@mui/material/FormControl';
-import InputLabel from '@mui/material/InputLabel';
 import Paper from '@mui/material/Paper';
 import Slider from '@mui/material/Slider';
 import { Formik, Form, FastField, Field } from 'formik';
@@ -14,6 +10,7 @@ import { addMaterial, updateMaterial } from 'service/storage';
 import { ROUTE_PATHS } from 'common/constants/routes';
 import useEntityFormGuard from 'hooks/useEntityFormGuard';
 import FormPageHeader from 'components/FormPageHeader/FormPageHeader';
+import FormSelect from 'components/FormSelect/FormSelect';
 import ImagePreviewPanel from 'components/ImagePreviewPanel/ImagePreviewPanel';
 import FormActions from 'components/FormActions/FormActions';
 import SectionTitle from 'components/SectionTitle/SectionTitle';
@@ -58,28 +55,6 @@ const NovoMaterial = () => {
     '& .MuiInputLabel-root': { color: 'var(--text-secondary)' },
     '& .MuiInputLabel-root.Mui-focused': { color: 'var(--color-accent)' },
     '& .MuiFormHelperText-root': { color: '#ef4444' },
-  };
-
-  const selectSx = {
-    color: 'var(--text-primary)',
-    '& .MuiOutlinedInput-notchedOutline': {
-      borderColor: 'var(--border-primary)',
-    },
-    '&:hover .MuiOutlinedInput-notchedOutline': {
-      borderColor: 'var(--border-hover)',
-    },
-    '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
-      borderColor: 'var(--color-accent)',
-    },
-    '& .MuiSvgIcon-root': { color: 'var(--text-secondary)' },
-  };
-
-  const menuPropsSx = {
-    slotProps: {
-      paper: {
-        sx: { background: 'var(--bg-card)', color: 'var(--text-primary)' },
-      },
-    },
   };
 
   if (loadingUniversos) return null;
@@ -159,32 +134,13 @@ const NovoMaterial = () => {
                       </FastField>
 
                       <Field name="raridade">
-                        {({ field }) => (
-                          <FormControl fullWidth>
-                            <InputLabel
-                              sx={{
-                                color: 'var(--text-secondary)',
-                                '&.Mui-focused': {
-                                  color: 'var(--color-accent)',
-                                },
-                              }}
-                            >
-                              Raridade
-                            </InputLabel>
-                            <Select
-                              {...field}
-                              label="Raridade"
-                              sx={selectSx}
-                              MenuProps={menuPropsSx}
-                            >
-                              <MenuItem value="">Nenhuma</MenuItem>
-                              {RARIDADES.map(raridade => (
-                                <MenuItem key={raridade} value={raridade}>
-                                  {raridade}
-                                </MenuItem>
-                              ))}
-                            </Select>
-                          </FormControl>
+                        {({ field, form }) => (
+                          <FormSelect
+                            field={field}
+                            form={form}
+                            label="Raridade"
+                            options={RARIDADES}
+                          />
                         )}
                       </Field>
                     </Box>
@@ -238,29 +194,17 @@ const NovoMaterial = () => {
                     </FastField>
 
                     <Field name="universo">
-                      {({ field }) => (
-                        <FormControl fullWidth>
-                          <InputLabel
-                            sx={{
-                              color: 'var(--text-secondary)',
-                              '&.Mui-focused': { color: 'var(--color-accent)' },
-                            }}
-                          >
-                            Universo
-                          </InputLabel>
-                          <Select
-                            {...field}
-                            label="Universo"
-                            sx={selectSx}
-                            MenuProps={menuPropsSx}
-                          >
-                            {universos.map(universo => (
-                              <MenuItem key={universo.id} value={universo.id}>
-                                {universo.Nome}
-                              </MenuItem>
-                            ))}
-                          </Select>
-                        </FormControl>
+                      {({ field, form }) => (
+                        <FormSelect
+                          field={field}
+                          form={form}
+                          label="Universo"
+                          options={universos.map(universo => ({
+                            value: universo.id,
+                            label: universo.Nome,
+                          }))}
+                          disableClearable
+                        />
                       )}
                     </Field>
                   </Box>

@@ -2,10 +2,7 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import Box from '@mui/material/Box';
 import TextField from '@mui/material/TextField';
-import Select from '@mui/material/Select';
-import MenuItem from '@mui/material/MenuItem';
-import FormControl from '@mui/material/FormControl';
-import InputLabel from '@mui/material/InputLabel';
+import SearchableSelect from 'components/SearchableSelect/SearchableSelect';
 import { OPCOES_ORDENACAO_NOME, ORDEM_ASC } from 'common/utils/ordenacao';
 
 const textFieldSx = {
@@ -17,33 +14,6 @@ const textFieldSx = {
   },
   '& .MuiInputLabel-root': { color: 'var(--text-secondary)' },
   '& .MuiInputLabel-root.Mui-focused': { color: 'var(--color-accent)' },
-};
-
-const inputLabelSx = {
-  color: 'var(--text-secondary)',
-  '&.Mui-focused': { color: 'var(--color-accent)' },
-};
-
-const selectSx = {
-  color: 'var(--text-primary)',
-  '& .MuiOutlinedInput-notchedOutline': {
-    borderColor: 'var(--border-primary)',
-  },
-  '&:hover .MuiOutlinedInput-notchedOutline': {
-    borderColor: 'var(--border-hover)',
-  },
-  '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
-    borderColor: 'var(--color-accent)',
-  },
-  '& .MuiSvgIcon-root': { color: 'var(--text-secondary)' },
-};
-
-const selectMenuProps = {
-  slotProps: {
-    paper: {
-      sx: { background: 'var(--bg-card)', color: 'var(--text-primary)' },
-    },
-  },
 };
 
 /**
@@ -63,16 +33,8 @@ const EntityFilters = ({
   sx = {},
   menuMaxHeight,
 }) => {
-  const menuProps = menuMaxHeight
-    ? {
-        slotProps: {
-          paper: {
-            sx: { ...selectMenuProps.slotProps.paper.sx, maxHeight: menuMaxHeight },
-          },
-        },
-      }
-    : selectMenuProps;
   const totalColunas = extraFilters.length + 1 + (onSortChange ? 1 : 0);
+  const universoOptions = universos.map(u => ({ value: u.id, label: u.Nome }));
 
   return (
     <Box
@@ -96,70 +58,42 @@ const EntityFilters = ({
         sx={textFieldSx}
       />
       {extraFilters.map(filtro => {
-        const labelId = `entity-filters-${filtro.label}`;
+        const options = filtro.options.map(opcao => ({
+          value: opcao,
+          label: opcao,
+        }));
         return (
-          <FormControl key={filtro.label} size="small">
-            <InputLabel id={labelId} sx={inputLabelSx}>
-              {filtro.label}
-            </InputLabel>
-            <Select
-              labelId={labelId}
-              label={filtro.label}
-              value={filtro.value}
-              onChange={e => filtro.onChange(e.target.value)}
-              sx={selectSx}
-              MenuProps={menuProps}
-            >
-              <MenuItem value="">{filtro.allLabel || 'Todos'}</MenuItem>
-              {filtro.options.map(opcao => (
-                <MenuItem key={opcao} value={opcao}>
-                  {opcao}
-                </MenuItem>
-              ))}
-            </Select>
-          </FormControl>
+          <SearchableSelect
+            key={filtro.label}
+            label={filtro.label}
+            size="small"
+            options={options}
+            value={options.find(o => o.value === filtro.value) ?? null}
+            onChange={(e, newValue) => filtro.onChange(newValue?.value ?? '')}
+            placeholder={filtro.allLabel || 'Todos'}
+            listboxMaxHeight={menuMaxHeight}
+          />
         );
       })}
-      <FormControl size="small">
-        <InputLabel id="entity-filters-universo" sx={inputLabelSx}>
-          Universo
-        </InputLabel>
-        <Select
-          labelId="entity-filters-universo"
-          label="Universo"
-          value={universoValue}
-          onChange={e => onUniversoChange(e.target.value)}
-          sx={selectSx}
-          MenuProps={menuProps}
-        >
-          <MenuItem value="">Todos</MenuItem>
-          {universos.map(u => (
-            <MenuItem key={u.id} value={u.id}>
-              {u.Nome}
-            </MenuItem>
-          ))}
-        </Select>
-      </FormControl>
+      <SearchableSelect
+        label="Universo"
+        size="small"
+        options={universoOptions}
+        value={universoOptions.find(o => o.value === universoValue) ?? null}
+        onChange={(e, newValue) => onUniversoChange(newValue?.value ?? '')}
+        placeholder="Todos"
+        listboxMaxHeight={menuMaxHeight}
+      />
       {onSortChange && (
-        <FormControl size="small">
-          <InputLabel id="entity-filters-ordenar" sx={inputLabelSx}>
-            Ordenar
-          </InputLabel>
-          <Select
-            labelId="entity-filters-ordenar"
-            label="Ordenar"
-            value={sortValue}
-            onChange={e => onSortChange(e.target.value)}
-            sx={selectSx}
-            MenuProps={menuProps}
-          >
-            {OPCOES_ORDENACAO_NOME.map(opcao => (
-              <MenuItem key={opcao.value} value={opcao.value}>
-                {opcao.label}
-              </MenuItem>
-            ))}
-          </Select>
-        </FormControl>
+        <SearchableSelect
+          label="Ordenar"
+          size="small"
+          disableClearable
+          options={OPCOES_ORDENACAO_NOME}
+          value={OPCOES_ORDENACAO_NOME.find(o => o.value === sortValue) ?? null}
+          onChange={(e, newValue) => onSortChange(newValue.value)}
+          listboxMaxHeight={menuMaxHeight}
+        />
       )}
     </Box>
   );

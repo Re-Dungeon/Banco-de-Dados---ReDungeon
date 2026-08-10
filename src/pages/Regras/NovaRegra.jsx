@@ -2,18 +2,13 @@ import React from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import Box from '@mui/material/Box';
 import TextField from '@mui/material/TextField';
-import Select from '@mui/material/Select';
-import MenuItem from '@mui/material/MenuItem';
-import FormControl from '@mui/material/FormControl';
-import InputLabel from '@mui/material/InputLabel';
 import Paper from '@mui/material/Paper';
-import Checkbox from '@mui/material/Checkbox';
-import ListItemText from '@mui/material/ListItemText';
 import { Formik, Form, FastField, Field } from 'formik';
 import { addRegra, updateRegra } from 'service/storage';
 import { ROUTE_PATHS } from 'common/constants/routes';
 import useEntityFormGuard from 'hooks/useEntityFormGuard';
 import FormPageHeader from 'components/FormPageHeader/FormPageHeader';
+import FormSelect from 'components/FormSelect/FormSelect';
 import ImagePreviewPanel from 'components/ImagePreviewPanel/ImagePreviewPanel';
 import FormActions from 'components/FormActions/FormActions';
 import SectionTitle from 'components/SectionTitle/SectionTitle';
@@ -62,33 +57,6 @@ const NovaRegra = () => {
     '& .MuiInputLabel-root': { color: 'var(--text-secondary)' },
     '& .MuiInputLabel-root.Mui-focused': { color: 'var(--color-accent)' },
     '& .MuiFormHelperText-root': { color: '#ef4444' },
-  };
-
-  const selectSx = {
-    color: 'var(--text-primary)',
-    '& .MuiOutlinedInput-notchedOutline': {
-      borderColor: 'var(--border-primary)',
-    },
-    '&:hover .MuiOutlinedInput-notchedOutline': {
-      borderColor: 'var(--border-hover)',
-    },
-    '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
-      borderColor: 'var(--color-accent)',
-    },
-    '& .MuiSvgIcon-root': { color: 'var(--text-secondary)' },
-  };
-
-  const menuPropsSx = {
-    slotProps: {
-      paper: {
-        sx: { background: 'var(--bg-card)', color: 'var(--text-primary)' },
-      },
-    },
-  };
-
-  const labelSx = {
-    color: 'var(--text-secondary)',
-    '&.Mui-focused': { color: 'var(--color-accent)' },
   };
 
   if (loadingUniversos) return null;
@@ -158,41 +126,16 @@ const NovaRegra = () => {
 
                       <Field name="universos">
                         {({ field, form }) => (
-                          <FormControl fullWidth>
-                            <InputLabel sx={labelSx}>Universos</InputLabel>
-                            <Select
-                              {...field}
-                              multiple
-                              label="Universos"
-                              value={field.value || []}
-                              onChange={e =>
-                                form.setFieldValue('universos', e.target.value)
-                              }
-                              renderValue={selecionados =>
-                                universos
-                                  .filter(u => selecionados.includes(u.id))
-                                  .map(u => u.Nome)
-                                  .join(', ')
-                              }
-                              sx={selectSx}
-                              MenuProps={menuPropsSx}
-                            >
-                              {universos.map(universo => (
-                                <MenuItem key={universo.id} value={universo.id}>
-                                  <Checkbox
-                                    checked={field.value?.includes(universo.id)}
-                                    sx={{
-                                      color: 'var(--text-secondary)',
-                                      '&.Mui-checked': {
-                                        color: 'var(--color-accent)',
-                                      },
-                                    }}
-                                  />
-                                  <ListItemText primary={universo.Nome} />
-                                </MenuItem>
-                              ))}
-                            </Select>
-                          </FormControl>
+                          <FormSelect
+                            field={field}
+                            form={form}
+                            multiple
+                            label="Universos"
+                            options={universos.map(universo => ({
+                              value: universo.id,
+                              label: universo.Nome,
+                            }))}
+                          />
                         )}
                       </Field>
                     </Box>
@@ -205,23 +148,13 @@ const NovaRegra = () => {
                       }}
                     >
                       <Field name="categoria">
-                        {({ field }) => (
-                          <FormControl fullWidth>
-                            <InputLabel sx={labelSx}>Categoria</InputLabel>
-                            <Select
-                              {...field}
-                              label="Categoria"
-                              sx={selectSx}
-                              MenuProps={menuPropsSx}
-                            >
-                              <MenuItem value="">Nenhuma</MenuItem>
-                              {CATEGORIAS_REGRA.map(categoria => (
-                                <MenuItem key={categoria} value={categoria}>
-                                  {categoria}
-                                </MenuItem>
-                              ))}
-                            </Select>
-                          </FormControl>
+                        {({ field, form }) => (
+                          <FormSelect
+                            field={field}
+                            form={form}
+                            label="Categoria"
+                            options={CATEGORIAS_REGRA}
+                          />
                         )}
                       </Field>
 
@@ -237,26 +170,13 @@ const NovaRegra = () => {
                       </FastField>
 
                       <Field name="complexidade">
-                        {({ field }) => (
-                          <FormControl fullWidth>
-                            <InputLabel sx={labelSx}>Complexidade</InputLabel>
-                            <Select
-                              {...field}
-                              label="Complexidade"
-                              sx={selectSx}
-                              MenuProps={menuPropsSx}
-                            >
-                              <MenuItem value="">Nenhuma</MenuItem>
-                              {COMPLEXIDADES_REGRA.map(complexidade => (
-                                <MenuItem
-                                  key={complexidade}
-                                  value={complexidade}
-                                >
-                                  {complexidade}
-                                </MenuItem>
-                              ))}
-                            </Select>
-                          </FormControl>
+                        {({ field, form }) => (
+                          <FormSelect
+                            field={field}
+                            form={form}
+                            label="Complexidade"
+                            options={COMPLEXIDADES_REGRA}
+                          />
                         )}
                       </Field>
                     </Box>

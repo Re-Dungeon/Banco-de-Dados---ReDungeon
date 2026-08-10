@@ -4,19 +4,14 @@ import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import TextField from '@mui/material/TextField';
 import IconButton from '@mui/material/IconButton';
-import Select from '@mui/material/Select';
-import MenuItem from '@mui/material/MenuItem';
-import FormControl from '@mui/material/FormControl';
-import InputLabel from '@mui/material/InputLabel';
 import Paper from '@mui/material/Paper';
-import Checkbox from '@mui/material/Checkbox';
-import ListItemText from '@mui/material/ListItemText';
 import { Formik, Form, FastField, Field, FieldArray } from 'formik';
 import { addCondicao, updateCondicao } from 'service/storage';
 import { ROUTE_PATHS } from 'common/constants/routes';
 import useEntityFormGuard from 'hooks/useEntityFormGuard';
 import useStableListKeys from 'hooks/useStableListKeys';
 import FormPageHeader from 'components/FormPageHeader/FormPageHeader';
+import FormSelect from 'components/FormSelect/FormSelect';
 import ImagePreviewPanel from 'components/ImagePreviewPanel/ImagePreviewPanel';
 import FormActions from 'components/FormActions/FormActions';
 import SectionTitle from 'components/SectionTitle/SectionTitle';
@@ -121,49 +116,29 @@ const NovaCondicao = () => {
                         error={touched.nome && Boolean(errors.nome)}
                         helperText={touched.nome && errors.nome}
                       />
-                      <FastField name="raridade">
-                        {({ field }) => (
-                          <FormControl fullWidth>
-                            <InputLabel>Raridade</InputLabel>
-                            <Select {...field} label="Raridade">
-                              {RARIDADES.map(raridade => (
-                                <MenuItem key={raridade} value={raridade}>
-                                  {raridade}
-                                </MenuItem>
-                              ))}
-                            </Select>
-                          </FormControl>
+                      <Field name="raridade">
+                        {({ field, form }) => (
+                          <FormSelect
+                            field={field}
+                            form={form}
+                            label="Raridade"
+                            options={RARIDADES}
+                            disableClearable
+                          />
                         )}
-                      </FastField>
+                      </Field>
                       <Field name="universos">
                         {({ field, form }) => (
-                          <FormControl fullWidth>
-                            <InputLabel>Universos</InputLabel>
-                            <Select
-                              {...field}
-                              multiple
-                              label="Universos"
-                              value={field.value || []}
-                              onChange={e =>
-                                form.setFieldValue('universos', e.target.value)
-                              }
-                              renderValue={selecionados =>
-                                universos
-                                  .filter(u => selecionados.includes(u.id))
-                                  .map(u => u.Nome)
-                                  .join(', ')
-                              }
-                            >
-                              {universos.map(universo => (
-                                <MenuItem key={universo.id} value={universo.id}>
-                                  <Checkbox
-                                    checked={field.value?.includes(universo.id)}
-                                  />
-                                  <ListItemText primary={universo.Nome} />
-                                </MenuItem>
-                              ))}
-                            </Select>
-                          </FormControl>
+                          <FormSelect
+                            field={field}
+                            form={form}
+                            multiple
+                            label="Universos"
+                            options={universos.map(universo => ({
+                              value: universo.id,
+                              label: universo.Nome,
+                            }))}
+                          />
                         )}
                       </Field>
                     </Box>

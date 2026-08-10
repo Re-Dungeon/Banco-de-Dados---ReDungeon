@@ -3,19 +3,15 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import TextField from '@mui/material/TextField';
-import Select from '@mui/material/Select';
-import MenuItem from '@mui/material/MenuItem';
-import FormControl from '@mui/material/FormControl';
-import InputLabel from '@mui/material/InputLabel';
 import Paper from '@mui/material/Paper';
 import Checkbox from '@mui/material/Checkbox';
-import ListItemText from '@mui/material/ListItemText';
 import FormControlLabel from '@mui/material/FormControlLabel';
 import { Formik, Form, FastField, Field } from 'formik';
 import { addAptidao, updateAptidao } from 'service/storage';
 import { ROUTE_PATHS } from 'common/constants/routes';
 import useEntityFormGuard from 'hooks/useEntityFormGuard';
 import FormPageHeader from 'components/FormPageHeader/FormPageHeader';
+import FormSelect from 'components/FormSelect/FormSelect';
 import ImagePreviewPanel from 'components/ImagePreviewPanel/ImagePreviewPanel';
 import FormActions from 'components/FormActions/FormActions';
 import SectionTitle from 'components/SectionTitle/SectionTitle';
@@ -24,7 +20,6 @@ import {
   APTIDAO_INITIAL_VALUES,
   NIVEL_PROGRESSAO_INICIAL,
   getAptidaoUniversos,
-  formatNomesUniversos,
 } from './utils';
 
 const slotInputSx = {
@@ -37,33 +32,6 @@ const slotInputSx = {
   '& .MuiInputLabel-root': { color: 'var(--text-secondary)' },
   '& .MuiInputLabel-root.Mui-focused': { color: 'var(--color-accent)' },
   '& .MuiFormHelperText-root': { color: 'var(--text-muted)' },
-};
-
-const selectSx = {
-  color: 'var(--text-primary)',
-  '& .MuiOutlinedInput-notchedOutline': {
-    borderColor: 'var(--border-primary)',
-  },
-  '&:hover .MuiOutlinedInput-notchedOutline': {
-    borderColor: 'var(--border-hover)',
-  },
-  '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
-    borderColor: 'var(--color-accent)',
-  },
-  '& .MuiSvgIcon-root': { color: 'var(--text-secondary)' },
-};
-
-const menuPropsSx = {
-  slotProps: {
-    paper: {
-      sx: { background: 'var(--bg-card)', color: 'var(--text-primary)' },
-    },
-  },
-};
-
-const labelSx = {
-  color: 'var(--text-secondary)',
-  '&.Mui-focused': { color: 'var(--color-accent)' },
 };
 
 const NovaAptidao = () => {
@@ -163,38 +131,16 @@ const NovaAptidao = () => {
 
                       <Field name="universos">
                         {({ field, form }) => (
-                          <FormControl fullWidth>
-                            <InputLabel sx={labelSx}>Universos</InputLabel>
-                            <Select
-                              {...field}
-                              multiple
-                              label="Universos"
-                              value={field.value || []}
-                              onChange={e =>
-                                form.setFieldValue('universos', e.target.value)
-                              }
-                              renderValue={selecionados =>
-                                formatNomesUniversos(selecionados, universos)
-                              }
-                              sx={selectSx}
-                              MenuProps={menuPropsSx}
-                            >
-                              {universos.map(universo => (
-                                <MenuItem key={universo.id} value={universo.id}>
-                                  <Checkbox
-                                    checked={field.value?.includes(universo.id)}
-                                    sx={{
-                                      color: 'var(--text-secondary)',
-                                      '&.Mui-checked': {
-                                        color: 'var(--color-accent)',
-                                      },
-                                    }}
-                                  />
-                                  <ListItemText primary={universo.Nome} />
-                                </MenuItem>
-                              ))}
-                            </Select>
-                          </FormControl>
+                          <FormSelect
+                            field={field}
+                            form={form}
+                            multiple
+                            label="Universos"
+                            options={universos.map(universo => ({
+                              value: universo.id,
+                              label: universo.Nome,
+                            }))}
+                          />
                         )}
                       </Field>
                     </Box>

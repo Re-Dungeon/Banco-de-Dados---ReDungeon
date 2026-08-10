@@ -5,14 +5,8 @@ import Typography from '@mui/material/Typography';
 import Button from '@mui/material/Button';
 import TextField from '@mui/material/TextField';
 import IconButton from '@mui/material/IconButton';
-import Select from '@mui/material/Select';
-import MenuItem from '@mui/material/MenuItem';
-import FormControl from '@mui/material/FormControl';
 import InputAdornment from '@mui/material/InputAdornment';
-import InputLabel from '@mui/material/InputLabel';
 import Paper from '@mui/material/Paper';
-import Checkbox from '@mui/material/Checkbox';
-import ListItemText from '@mui/material/ListItemText';
 import ShieldOutlinedIcon from '@mui/icons-material/ShieldOutlined';
 import FitnessCenterIcon from '@mui/icons-material/FitnessCenter';
 import DirectionsRunIcon from '@mui/icons-material/DirectionsRun';
@@ -25,6 +19,7 @@ import { ROUTE_PATHS } from 'common/constants/routes';
 import useEntityFormGuard from 'hooks/useEntityFormGuard';
 import useStableListKeys from 'hooks/useStableListKeys';
 import FormPageHeader from 'components/FormPageHeader/FormPageHeader';
+import FormSelect from 'components/FormSelect/FormSelect';
 import ImagePreviewPanel from 'components/ImagePreviewPanel/ImagePreviewPanel';
 import FormActions from 'components/FormActions/FormActions';
 import SectionTitle from 'components/SectionTitle/SectionTitle';
@@ -33,10 +28,7 @@ import {
   CLASSE_INITIAL_VALUES,
   HABILIDADE_INICIAL,
 } from './utils';
-import {
-  RARIDADES,
-  TIPOS_PERSONAGEM,
-} from 'common/constants/constants';
+import { RARIDADES, TIPOS_PERSONAGEM } from 'common/constants/constants';
 import {
   ClasseFormPanel,
   ClasseFormHeader,
@@ -130,42 +122,6 @@ const NovaClasse = () => {
     },
   };
 
-  const selectSx = {
-    color: 'var(--text-primary)',
-    background:
-      'linear-gradient(180deg, rgba(22, 33, 54, 0.95), rgba(15, 23, 42, 0.95))',
-    borderRadius: '14px',
-    '& .MuiOutlinedInput-notchedOutline': {
-      borderColor: 'rgba(43, 57, 85, 0.9)',
-      borderWidth: '1px',
-      transition: 'all 0.2s ease',
-    },
-    '&:hover .MuiOutlinedInput-notchedOutline': {
-      borderColor: 'rgba(41, 182, 246, 0.7)',
-      boxShadow: '0 0 0 1px rgba(41, 182, 246, 0.14)',
-    },
-    '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
-      borderColor: '#29B6F6',
-      boxShadow: '0 0 0 4px rgba(41, 182, 246, 0.14)',
-    },
-    '& .MuiSvgIcon-root': { color: 'var(--text-secondary)' },
-  };
-
-  const menuPropsSx = {
-    slotProps: {
-      paper: {
-        sx: {
-          background: 'linear-gradient(145deg, #10182b 0%, #0f172a 100%)',
-          color: 'var(--text-primary)',
-          border: '1px solid rgba(43, 57, 85, 0.95)',
-          borderRadius: '16px',
-          boxShadow: '0 16px 36px rgba(2, 6, 23, 0.38)',
-          overflow: 'hidden',
-        },
-      },
-    },
-  };
-
   const attributeLabelProps = {
     shrink: true,
   };
@@ -181,7 +137,8 @@ const NovaClasse = () => {
     borderRadius: '20px',
     border: '1px solid rgba(42, 92, 126, 0.85)',
     boxShadow: 'inset 0 0 0 1px rgba(31, 64, 96, 0.12)',
-    transition: 'transform 200ms ease, box-shadow 200ms ease, border-color 200ms ease',
+    transition:
+      'transform 200ms ease, box-shadow 200ms ease, border-color 200ms ease',
     '&:hover': {
       transform: 'translateY(-2px)',
       borderColor: '#60a5fa',
@@ -203,10 +160,11 @@ const NovaClasse = () => {
         border: 'none',
         boxShadow: 'none',
       },
-      '&.Mui-focused fieldset, &.Mui-focused .MuiOutlinedInput-notchedOutline': {
-        border: 'none',
-        boxShadow: 'none',
-      },
+      '&.Mui-focused fieldset, &.Mui-focused .MuiOutlinedInput-notchedOutline':
+        {
+          border: 'none',
+          boxShadow: 'none',
+        },
       '& .MuiInputBase-input': {
         color: '#ffffff',
         fontSize: '1.35rem',
@@ -259,7 +217,8 @@ const NovaClasse = () => {
     borderRadius: '16px',
     boxShadow:
       '0 12px 28px rgba(0, 0, 0, 0.2), inset 0 0 0 1px rgba(59, 130, 246, 0.08)',
-    transition: 'transform 200ms ease, box-shadow 200ms ease, border-color 200ms ease',
+    transition:
+      'transform 200ms ease, box-shadow 200ms ease, border-color 200ms ease',
     '&:hover': {
       transform: 'translateY(-1px)',
       borderColor: '#3b82f6',
@@ -428,9 +387,12 @@ const NovaClasse = () => {
               {/* Seção: Informações Gerais */}
               <ClasseFormPanel elevation={0}>
                 <ClasseFormHeader>
-                  <ClasseFormTitle variant="h4">🛡️ Informações da Classe</ClasseFormTitle>
+                  <ClasseFormTitle variant="h4">
+                    🛡️ Informações da Classe
+                  </ClasseFormTitle>
                   <ClasseFormSubtitle>
-                    Dados básicos utilizados pelo sistema para identificar esta classe.
+                    Dados básicos utilizados pelo sistema para identificar esta
+                    classe.
                   </ClasseFormSubtitle>
                   <ClasseFormDivider />
                 </ClasseFormHeader>
@@ -451,75 +413,30 @@ const NovaClasse = () => {
                         )}
                       </FastField>
 
-                      <FastField name="raridade">
-                        {({ field }) => (
-                          <FormControl fullWidth>
-                            <InputLabel sx={{ color: 'var(--text-secondary)' }}>
-                              Raridade
-                            </InputLabel>
-                            <Select
-                              {...field}
-                              label="Raridade"
-                              sx={selectSx}
-                              MenuProps={menuPropsSx}
-                            >
-                              {RARIDADES.map(raridade => (
-                                <MenuItem
-                                  key={raridade}
-                                  value={raridade}
-                                  sx={{
-                                    '&:hover': {
-                                      background: 'rgba(41, 182, 246, 0.16)',
-                                    },
-                                    '&.Mui-selected': {
-                                      background:
-                                        'linear-gradient(90deg, rgba(124, 77, 255, 0.32), rgba(41, 182, 246, 0.18))',
-                                      color: '#fff',
-                                    },
-                                  }}
-                                >
-                                  {raridade}
-                                </MenuItem>
-                              ))}
-                            </Select>
-                          </FormControl>
+                      <Field name="raridade">
+                        {({ field, form }) => (
+                          <FormSelect
+                            field={field}
+                            form={form}
+                            label="Raridade"
+                            options={RARIDADES}
+                            disableClearable
+                          />
                         )}
-                      </FastField>
+                      </Field>
 
                       <Field name="universo">
                         {({ field, form }) => (
-                          <FormControl fullWidth>
-                            <InputLabel sx={{ color: 'var(--text-secondary)' }}>
-                              Universo
-                            </InputLabel>
-                            <Select
-                              {...field}
-                              value={field.value || ''}
-                              onChange={e => form.setFieldValue('universo', e.target.value)}
-                              label="Universo"
-                              sx={selectSx}
-                              MenuProps={menuPropsSx}
-                            >
-                              {universos.map(universo => (
-                                <MenuItem
-                                  key={universo.id}
-                                  value={universo.id}
-                                  sx={{
-                                    '&:hover': {
-                                      background: 'rgba(41, 182, 246, 0.16)',
-                                    },
-                                    '&.Mui-selected': {
-                                      background:
-                                        'linear-gradient(90deg, rgba(124, 77, 255, 0.32), rgba(41, 182, 246, 0.18))',
-                                      color: '#fff',
-                                    },
-                                  }}
-                                >
-                                  {universo.Nome}
-                                </MenuItem>
-                              ))}
-                            </Select>
-                          </FormControl>
+                          <FormSelect
+                            field={field}
+                            form={form}
+                            label="Universo"
+                            options={universos.map(universo => ({
+                              value: universo.id,
+                              label: universo.Nome,
+                            }))}
+                            disableClearable
+                          />
                         )}
                       </Field>
                     </ClasseFormFieldGrid>
@@ -531,7 +448,9 @@ const NovaClasse = () => {
                           label="Link da Imagem da Classe"
                           fullWidth
                           placeholder="https://..."
-                          error={touched.linkImagem && Boolean(errors.linkImagem)}
+                          error={
+                            touched.linkImagem && Boolean(errors.linkImagem)
+                          }
                           helperText={touched.linkImagem && errors.linkImagem}
                           sx={inputSx}
                           slotProps={{
@@ -557,51 +476,13 @@ const NovaClasse = () => {
 
                     <Field name="tiposDisponiveis">
                       {({ field, form }) => (
-                        <FormControl fullWidth>
-                          <InputLabel sx={{ color: 'var(--text-secondary)' }}>
-                            Disponível Para os Tipos
-                          </InputLabel>
-                          <Select
-                            {...field}
-                            multiple
-                            label="Disponível Para os Tipos"
-                            value={field.value || []}
-                            onChange={e =>
-                              form.setFieldValue('tiposDisponiveis', e.target.value)
-                            }
-                            renderValue={selecionados => selecionados.join(', ')}
-                            sx={selectSx}
-                            MenuProps={menuPropsSx}
-                          >
-                            {TIPOS_PERSONAGEM.map(tipo => (
-                              <MenuItem
-                                key={tipo}
-                                value={tipo}
-                                sx={{
-                                  '&:hover': {
-                                    background: 'rgba(41, 182, 246, 0.16)',
-                                  },
-                                  '&.Mui-selected': {
-                                    background:
-                                      'linear-gradient(90deg, rgba(124, 77, 255, 0.32), rgba(41, 182, 246, 0.18))',
-                                    color: '#fff',
-                                  },
-                                }}
-                              >
-                                <Checkbox
-                                  checked={field.value?.includes(tipo)}
-                                  sx={{
-                                    color: 'rgba(41, 182, 246, 0.7)',
-                                    '&.Mui-checked': {
-                                      color: '#29B6F6',
-                                    },
-                                  }}
-                                />
-                                <ListItemText primary={tipo} />
-                              </MenuItem>
-                            ))}
-                          </Select>
-                        </FormControl>
+                        <FormSelect
+                          field={field}
+                          form={form}
+                          multiple
+                          label="Disponível Para os Tipos"
+                          options={TIPOS_PERSONAGEM}
+                        />
                       )}
                     </Field>
 
@@ -626,7 +507,10 @@ const NovaClasse = () => {
                     />
                   </ClasseFormFieldColumn>
 
-                  <ImagePreviewPanel src={values.linkImagem} alt="Preview da classe" />
+                  <ImagePreviewPanel
+                    src={values.linkImagem}
+                    alt="Preview da classe"
+                  />
                 </ClasseFormContentGrid>
               </ClasseFormPanel>
 
@@ -634,7 +518,9 @@ const NovaClasse = () => {
               <AtributosCard elevation={0}>
                 <AtributosHeader>
                   <AtributosHeaderRow>
-                    <ShieldOutlinedIcon sx={{ color: '#22d3ee', fontSize: '1.25rem' }} />
+                    <ShieldOutlinedIcon
+                      sx={{ color: '#22d3ee', fontSize: '1.25rem' }}
+                    />
                     <Typography
                       sx={{
                         color: '#22d3ee',
@@ -675,8 +561,16 @@ const NovaClasse = () => {
                           color: '#f8fafc',
                         }}
                       >
-                        <FitnessCenterIcon sx={{ color: '#22d3ee', fontSize: '1.18rem' }} />
-                        <Typography sx={{ fontSize: '0.92rem', fontWeight: 600, color: '#f8fafc' }}>
+                        <FitnessCenterIcon
+                          sx={{ color: '#22d3ee', fontSize: '1.18rem' }}
+                        />
+                        <Typography
+                          sx={{
+                            fontSize: '0.92rem',
+                            fontWeight: 600,
+                            color: '#f8fafc',
+                          }}
+                        >
                           Força
                         </Typography>
                       </Box>
@@ -699,8 +593,16 @@ const NovaClasse = () => {
                           color: '#f8fafc',
                         }}
                       >
-                        <DirectionsRunIcon sx={{ color: '#22d3ee', fontSize: '1.18rem' }} />
-                        <Typography sx={{ fontSize: '0.92rem', fontWeight: 600, color: '#f8fafc' }}>
+                        <DirectionsRunIcon
+                          sx={{ color: '#22d3ee', fontSize: '1.18rem' }}
+                        />
+                        <Typography
+                          sx={{
+                            fontSize: '0.92rem',
+                            fontWeight: 600,
+                            color: '#f8fafc',
+                          }}
+                        >
                           Agilidade
                         </Typography>
                       </Box>
@@ -723,8 +625,16 @@ const NovaClasse = () => {
                           color: '#f8fafc',
                         }}
                       >
-                        <VisibilityIcon sx={{ color: '#22d3ee', fontSize: '1.18rem' }} />
-                        <Typography sx={{ fontSize: '0.92rem', fontWeight: 600, color: '#f8fafc' }}>
+                        <VisibilityIcon
+                          sx={{ color: '#22d3ee', fontSize: '1.18rem' }}
+                        />
+                        <Typography
+                          sx={{
+                            fontSize: '0.92rem',
+                            fontWeight: 600,
+                            color: '#f8fafc',
+                          }}
+                        >
                           Percepção
                         </Typography>
                       </Box>
@@ -747,8 +657,16 @@ const NovaClasse = () => {
                           color: '#f8fafc',
                         }}
                       >
-                        <FavoriteIcon sx={{ color: '#22d3ee', fontSize: '1.18rem' }} />
-                        <Typography sx={{ fontSize: '0.92rem', fontWeight: 600, color: '#f8fafc' }}>
+                        <FavoriteIcon
+                          sx={{ color: '#22d3ee', fontSize: '1.18rem' }}
+                        />
+                        <Typography
+                          sx={{
+                            fontSize: '0.92rem',
+                            fontWeight: 600,
+                            color: '#f8fafc',
+                          }}
+                        >
                           Vitalidade
                         </Typography>
                       </Box>
@@ -771,8 +689,16 @@ const NovaClasse = () => {
                           color: '#f8fafc',
                         }}
                       >
-                        <PsychologyIcon sx={{ color: '#22d3ee', fontSize: '1.18rem' }} />
-                        <Typography sx={{ fontSize: '0.92rem', fontWeight: 600, color: '#f8fafc' }}>
+                        <PsychologyIcon
+                          sx={{ color: '#22d3ee', fontSize: '1.18rem' }}
+                        />
+                        <Typography
+                          sx={{
+                            fontSize: '0.92rem',
+                            fontWeight: 600,
+                            color: '#f8fafc',
+                          }}
+                        >
                           Inteligência
                         </Typography>
                       </Box>
@@ -788,9 +714,19 @@ const NovaClasse = () => {
                 <SectionTitle>Habilidades Básicas</SectionTitle>
                 <FieldArray name="habilidadesBasicas">
                   {({ push, remove }) => (
-                    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, mt: 1.5 }}>
+                    <Box
+                      sx={{
+                        display: 'flex',
+                        flexDirection: 'column',
+                        gap: 2,
+                        mt: 1.5,
+                      }}
+                    >
                       {values.habilidadesBasicas.map((hab, idx) => (
-                        <Box key={habilidadesBasicasKeys.keys[idx] ?? idx} sx={skillCardSx}>
+                        <Box
+                          key={habilidadesBasicasKeys.keys[idx] ?? idx}
+                          sx={skillCardSx}
+                        >
                           <Box sx={skillHeaderSx}>
                             <Typography sx={skillTitleSx}>
                               Habilidade #{idx + 1}
@@ -807,7 +743,13 @@ const NovaClasse = () => {
                               ✕
                             </IconButton>
                           </Box>
-                          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                          <Box
+                            sx={{
+                              display: 'flex',
+                              flexDirection: 'column',
+                              gap: 2,
+                            }}
+                          >
                             <FastField
                               as={TextField}
                               name={`habilidadesBasicas[${idx}].nome`}
@@ -826,14 +768,29 @@ const NovaClasse = () => {
                               size="small"
                               sx={skillTextareaSx}
                             />
-                            <FieldArray name={`habilidadesBasicas[${idx}].bonus`}>
+                            <FieldArray
+                              name={`habilidadesBasicas[${idx}].bonus`}
+                            >
                               {({ push: pushBonus, remove: removeBonus }) => (
                                 <Box>
-                                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
-                                    <Typography variant="caption" sx={{ color: '#94a3b8' }}>
+                                  <Box
+                                    sx={{
+                                      display: 'flex',
+                                      alignItems: 'center',
+                                      gap: 1,
+                                      mb: 1,
+                                    }}
+                                  >
+                                    <Typography
+                                      variant="caption"
+                                      sx={{ color: '#94a3b8' }}
+                                    >
                                       Bônus
                                     </Typography>
-                                    <Button onClick={() => pushBonus('')} sx={addBonusButtonSx}>
+                                    <Button
+                                      onClick={() => pushBonus('')}
+                                      sx={addBonusButtonSx}
+                                    >
                                       + Adicionar
                                     </Button>
                                   </Box>
@@ -883,9 +840,19 @@ const NovaClasse = () => {
                 <SectionTitle>Habilidades Avançadas</SectionTitle>
                 <FieldArray name="habilidadesAvancadas">
                   {({ push, remove }) => (
-                    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, mt: 1.5 }}>
+                    <Box
+                      sx={{
+                        display: 'flex',
+                        flexDirection: 'column',
+                        gap: 2,
+                        mt: 1.5,
+                      }}
+                    >
                       {values.habilidadesAvancadas.map((hab, idx) => (
-                        <Box key={habilidadesAvancadasKeys.keys[idx] ?? idx} sx={skillCardSx}>
+                        <Box
+                          key={habilidadesAvancadasKeys.keys[idx] ?? idx}
+                          sx={skillCardSx}
+                        >
                           <Box sx={skillHeaderSx}>
                             <Typography sx={skillTitleSx}>
                               Habilidade Avançada #{idx + 1}
@@ -902,7 +869,13 @@ const NovaClasse = () => {
                               ✕
                             </IconButton>
                           </Box>
-                          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                          <Box
+                            sx={{
+                              display: 'flex',
+                              flexDirection: 'column',
+                              gap: 2,
+                            }}
+                          >
                             <FastField
                               as={TextField}
                               name={`habilidadesAvancadas[${idx}].nome`}
@@ -921,14 +894,29 @@ const NovaClasse = () => {
                               size="small"
                               sx={skillTextareaSx}
                             />
-                            <FieldArray name={`habilidadesAvancadas[${idx}].bonus`}>
+                            <FieldArray
+                              name={`habilidadesAvancadas[${idx}].bonus`}
+                            >
                               {({ push: pushBonus, remove: removeBonus }) => (
                                 <Box>
-                                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
-                                    <Typography variant="caption" sx={{ color: '#94a3b8' }}>
+                                  <Box
+                                    sx={{
+                                      display: 'flex',
+                                      alignItems: 'center',
+                                      gap: 1,
+                                      mb: 1,
+                                    }}
+                                  >
+                                    <Typography
+                                      variant="caption"
+                                      sx={{ color: '#94a3b8' }}
+                                    >
                                       Bônus
                                     </Typography>
-                                    <Button onClick={() => pushBonus('')} sx={addBonusButtonSx}>
+                                    <Button
+                                      onClick={() => pushBonus('')}
+                                      sx={addBonusButtonSx}
+                                    >
                                       + Adicionar
                                     </Button>
                                   </Box>

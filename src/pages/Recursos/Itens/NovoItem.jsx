@@ -5,10 +5,6 @@ import Typography from '@mui/material/Typography';
 import Button from '@mui/material/Button';
 import TextField from '@mui/material/TextField';
 import IconButton from '@mui/material/IconButton';
-import Select from '@mui/material/Select';
-import MenuItem from '@mui/material/MenuItem';
-import FormControl from '@mui/material/FormControl';
-import InputLabel from '@mui/material/InputLabel';
 import Paper from '@mui/material/Paper';
 import Checkbox from '@mui/material/Checkbox';
 import FormControlLabel from '@mui/material/FormControlLabel';
@@ -18,6 +14,7 @@ import { ROUTE_PATHS } from 'common/constants/routes';
 import useEntityFormGuard from 'hooks/useEntityFormGuard';
 import useStableListKeys from 'hooks/useStableListKeys';
 import FormPageHeader from 'components/FormPageHeader/FormPageHeader';
+import FormSelect from 'components/FormSelect/FormSelect';
 import ImagePreviewPanel from 'components/ImagePreviewPanel/ImagePreviewPanel';
 import FormActions from 'components/FormActions/FormActions';
 import SectionTitle from 'components/SectionTitle/SectionTitle';
@@ -125,46 +122,40 @@ const NovoItem = () => {
                           />
                         )}
                       </FastField>
-                      <FastField name="qualidade">
-                        {({ field }) => (
-                          <FormControl fullWidth>
-                            <InputLabel>Qualidade</InputLabel>
-                            <Select {...field} label="Qualidade">
-                              {RARIDADES.map(r => (
-                                <MenuItem key={r} value={r}>
-                                  {r}
-                                </MenuItem>
-                              ))}
-                            </Select>
-                          </FormControl>
+                      <Field name="qualidade">
+                        {({ field, form }) => (
+                          <FormSelect
+                            field={field}
+                            form={form}
+                            label="Qualidade"
+                            options={RARIDADES}
+                            disableClearable
+                          />
                         )}
-                      </FastField>
-                      <FastField name="tipo">
-                        {({ field }) => (
-                          <FormControl fullWidth>
-                            <InputLabel>Tipo</InputLabel>
-                            <Select {...field} label="Tipo">
-                              {TIPOS_ITEM.map(t => (
-                                <MenuItem key={t} value={t}>
-                                  {t}
-                                </MenuItem>
-                              ))}
-                            </Select>
-                          </FormControl>
+                      </Field>
+                      <Field name="tipo">
+                        {({ field, form }) => (
+                          <FormSelect
+                            field={field}
+                            form={form}
+                            label="Tipo"
+                            options={TIPOS_ITEM}
+                            disableClearable
+                          />
                         )}
-                      </FastField>
+                      </Field>
                       <Field name="universo">
-                        {({ field }) => (
-                          <FormControl fullWidth>
-                            <InputLabel>Universo</InputLabel>
-                            <Select {...field} label="Universo">
-                              {universos.map(universo => (
-                                <MenuItem key={universo.id} value={universo.id}>
-                                  {universo.Nome}
-                                </MenuItem>
-                              ))}
-                            </Select>
-                          </FormControl>
+                        {({ field, form }) => (
+                          <FormSelect
+                            field={field}
+                            form={form}
+                            label="Universo"
+                            options={universos.map(universo => ({
+                              value: universo.id,
+                              label: universo.Nome,
+                            }))}
+                            disableClearable
+                          />
                         )}
                       </Field>
                     </Box>
@@ -175,7 +166,9 @@ const NovoItem = () => {
                           label="Link da Imagem do Item"
                           fullWidth
                           placeholder="https://..."
-                          error={touched.linkImagem && Boolean(errors.linkImagem)}
+                          error={
+                            touched.linkImagem && Boolean(errors.linkImagem)
+                          }
                           helperText={touched.linkImagem && errors.linkImagem}
                         />
                       )}
@@ -405,7 +398,9 @@ const NovoItem = () => {
                               gap: 2,
                             }}
                           >
-                            <FastField name={`habilidadesEspeciais[${idx}].nome`}>
+                            <FastField
+                              name={`habilidadesEspeciais[${idx}].nome`}
+                            >
                               {({ field }) => (
                                 <TextField
                                   {...field}
@@ -415,7 +410,9 @@ const NovoItem = () => {
                                 />
                               )}
                             </FastField>
-                            <FastField name={`habilidadesEspeciais[${idx}].descricao`}>
+                            <FastField
+                              name={`habilidadesEspeciais[${idx}].descricao`}
+                            >
                               {({ field }) => (
                                 <TextField
                                   {...field}

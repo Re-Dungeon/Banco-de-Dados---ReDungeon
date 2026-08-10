@@ -2,10 +2,6 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import Box from '@mui/material/Box';
 import TextField from '@mui/material/TextField';
-import Select from '@mui/material/Select';
-import MenuItem from '@mui/material/MenuItem';
-import FormControl from '@mui/material/FormControl';
-import InputLabel from '@mui/material/InputLabel';
 import Paper from '@mui/material/Paper';
 import Autocomplete from '@mui/material/Autocomplete';
 import Chip from '@mui/material/Chip';
@@ -14,6 +10,7 @@ import { addReceita, updateReceita, getMateriais } from 'service/storage';
 import { ROUTE_PATHS } from 'common/constants/routes';
 import useEntityFormGuard from 'hooks/useEntityFormGuard';
 import FormPageHeader from 'components/FormPageHeader/FormPageHeader';
+import FormSelect from 'components/FormSelect/FormSelect';
 import ImagePreviewPanel from 'components/ImagePreviewPanel/ImagePreviewPanel';
 import FormActions from 'components/FormActions/FormActions';
 import SectionTitle from 'components/SectionTitle/SectionTitle';
@@ -68,33 +65,6 @@ const NovaReceita = () => {
     '& .MuiInputLabel-root': { color: 'var(--text-secondary)' },
     '& .MuiInputLabel-root.Mui-focused': { color: 'var(--color-accent)' },
     '& .MuiFormHelperText-root': { color: '#ef4444' },
-  };
-
-  const selectSx = {
-    color: 'var(--text-primary)',
-    '& .MuiOutlinedInput-notchedOutline': {
-      borderColor: 'var(--border-primary)',
-    },
-    '&:hover .MuiOutlinedInput-notchedOutline': {
-      borderColor: 'var(--border-hover)',
-    },
-    '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
-      borderColor: 'var(--color-accent)',
-    },
-    '& .MuiSvgIcon-root': { color: 'var(--text-secondary)' },
-  };
-
-  const menuPropsSx = {
-    slotProps: {
-      paper: {
-        sx: { background: 'var(--bg-card)', color: 'var(--text-primary)' },
-      },
-    },
-  };
-
-  const labelSx = {
-    color: 'var(--text-secondary)',
-    '&.Mui-focused': { color: 'var(--color-accent)' },
   };
 
   if (loadingUniversos || loadingMateriais) return null;
@@ -169,37 +139,27 @@ const NovaReceita = () => {
 
                         <Field name="universo">
                           {({ field, form }) => (
-                            <FormControl fullWidth>
-                              <InputLabel sx={labelSx}>Universo</InputLabel>
-                              <Select
-                                {...field}
-                                label="Universo"
-                                sx={selectSx}
-                                MenuProps={menuPropsSx}
-                                onChange={e => {
-                                  field.onChange(e);
-                                  const novoUniverso = e.target.value;
-                                  const permitidos = materiais.filter(
-                                    m => m.universo === novoUniverso,
-                                  );
-                                  form.setFieldValue(
-                                    'materiais',
-                                    form.values.materiais.filter(sel =>
-                                      permitidos.some(m => m.id === sel.id),
-                                    ),
-                                  );
-                                }}
-                              >
-                                {universos.map(universo => (
-                                  <MenuItem
-                                    key={universo.id}
-                                    value={universo.id}
-                                  >
-                                    {universo.Nome}
-                                  </MenuItem>
-                                ))}
-                              </Select>
-                            </FormControl>
+                            <FormSelect
+                              field={field}
+                              form={form}
+                              label="Universo"
+                              options={universos.map(universo => ({
+                                value: universo.id,
+                                label: universo.Nome,
+                              }))}
+                              disableClearable
+                              onValueChange={novoUniverso => {
+                                const permitidos = materiais.filter(
+                                  m => m.universo === novoUniverso,
+                                );
+                                form.setFieldValue(
+                                  'materiais',
+                                  form.values.materiais.filter(sel =>
+                                    permitidos.some(m => m.id === sel.id),
+                                  ),
+                                );
+                              }}
+                            />
                           )}
                         </Field>
                       </Box>
@@ -212,44 +172,24 @@ const NovaReceita = () => {
                         }}
                       >
                         <Field name="raridade">
-                          {({ field }) => (
-                            <FormControl fullWidth>
-                              <InputLabel sx={labelSx}>Raridade</InputLabel>
-                              <Select
-                                {...field}
-                                label="Raridade"
-                                sx={selectSx}
-                                MenuProps={menuPropsSx}
-                              >
-                                <MenuItem value="">Nenhuma</MenuItem>
-                                {RARIDADES.map(raridade => (
-                                  <MenuItem key={raridade} value={raridade}>
-                                    {raridade}
-                                  </MenuItem>
-                                ))}
-                              </Select>
-                            </FormControl>
+                          {({ field, form }) => (
+                            <FormSelect
+                              field={field}
+                              form={form}
+                              label="Raridade"
+                              options={RARIDADES}
+                            />
                           )}
                         </Field>
 
                         <Field name="categoria">
-                          {({ field }) => (
-                            <FormControl fullWidth>
-                              <InputLabel sx={labelSx}>Categoria</InputLabel>
-                              <Select
-                                {...field}
-                                label="Categoria"
-                                sx={selectSx}
-                                MenuProps={menuPropsSx}
-                              >
-                                <MenuItem value="">Nenhuma</MenuItem>
-                                {CATEGORIAS_RECEITA.map(categoria => (
-                                  <MenuItem key={categoria} value={categoria}>
-                                    {categoria}
-                                  </MenuItem>
-                                ))}
-                              </Select>
-                            </FormControl>
+                          {({ field, form }) => (
+                            <FormSelect
+                              field={field}
+                              form={form}
+                              label="Categoria"
+                              options={CATEGORIAS_RECEITA}
+                            />
                           )}
                         </Field>
                       </Box>

@@ -2,10 +2,6 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import Box from '@mui/material/Box';
 import TextField from '@mui/material/TextField';
-import Select from '@mui/material/Select';
-import MenuItem from '@mui/material/MenuItem';
-import FormControl from '@mui/material/FormControl';
-import InputLabel from '@mui/material/InputLabel';
 import Paper from '@mui/material/Paper';
 import { Formik, Form, FastField, Field } from 'formik';
 import {
@@ -17,6 +13,7 @@ import {
 import { ROUTE_PATHS } from 'common/constants/routes';
 import useEntityFormGuard from 'hooks/useEntityFormGuard';
 import FormPageHeader from 'components/FormPageHeader/FormPageHeader';
+import FormSelect from 'components/FormSelect/FormSelect';
 import ImagePreviewPanel from 'components/ImagePreviewPanel/ImagePreviewPanel';
 import FormActions from 'components/FormActions/FormActions';
 import SectionTitle from 'components/SectionTitle/SectionTitle';
@@ -94,33 +91,6 @@ const NovaVeiaAstral = () => {
     '& .MuiFormHelperText-root': { color: 'var(--text-muted)' },
   };
 
-  const selectSx = {
-    color: 'var(--text-primary)',
-    '& .MuiOutlinedInput-notchedOutline': {
-      borderColor: 'var(--border-primary)',
-    },
-    '&:hover .MuiOutlinedInput-notchedOutline': {
-      borderColor: 'var(--border-hover)',
-    },
-    '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
-      borderColor: 'var(--color-accent)',
-    },
-    '& .MuiSvgIcon-root': { color: 'var(--text-secondary)' },
-  };
-
-  const menuPropsSx = {
-    slotProps: {
-      paper: {
-        sx: { background: 'var(--bg-card)', color: 'var(--text-primary)' },
-      },
-    },
-  };
-
-  const labelSx = {
-    color: 'var(--text-secondary)',
-    '&.Mui-focused': { color: 'var(--color-accent)' },
-  };
-
   if (loadingUniversos) return null;
 
   return (
@@ -188,25 +158,19 @@ const NovaVeiaAstral = () => {
 
                       <Field name="universo">
                         {({ field, form }) => (
-                          <FormControl fullWidth>
-                            <InputLabel sx={labelSx}>Universo</InputLabel>
-                            <Select
-                              {...field}
-                              label="Universo"
-                              sx={selectSx}
-                              MenuProps={menuPropsSx}
-                              onChange={e => {
-                                field.onChange(e);
-                                form.setFieldValue('divindade', '');
-                              }}
-                            >
-                              {universos.map(universo => (
-                                <MenuItem key={universo.id} value={universo.id}>
-                                  {universo.Nome}
-                                </MenuItem>
-                              ))}
-                            </Select>
-                          </FormControl>
+                          <FormSelect
+                            field={field}
+                            form={form}
+                            label="Universo"
+                            options={universos.map(universo => ({
+                              value: universo.id,
+                              label: universo.Nome,
+                            }))}
+                            disableClearable
+                            onValueChange={() =>
+                              form.setFieldValue('divindade', '')
+                            }
+                          />
                         )}
                       </Field>
                     </Box>
@@ -220,36 +184,23 @@ const NovaVeiaAstral = () => {
                     >
                       <Field name="divindade">
                         {({ field, form }) => (
-                          <FormControl fullWidth>
-                            <InputLabel sx={labelSx}>
-                              Divindade/Constelação
-                            </InputLabel>
-                            <Select
-                              {...field}
-                              label="Divindade/Constelação"
-                              sx={selectSx}
-                              MenuProps={menuPropsSx}
-                              onChange={e => {
-                                field.onChange(e);
-                                form.setFieldValue('requisitos', []);
-                              }}
-                            >
-                              <MenuItem value="">Nenhuma</MenuItem>
-                              {divindades
-                                .filter(
-                                  divindade =>
-                                    divindade.universo === values.universo,
-                                )
-                                .map(divindade => (
-                                  <MenuItem
-                                    key={divindade.id}
-                                    value={divindade.id}
-                                  >
-                                    {divindade.nome}
-                                  </MenuItem>
-                                ))}
-                            </Select>
-                          </FormControl>
+                          <FormSelect
+                            field={field}
+                            form={form}
+                            label="Divindade/Constelação"
+                            options={divindades
+                              .filter(
+                                divindade =>
+                                  divindade.universo === values.universo,
+                              )
+                              .map(divindade => ({
+                                value: divindade.id,
+                                label: divindade.nome,
+                              }))}
+                            onValueChange={() =>
+                              form.setFieldValue('requisitos', [])
+                            }
+                          />
                         )}
                       </Field>
 
@@ -271,47 +222,22 @@ const NovaVeiaAstral = () => {
                     {Number(values.nivel) > 1 && (
                       <Field name="requisitos">
                         {({ field, form }) => (
-                          <FormControl fullWidth>
-                            <InputLabel sx={labelSx}>
-                              Requisitos (Veias Astrais)
-                            </InputLabel>
-                            <Select
-                              {...field}
-                              multiple
-                              value={field.value || []}
-                              label="Requisitos (Veias Astrais)"
-                              sx={selectSx}
-                              MenuProps={menuPropsSx}
-                              onChange={e =>
-                                form.setFieldValue('requisitos', e.target.value)
-                              }
-                              renderValue={selected =>
-                                selected
-                                  .map(
-                                    id =>
-                                      veiasAstrais.find(v => v.id === id)?.nome,
-                                  )
-                                  .filter(Boolean)
-                                  .join(', ')
-                              }
-                            >
-                              {veiasAstrais
-                                .filter(
-                                  veiaAstral =>
-                                    veiaAstral.id !==
-                                      veiaAstralParaEditar?.id &&
-                                    veiaAstral.divindade === values.divindade,
-                                )
-                                .map(veiaAstral => (
-                                  <MenuItem
-                                    key={veiaAstral.id}
-                                    value={veiaAstral.id}
-                                  >
-                                    {veiaAstral.nome}
-                                  </MenuItem>
-                                ))}
-                            </Select>
-                          </FormControl>
+                          <FormSelect
+                            field={field}
+                            form={form}
+                            multiple
+                            label="Requisitos (Veias Astrais)"
+                            options={veiasAstrais
+                              .filter(
+                                veiaAstral =>
+                                  veiaAstral.id !== veiaAstralParaEditar?.id &&
+                                  veiaAstral.divindade === values.divindade,
+                              )
+                              .map(veiaAstral => ({
+                                value: veiaAstral.id,
+                                label: veiaAstral.nome,
+                              }))}
+                          />
                         )}
                       </Field>
                     )}

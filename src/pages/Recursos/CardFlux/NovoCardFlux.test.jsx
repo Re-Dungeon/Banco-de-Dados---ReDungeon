@@ -101,14 +101,10 @@ describe('NovoCardFlux (migrado para useEntityFormGuard/FormPageHeader/ImagePrev
       expect(screen.getByText('Novo CardFlux')).toBeInTheDocument(),
     );
 
-    expect(
-      document.getElementById('mui-component-select-tipoAtivacao'),
-    ).not.toBeInTheDocument();
+    expect(screen.queryByLabelText('Tipo de Ativação')).not.toBeInTheDocument();
 
     await user.click(screen.getByLabelText('Ativar encadeamento de eventos'));
 
-    expect(
-      document.getElementById('mui-component-select-tipoAtivacao'),
-    ).toBeInTheDocument();
+    expect(screen.getByLabelText('Tipo de Ativação')).toBeInTheDocument();
   });
 });
