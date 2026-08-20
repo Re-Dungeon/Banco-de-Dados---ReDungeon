@@ -134,6 +134,8 @@ const NovaCondicao = () => {
                             form={form}
                             multiple
                             label="Universos"
+                            compactSelection
+                            compactMaxVisible={2}
                             options={universos.map(universo => ({
                               value: universo.id,
                               label: universo.Nome,
