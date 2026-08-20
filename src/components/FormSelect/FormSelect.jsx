@@ -27,6 +27,8 @@ const FormSelect = ({
   placeholder,
   sx,
   onValueChange,
+  compactSelection = false,
+  compactMaxVisible,
 }) => {
   const normalizedOptions = useMemo(
     () => options.map(normalizeOption),
@@ -67,6 +69,8 @@ const FormSelect = ({
       helperText={helperText}
       placeholder={placeholder}
       sx={sx}
+      compactSelection={compactSelection}
+      compactMaxVisible={compactMaxVisible}
     />
   );
 };
@@ -91,6 +95,8 @@ FormSelect.propTypes = {
   placeholder: PropTypes.string,
   sx: PropTypes.object,
   onValueChange: PropTypes.func,
+  compactSelection: PropTypes.bool,
+  compactMaxVisible: PropTypes.number,
 };
 
 export default FormSelect;
