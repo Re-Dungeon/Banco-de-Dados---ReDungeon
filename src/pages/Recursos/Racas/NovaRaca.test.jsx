@@ -115,6 +115,13 @@ describe('NovaRaca (migrado para useEntityFormGuard/FormPageHeader/ImagePreviewP
       screen.getByRole('button', { name: '+ Adicionar Habilidade Básica' }),
     );
     expect(screen.getByText('Habilidade #1')).toBeInTheDocument();
+    expect(screen.getByLabelText('Tipo de Ação')).toBeInTheDocument();
+    expect(screen.getByLabelText('Alvo')).toBeInTheDocument();
+    expect(screen.getByLabelText('Alcance')).toBeInTheDocument();
+    expect(screen.getByLabelText('Recarga')).toBeInTheDocument();
+    expect(screen.getByLabelText('Custo')).toBeInTheDocument();
+    expect(screen.getByLabelText('Duração')).toBeInTheDocument();
+    expect(screen.getByLabelText('Dados')).toBeInTheDocument();
 
     await user.click(screen.getByRole('button', { name: '+ Adicionar' }));
     expect(screen.getByLabelText('Bônus 1')).toBeInTheDocument();

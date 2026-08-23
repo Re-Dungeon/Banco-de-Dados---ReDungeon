@@ -8,6 +8,8 @@ import {
 
 const habilidadeBasicaSchema = Yup.object({
   nome: nomeSchema,
+  acao: Yup.string().oneOf(['Imediata', 'Duradoura', 'Sustentada', 'Passiva']),
+  tipo: Yup.string().oneOf(['Imediata', 'Duradoura', 'Sustentada', 'Passiva']),
   descricao: descricaoSchema,
   raridade: Yup.string(),
   bonus: Yup.array().of(campoCurtoSchema),
@@ -21,6 +23,8 @@ const habilidadeBasicaSchema = Yup.object({
 
 const habilidadeAvancadaSchema = Yup.object({
   nome: nomeSchema,
+  acao: Yup.string().oneOf(['Imediata', 'Duradoura', 'Sustentada', 'Passiva']),
+  tipo: Yup.string().oneOf(['Imediata', 'Duradoura', 'Sustentada', 'Passiva']),
   descricao: descricaoSchema,
   raridade: Yup.string(),
   bonus: Yup.array().of(campoCurtoSchema),
@@ -49,8 +53,10 @@ export const CLASSE_SCHEMA = Yup.object({
   habilidadesAvancadas: Yup.array().of(habilidadeAvancadaSchema),
 });
 
-export const HABILIDADE_INICIAL = {
+export const HABILIDADE_BASICA_INICIAL = {
   nome: '',
+  acao: 'Passiva',
+  tipo: 'Passiva',
   descricao: '',
   raridade: '',
   bonus: [],
@@ -61,6 +67,23 @@ export const HABILIDADE_INICIAL = {
   duracao: '',
   dados: '',
 };
+
+export const HABILIDADE_AVANCADA_INICIAL = {
+  nome: '',
+  acao: 'Passiva',
+  tipo: 'Passiva',
+  descricao: '',
+  raridade: '',
+  bonus: [],
+  alcance: '',
+  alvo: '',
+  custo: '',
+  recarga: '',
+  duracao: '',
+  dados: '',
+};
+
+export const HABILIDADE_INICIAL = HABILIDADE_BASICA_INICIAL;
 
 export const CLASSE_INITIAL_VALUES = {
   nome: '',

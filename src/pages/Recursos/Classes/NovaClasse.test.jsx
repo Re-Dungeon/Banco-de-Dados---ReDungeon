@@ -98,9 +98,16 @@ describe('NovaClasse (migrado para useEntityFormGuard/FormPageHeader/ImagePrevie
     );
 
     await user.click(
-      screen.getAllByRole('button', { name: '+ Adicionar Habilidade' })[0],
+      screen.getByRole('button', { name: '+ Adicionar Habilidade Básica' }),
     );
     expect(screen.getByText('Habilidade #1')).toBeInTheDocument();
+    expect(screen.getByLabelText('Tipo de Ação')).toBeInTheDocument();
+    expect(screen.getByLabelText('Alvo')).toBeInTheDocument();
+    expect(screen.getByLabelText('Alcance')).toBeInTheDocument();
+    expect(screen.getByLabelText('Recarga')).toBeInTheDocument();
+    expect(screen.getByLabelText('Custo')).toBeInTheDocument();
+    expect(screen.getByLabelText('Duração')).toBeInTheDocument();
+    expect(screen.getByLabelText('Dados')).toBeInTheDocument();
 
     await user.click(screen.getByRole('button', { name: '+ Adicionar' }));
     expect(screen.getByLabelText('Bônus 1')).toBeInTheDocument();
@@ -112,5 +119,30 @@ describe('NovaClasse (migrado para useEntityFormGuard/FormPageHeader/ImagePrevie
       screen.getByRole('button', { name: 'Remover habilidade' }),
     );
     expect(screen.queryByText('Habilidade #1')).not.toBeInTheDocument();
+  });
+
+  it('apresenta os campos completos de habilidade avançada seguindo o padrão das raças', async () => {
+    const user = userEvent.setup();
+    renderNova(undefined);
+
+    await waitFor(() =>
+      expect(screen.getByText('Nova Classe')).toBeInTheDocument(),
+    );
+
+    await user.click(
+      screen.getByRole('button', { name: '+ Adicionar Habilidade Avançada' }),
+    );
+
+    expect(
+      screen.getByText('Habilidade Avançada #1'),
+    ).toBeInTheDocument();
+    expect(screen.getByLabelText('Nome da Habilidade')).toBeInTheDocument();
+    expect(screen.getByLabelText('Tipo de Ação')).toBeInTheDocument();
+    expect(screen.getByLabelText('Alvo')).toBeInTheDocument();
+    expect(screen.getByLabelText('Alcance')).toBeInTheDocument();
+    expect(screen.getByLabelText('Recarga')).toBeInTheDocument();
+    expect(screen.getByLabelText('Custo')).toBeInTheDocument();
+    expect(screen.getByLabelText('Duração')).toBeInTheDocument();
+    expect(screen.getByLabelText('Dados')).toBeInTheDocument();
   });
 });
