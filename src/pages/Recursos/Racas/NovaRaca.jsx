@@ -823,105 +823,193 @@ const NovaRaca = () => {
                       }}
                     >
                       {values.habilidadesRaciais.habilidadesBasicas.map(
-                        (hab, idx) => (
-                          <Box
-                            key={habilidadesBasicasKeys.keys[idx] ?? idx}
-                            sx={skillCardSx}
-                          >
-                            <Box sx={skillHeaderSx}>
-                              <Typography sx={skillTitleSx}>
-                                Habilidade #{idx + 1}
-                              </Typography>
-                              <IconButton
-                                size="small"
-                                onClick={() => {
-                                  habilidadesBasicasKeys.removeKey(idx);
-                                  remove(idx);
-                                }}
-                                sx={deleteSkillButtonSx}
-                                aria-label="Remover habilidade básica"
-                              >
-                                ✕
-                              </IconButton>
-                            </Box>
+                        (hab, idx) => {
+                          const bonusList = hab.bonus || [];
 
+                          return (
                             <Box
-                              sx={{
-                                display: 'flex',
-                                flexDirection: 'column',
-                                gap: 2,
-                              }}
+                              key={habilidadesBasicasKeys.keys[idx] ?? idx}
+                              sx={skillCardSx}
                             >
-                              <FastField
-                                as={TextField}
-                                name={`habilidadesRaciais.habilidadesBasicas[${idx}].nome`}
-                                label="Nome da Habilidade"
-                                fullWidth
-                                size="small"
-                                sx={skillFieldSx}
-                              />
-                              <FastField
-                                as={TextField}
-                                name={`habilidadesRaciais.habilidadesBasicas[${idx}].descricao`}
-                                label="Descrição da Habilidade"
-                                fullWidth
-                                multiline
-                                rows={2}
-                                size="small"
-                                sx={skillTextareaSx}
-                              />
-                              <FieldArray
-                                name={`habilidadesRaciais.habilidadesBasicas[${idx}].bonus`}
+                              <Box sx={skillHeaderSx}>
+                                <Typography sx={skillTitleSx}>
+                                  Habilidade #{idx + 1}
+                                </Typography>
+                                <IconButton
+                                  size="small"
+                                  onClick={() => {
+                                    habilidadesBasicasKeys.removeKey(idx);
+                                    remove(idx);
+                                  }}
+                                  sx={deleteSkillButtonSx}
+                                  aria-label="Remover habilidade básica"
+                                >
+                                  ✕
+                                </IconButton>
+                              </Box>
+
+                              <Box
+                                sx={{
+                                  display: 'flex',
+                                  flexDirection: 'column',
+                                  gap: 2,
+                                }}
                               >
-                                {({ push: pushBonus, remove: removeBonus }) => (
-                                  <Box>
-                                    <Box
-                                      sx={{
-                                        display: 'flex',
-                                        alignItems: 'center',
-                                        gap: 1,
-                                        mb: 1,
-                                      }}
-                                    >
-                                      <Typography
-                                        variant="caption"
-                                        sx={{ color: '#94a3b8' }}
+                                <Box
+                                  sx={{
+                                    display: 'grid',
+                                    gridTemplateColumns: '1fr 1fr',
+                                    gap: 2,
+                                  }}
+                                >
+                                  <FastField
+                                    as={TextField}
+                                    name={`habilidadesRaciais.habilidadesBasicas[${idx}].nome`}
+                                    label="Nome da Habilidade"
+                                    fullWidth
+                                    size="small"
+                                    sx={skillFieldSx}
+                                  />
+                                  <Field
+                                    name={`habilidadesRaciais.habilidadesBasicas[${idx}].acao`}
+                                  >
+                                    {({ field, form }) => (
+                                      <FormSelect
+                                        field={field}
+                                        form={form}
+                                        size="small"
+                                        label="Tipo de Ação"
+                                        options={ACAO_HABILIDADE}
+                                        disableClearable
+                                      />
+                                    )}
+                                  </Field>
+                                </Box>
+                                <FastField
+                                  as={TextField}
+                                  name={`habilidadesRaciais.habilidadesBasicas[${idx}].descricao`}
+                                  label="Descrição da Habilidade"
+                                  fullWidth
+                                  multiline
+                                  rows={2}
+                                  size="small"
+                                  sx={skillTextareaSx}
+                                />
+                                <Divider
+                                  sx={{
+                                    borderColor: 'rgba(148, 163, 184, 0.18)',
+                                  }}
+                                />
+                                <Box
+                                  sx={{
+                                    display: 'grid',
+                                    gridTemplateColumns:
+                                      'repeat(6, minmax(0, 1fr))',
+                                    gap: 2,
+                                  }}
+                                >
+                                  <FastField
+                                    as={TextField}
+                                    name={`habilidadesRaciais.habilidadesBasicas[${idx}].alvo`}
+                                    label="Alvo"
+                                    fullWidth
+                                    size="small"
+                                    sx={skillFieldSx}
+                                  />
+                                  <FastField
+                                    as={TextField}
+                                    name={`habilidadesRaciais.habilidadesBasicas[${idx}].alcance`}
+                                    label="Alcance"
+                                    fullWidth
+                                    size="small"
+                                    sx={skillFieldSx}
+                                  />
+                                  <FastField
+                                    as={TextField}
+                                    name={`habilidadesRaciais.habilidadesBasicas[${idx}].recarga`}
+                                    label="Recarga"
+                                    fullWidth
+                                    size="small"
+                                    sx={skillFieldSx}
+                                  />
+                                  <FastField
+                                    as={TextField}
+                                    name={`habilidadesRaciais.habilidadesBasicas[${idx}].custo`}
+                                    label="Custo"
+                                    fullWidth
+                                    size="small"
+                                    sx={skillFieldSx}
+                                  />
+                                  <FastField
+                                    as={TextField}
+                                    name={`habilidadesRaciais.habilidadesBasicas[${idx}].duracao`}
+                                    label="Duração"
+                                    fullWidth
+                                    size="small"
+                                    sx={skillFieldSx}
+                                  />
+                                  <FastField
+                                    as={TextField}
+                                    name={`habilidadesRaciais.habilidadesBasicas[${idx}].dados`}
+                                    label="Dados"
+                                    fullWidth
+                                    size="small"
+                                    sx={skillFieldSx}
+                                  />
+                                </Box>
+                                <FieldArray
+                                  name={`habilidadesRaciais.habilidadesBasicas[${idx}].bonus`}
+                                >
+                                  {({ push: pushBonus, remove: removeBonus }) => (
+                                    <Box>
+                                      <Box
+                                        sx={{
+                                          display: 'flex',
+                                          alignItems: 'center',
+                                          gap: 1,
+                                          mb: 1,
+                                        }}
                                       >
-                                        Bônus
-                                      </Typography>
-                                      <Button
-                                        onClick={() => pushBonus('')}
-                                        sx={addBonusButtonSx}
-                                      >
-                                        + Adicionar
-                                      </Button>
-                                    </Box>
-                                    {hab.bonus.map((_, bIdx) => (
-                                      <Box key={bIdx} sx={bonusItemSx}>
-                                        <FastField
-                                          as={TextField}
-                                          name={`habilidadesRaciais.habilidadesBasicas[${idx}].bonus[${bIdx}]`}
-                                          label={`Bônus ${bIdx + 1}`}
-                                          fullWidth
-                                          size="small"
-                                          sx={skillFieldSx}
-                                        />
-                                        <IconButton
-                                          size="small"
-                                          onClick={() => removeBonus(bIdx)}
-                                          sx={removeBonusButtonSx}
-                                          aria-label="Remover bônus"
+                                        <Typography
+                                          variant="caption"
+                                          sx={{ color: '#94a3b8' }}
                                         >
-                                          ✕
-                                        </IconButton>
+                                          Bônus
+                                        </Typography>
+                                        <Button
+                                          onClick={() => pushBonus('')}
+                                          sx={addBonusButtonSx}
+                                        >
+                                          + Adicionar
+                                        </Button>
                                       </Box>
-                                    ))}
-                                  </Box>
-                                )}
-                              </FieldArray>
+                                      {bonusList.map((_, bIdx) => (
+                                        <Box key={bIdx} sx={bonusItemSx}>
+                                          <FastField
+                                            as={TextField}
+                                            name={`habilidadesRaciais.habilidadesBasicas[${idx}].bonus[${bIdx}]`}
+                                            label={`Bônus ${bIdx + 1}`}
+                                            fullWidth
+                                            size="small"
+                                            sx={skillFieldSx}
+                                          />
+                                          <IconButton
+                                            size="small"
+                                            onClick={() => removeBonus(bIdx)}
+                                            sx={removeBonusButtonSx}
+                                            aria-label="Remover bônus"
+                                          >
+                                            ✕
+                                          </IconButton>
+                                        </Box>
+                                      ))}
+                                    </Box>
+                                  )}
+                                </FieldArray>
+                              </Box>
                             </Box>
-                          </Box>
-                        ),
+                          );
+                        },
                       )}
                       <Button
                         variant="outlined"
