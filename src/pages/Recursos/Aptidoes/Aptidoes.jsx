@@ -50,7 +50,16 @@ import { getAptidaoUniversos, formatNomesUniversos } from './utils';
 
 const Aptidoes = () => {
   const navigate = useNavigate();
-  const { canCreate, canWrite } = useAuth();
+  const { canCreate, isAdmin, allowedUniversos } = useAuth();
+  // Aptidões aceitam associação parcial (ver `canTogglePartialUniverso` em
+  // firestore.rules): qualquer usuário com permissão de criar pode abrir a
+  // edição para adicionar/remover o seu próprio universo, mesmo sem acesso
+  // aos demais universos já vinculados à aptidão. Excluir continua exigindo
+  // acesso a TODOS os universos do doc, como o rule de delete exige.
+  const podeExcluir = universoIds =>
+    isAdmin ||
+    (universoIds.length > 0 &&
+      universoIds.every(id => allowedUniversos.includes(id)));
   const {
     items: aptidoes,
     loading: loadingAptidoes,
@@ -161,25 +170,80 @@ const Aptidoes = () => {
                     <RacaImageOverlay />
                     <RacaActionBar>
                       <Tooltip title="Visualizar detalhes">
-                        <IconButton size="small" onClick={() => setAptidaoVisualizando(aptidao)} sx={{ color: 'var(--text-secondary)', padding: '14px', minWidth: '16px', width: '16px', height: '16px', '&:hover': { color: 'var(--color-accent)' } }} aria-label={`Visualizar aptidão ${aptidao.nome}`}>
+                        <IconButton
+                          size="small"
+                          onClick={() => setAptidaoVisualizando(aptidao)}
+                          sx={{
+                            color: 'var(--text-secondary)',
+                            padding: '14px',
+                            minWidth: '16px',
+                            width: '16px',
+                            height: '16px',
+                            '&:hover': { color: 'var(--color-accent)' },
+                          }}
+                          aria-label={`Visualizar aptidão ${aptidao.nome}`}
+                        >
                           <VisibilityOutlinedIcon fontSize="small" />
                         </IconButton>
                       </Tooltip>
 
-                      {canWrite(getAptidaoUniversos(aptidao)) && (
-                        <>
-                          <IconButton size="small" onClick={() => navigate(ROUTE_PATHS.NOVA_APTIDAO, { state: { aptidao } })} sx={{ color: 'var(--color-accent)', padding: '4px', minWidth: '32px', width: '32px', height: '32px', '&:hover': { color: 'var(--color-accent)', opacity: 0.8 } }} aria-label={`Editar aptidão ${aptidao.nome}`}>
-                            <EditOutlinedIcon fontSize="small" />
-                          </IconButton>
-                          <IconButton size="small" onClick={() => confirmDelete(aptidao.nome, () => handleRemove(aptidao.id))} sx={{ color: '#ef4444', padding: '4px', minWidth: '32px', width: '32px', height: '32px', '&:hover': { color: '#ef4444' } }} aria-label={`Remover aptidão ${aptidao.nome}`}>
-                            <DeleteOutlineIcon fontSize="small" />
-                          </IconButton>
-                        </>
+                      {canCreate() && (
+                        <IconButton
+                          size="small"
+                          onClick={() =>
+                            navigate(ROUTE_PATHS.NOVA_APTIDAO, {
+                              state: { aptidao },
+                            })
+                          }
+                          sx={{
+                            color: 'var(--color-accent)',
+                            padding: '4px',
+                            minWidth: '32px',
+                            width: '32px',
+                            height: '32px',
+                            '&:hover': {
+                              color: 'var(--color-accent)',
+                              opacity: 0.8,
+                            },
+                          }}
+                          aria-label={`Editar aptidão ${aptidao.nome}`}
+                        >
+                          <EditOutlinedIcon fontSize="small" />
+                        </IconButton>
+                      )}
+                      {podeExcluir(getAptidaoUniversos(aptidao)) && (
+                        <IconButton
+                          size="small"
+                          onClick={() =>
+                            confirmDelete(aptidao.nome, () =>
+                              handleRemove(aptidao.id),
+                            )
+                          }
+                          sx={{
+                            color: '#ef4444',
+                            padding: '4px',
+                            minWidth: '32px',
+                            width: '32px',
+                            height: '32px',
+                            '&:hover': { color: '#ef4444' },
+                          }}
+                          aria-label={`Remover aptidão ${aptidao.nome}`}
+                        >
+                          <DeleteOutlineIcon fontSize="small" />
+                        </IconButton>
                       )}
                     </RacaActionBar>
 
                     {aptidao.linkImagem && (
-                      <Box component="img" className="raca-card-image" src={aptidao.linkImagem} alt={aptidao.nome} onError={e => { e.currentTarget.style.display = 'none'; }} />
+                      <Box
+                        component="img"
+                        className="raca-card-image"
+                        src={aptidao.linkImagem}
+                        alt={aptidao.nome}
+                        onError={e => {
+                          e.currentTarget.style.display = 'none';
+                        }}
+                      />
                     )}
                   </RacaImageFrame>
 
@@ -192,14 +256,20 @@ const Aptidoes = () => {
                       </RacaSubtitle>
                     )}
 
-                    {aptidao.descricao && <RacaDescription variant="body2">{aptidao.descricao}</RacaDescription>}
+                    {aptidao.descricao && (
+                      <RacaDescription variant="body2">
+                        {aptidao.descricao}
+                      </RacaDescription>
+                    )}
 
                     <RacaFooter>
                       <CardTokens
                         items={
                           getAptidaoUniversos(aptidao).length > 0
                             ? universos
-                                .filter(u => getAptidaoUniversos(aptidao).includes(u.id))
+                                .filter(u =>
+                                  getAptidaoUniversos(aptidao).includes(u.id),
+                                )
                                 .map(u => `📖 ${u.Nome}`)
                             : ['📖 Universo Desconhecido']
                         }
@@ -305,7 +375,7 @@ const Aptidoes = () => {
             scrollbarWidth: 'thin',
           }}
         >
-          {(aptidaoVisualizando?.linkImagem) && (
+          {aptidaoVisualizando?.linkImagem && (
             <Box
               sx={{
                 position: 'relative',
@@ -316,7 +386,8 @@ const Aptidoes = () => {
                 // altura reduzida para este modal específico
                 height: { xs: 220, md: 240 },
                 boxShadow: '0 12px 30px rgba(0,0,0,0.45)',
-                background: 'linear-gradient(135deg, rgba(8, 13, 28, 0.98) 0%, rgba(15, 22, 40, 0.9) 100%)',
+                background:
+                  'linear-gradient(135deg, rgba(8, 13, 28, 0.98) 0%, rgba(15, 22, 40, 0.9) 100%)',
               }}
             >
               <Box
@@ -340,7 +411,8 @@ const Aptidoes = () => {
                 sx={{
                   position: 'absolute',
                   inset: 0,
-                  background: 'linear-gradient(180deg, rgba(0,0,0,0.18) 0%, rgba(0,0,0,0.35) 100%)',
+                  background:
+                    'linear-gradient(180deg, rgba(0,0,0,0.18) 0%, rgba(0,0,0,0.35) 100%)',
                   pointerEvents: 'none',
                 }}
               />
@@ -348,115 +420,127 @@ const Aptidoes = () => {
           )}
 
           <AptidaoDialogContentWrapper sx={{ mt: 0 }}>
-          <AptidaoSectionGrid>
-            <AptidaoSectionCard>
-              <AptidaoSectionHeader>
-                <DescriptionOutlinedIcon fontSize="small" /> Descrição
-              </AptidaoSectionHeader>
-              <AptidaoSectionBody>
-                {aptidaoVisualizando?.descricao ||
-                  'Nenhuma descrição detalhada foi registrada para esta aptidão.'}
-              </AptidaoSectionBody>
-            </AptidaoSectionCard>
+            <AptidaoSectionGrid>
+              <AptidaoSectionCard>
+                <AptidaoSectionHeader>
+                  <DescriptionOutlinedIcon fontSize="small" /> Descrição
+                </AptidaoSectionHeader>
+                <AptidaoSectionBody>
+                  {aptidaoVisualizando?.descricao ||
+                    'Nenhuma descrição detalhada foi registrada para esta aptidão.'}
+                </AptidaoSectionBody>
+              </AptidaoSectionCard>
 
-            <AptidaoSectionCard>
-              <AptidaoSectionHeader>
-                <FlashOnOutlinedIcon fontSize="small" /> Funcionamento
-              </AptidaoSectionHeader>
-              <AptidaoSectionBody>
-                {aptidaoVisualizando?.progressaoNiveis?.length > 0 ? (
-                  <Box
-                    sx={{
-                      // 4 linhas de texto (usa line-height do container: 1.8 * 4 = 7.2em)
-                      maxHeight: '7.2em',
-                      overflowY: 'auto',
-                      pr: 1,
-                      // barra de rolagem discreta
-                      '&::-webkit-scrollbar': { width: '8px' },
-                      '&::-webkit-scrollbar-track': { background: 'transparent' },
-                      '&::-webkit-scrollbar-thumb': {
-                        background: 'rgba(255,255,255,0.06)',
-                        borderRadius: '999px',
-                      },
-                    }}
-                  >
-                    {aptidaoVisualizando.progressaoNiveis.map(nivel => (
-                      <Box key={nivel.nivel} mb={1.5}>
-                        <Box component="div" sx={{ fontWeight: 700 }}>
-                          {`Nível ${nivel.nivel}`}
-                        </Box>
-                        {nivel.possuiBonus ? (
-                          <Box sx={{ mt: 0.5 }}>
-                            <Box component="div">• {nivel.bonus.descricaoCurta}</Box>
-                            {nivel.bonus.descricaoCompleta && (
-                              <Box component="div" sx={{ mt: 0.5 }}>
-                                {nivel.bonus.descricaoCompleta}
-                              </Box>
-                            )}
+              <AptidaoSectionCard>
+                <AptidaoSectionHeader>
+                  <FlashOnOutlinedIcon fontSize="small" /> Funcionamento
+                </AptidaoSectionHeader>
+                <AptidaoSectionBody>
+                  {aptidaoVisualizando?.progressaoNiveis?.length > 0 ? (
+                    <Box
+                      sx={{
+                        // 4 linhas de texto (usa line-height do container: 1.8 * 4 = 7.2em)
+                        maxHeight: '7.2em',
+                        overflowY: 'auto',
+                        pr: 1,
+                        // barra de rolagem discreta
+                        '&::-webkit-scrollbar': { width: '8px' },
+                        '&::-webkit-scrollbar-track': {
+                          background: 'transparent',
+                        },
+                        '&::-webkit-scrollbar-thumb': {
+                          background: 'rgba(255,255,255,0.06)',
+                          borderRadius: '999px',
+                        },
+                      }}
+                    >
+                      {aptidaoVisualizando.progressaoNiveis.map(nivel => (
+                        <Box key={nivel.nivel} mb={1.5}>
+                          <Box component="div" sx={{ fontWeight: 700 }}>
+                            {`Nível ${nivel.nivel}`}
                           </Box>
-                        ) : (
-                          <Box component="div">Sem bônus: +1 no dado em testes desta aptidão.</Box>
-                        )}
-                      </Box>
-                    ))}
+                          {nivel.possuiBonus ? (
+                            <Box sx={{ mt: 0.5 }}>
+                              <Box component="div">
+                                • {nivel.bonus.descricaoCurta}
+                              </Box>
+                              {nivel.bonus.descricaoCompleta && (
+                                <Box component="div" sx={{ mt: 0.5 }}>
+                                  {nivel.bonus.descricaoCompleta}
+                                </Box>
+                              )}
+                            </Box>
+                          ) : (
+                            <Box component="div">
+                              Sem bônus: +1 no dado em testes desta aptidão.
+                            </Box>
+                          )}
+                        </Box>
+                      ))}
+                    </Box>
+                  ) : (
+                    'Informações de funcionamento não estão disponíveis para esta aptidão.'
+                  )}
+                </AptidaoSectionBody>
+              </AptidaoSectionCard>
+
+              <AptidaoSectionCard>
+                <AptidaoSectionHeader>
+                  <DataObjectOutlinedIcon fontSize="small" /> Dados Utilizados
+                </AptidaoSectionHeader>
+                <AptidaoSectionBody>
+                  <Box component="span" display="block" mb={1}>
+                    <strong>Nível Máximo:</strong>{' '}
+                    {aptidaoVisualizando?.nivelMaximo || 'Não definido'}
                   </Box>
-                ) : (
-                  'Informações de funcionamento não estão disponíveis para esta aptidão.'
-                )}
-              </AptidaoSectionBody>
-            </AptidaoSectionCard>
+                  <Box component="span" display="block">
+                    <strong>Universos:</strong>{' '}
+                    {formatNomesUniversos(
+                      getAptidaoUniversos(aptidaoVisualizando),
+                      universos,
+                    ) || 'Universo Desconhecido'}
+                  </Box>
+                </AptidaoSectionBody>
+              </AptidaoSectionCard>
 
-            <AptidaoSectionCard>
-              <AptidaoSectionHeader>
-                <DataObjectOutlinedIcon fontSize="small" /> Dados Utilizados
-              </AptidaoSectionHeader>
-              <AptidaoSectionBody>
-                <Box component="span" display="block" mb={1}>
-                  <strong>Nível Máximo:</strong>{' '}
-                  {aptidaoVisualizando?.nivelMaximo || 'Não definido'}
-                </Box>
-                <Box component="span" display="block">
-                  <strong>Universos:</strong>{' '}
-                  {formatNomesUniversos(getAptidaoUniversos(aptidaoVisualizando), universos) ||
-                    'Universo Desconhecido'}
-                </Box>
-              </AptidaoSectionBody>
-            </AptidaoSectionCard>
+              <AptidaoSectionCard>
+                <AptidaoSectionHeader>
+                  <CheckCircleOutlinedIcon fontSize="small" /> Sucesso
+                </AptidaoSectionHeader>
+                <AptidaoSectionBody>
+                  {aptidaoVisualizando?.progressaoNiveis?.some(
+                    n => n.possuiBonus,
+                  )
+                    ? 'As condições de sucesso são alcançadas ao cumprir as vantagens de nível desta aptidão.'
+                    : 'Nenhuma definição de sucesso foi registrada para esta aptidão.'}
+                </AptidaoSectionBody>
+              </AptidaoSectionCard>
 
-            <AptidaoSectionCard>
-              <AptidaoSectionHeader>
-                <CheckCircleOutlinedIcon fontSize="small" /> Sucesso
-              </AptidaoSectionHeader>
-              <AptidaoSectionBody>
-                {aptidaoVisualizando?.progressaoNiveis?.some(n => n.possuiBonus)
-                  ? 'As condições de sucesso são alcançadas ao cumprir as vantagens de nível desta aptidão.'
-                  : 'Nenhuma definição de sucesso foi registrada para esta aptidão.'}
-              </AptidaoSectionBody>
-            </AptidaoSectionCard>
+              <AptidaoSectionCard>
+                <AptidaoSectionHeader>
+                  <CancelOutlinedIcon fontSize="small" /> Falha
+                </AptidaoSectionHeader>
+                <AptidaoSectionBody>
+                  {aptidaoVisualizando?.progressaoNiveis?.every(
+                    n => !n.possuiBonus,
+                  )
+                    ? 'A falha indica ausência de bônus extra e pode resultar em testes padrão ou penalidades do mestre.'
+                    : 'A falha pode significar que o efeito não se aplica ou que o jogador não cumpriu os requisitos.'}
+                </AptidaoSectionBody>
+              </AptidaoSectionCard>
 
-            <AptidaoSectionCard>
-              <AptidaoSectionHeader>
-                <CancelOutlinedIcon fontSize="small" /> Falha
-              </AptidaoSectionHeader>
-              <AptidaoSectionBody>
-                {aptidaoVisualizando?.progressaoNiveis?.every(n => !n.possuiBonus)
-                  ? 'A falha indica ausência de bônus extra e pode resultar em testes padrão ou penalidades do mestre.'
-                  : 'A falha pode significar que o efeito não se aplica ou que o jogador não cumpriu os requisitos.'}
-              </AptidaoSectionBody>
-            </AptidaoSectionCard>
-
-            <AptidaoSectionCard>
-              <AptidaoSectionHeader>
-                <GavelOutlinedIcon fontSize="small" /> Restrições
-              </AptidaoSectionHeader>
-              <AptidaoSectionBody>
-                {aptidaoVisualizando?.nivelMaximo
-                  ? `Requer até nível ${aptidaoVisualizando.nivelMaximo} e apenas os universos listados.`
-                  : 'Nenhuma restrição específica foi definida para esta aptidão.'}
-              </AptidaoSectionBody>
-            </AptidaoSectionCard>
-          </AptidaoSectionGrid>
-        </AptidaoDialogContentWrapper>
+              <AptidaoSectionCard>
+                <AptidaoSectionHeader>
+                  <GavelOutlinedIcon fontSize="small" /> Restrições
+                </AptidaoSectionHeader>
+                <AptidaoSectionBody>
+                  {aptidaoVisualizando?.nivelMaximo
+                    ? `Requer até nível ${aptidaoVisualizando.nivelMaximo} e apenas os universos listados.`
+                    : 'Nenhuma restrição específica foi definida para esta aptidão.'}
+                </AptidaoSectionBody>
+              </AptidaoSectionCard>
+            </AptidaoSectionGrid>
+          </AptidaoDialogContentWrapper>
         </DialogContent>
 
         <DialogActions
@@ -490,7 +574,7 @@ const Aptidoes = () => {
             Fechar
           </Button>
 
-          {canWrite(getAptidaoUniversos(aptidaoVisualizando)) && (
+          {canCreate() && (
             <Button
               variant="contained"
               sx={{

@@ -9,12 +9,18 @@ import useUniversos from './useUniversos';
  * `allowedUniversos`/`isAdmin` e redirecionar para `routeOnDeny` caso o
  * usuário não tenha permissão de criar (item novo) ou editar (item
  * existente, avaliado contra `universoDoItem`).
- * @param {{ itemParaEditar: object|null, universoDoItem?: string|string[], routeOnDeny: string }} params
+ * @param {{ itemParaEditar: object|null, universoDoItem?: string|string[], routeOnDeny: string, permitirEdicaoParcial?: boolean }} params
+ * `permitirEdicaoParcial` libera o acesso à edição mesmo sem overlap com
+ * `universoDoItem` quando o usuário pode criar em algum universo — usado por
+ * entidades multi-universo (ex.: Aptidões) cujas regras do Firestore
+ * permitem associar/desassociar o próprio universo de um doc já existente
+ * (`canTogglePartialUniverso`), mesmo sem acesso aos demais universos dele.
  */
 const useEntityFormGuard = ({
   itemParaEditar,
   universoDoItem,
   routeOnDeny,
+  permitirEdicaoParcial = false,
 }) => {
   const navigate = useNavigate();
   const { canCreate, canWrite, isAdmin, allowedUniversos, loadingPermissions } =
@@ -24,7 +30,9 @@ const useEntityFormGuard = ({
 
   useEffect(() => {
     if (loadingPermissions) return;
-    const allowed = isEditing ? canWrite(universoDoItem) : canCreate();
+    const allowed = isEditing
+      ? canWrite(universoDoItem) || (permitirEdicaoParcial && canCreate())
+      : canCreate();
     if (!allowed) navigate(routeOnDeny);
   }, [
     loadingPermissions,
@@ -32,6 +40,7 @@ const useEntityFormGuard = ({
     canWrite,
     canCreate,
     universoDoItem,
+    permitirEdicaoParcial,
     navigate,
     routeOnDeny,
   ]);

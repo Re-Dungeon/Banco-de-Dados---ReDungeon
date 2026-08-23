@@ -9,6 +9,7 @@ import FormControlLabel from '@mui/material/FormControlLabel';
 import { Formik, Form, FastField, Field } from 'formik';
 import { addAptidao, updateAptidao } from 'service/storage';
 import { ROUTE_PATHS } from 'common/constants/routes';
+import { useAuth } from 'context/AuthContext';
 import useEntityFormGuard from 'hooks/useEntityFormGuard';
 import FormPageHeader from 'components/FormPageHeader/FormPageHeader';
 import FormSelect from 'components/FormSelect/FormSelect';
@@ -38,27 +39,54 @@ const NovaAptidao = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const aptidaoParaEditar = location.state?.aptidao ?? null;
+  const universoDoItem = getAptidaoUniversos(aptidaoParaEditar);
 
+  const { isAdmin, allowedUniversos } = useAuth();
   const { universos, loadingUniversos, isEditing } = useEntityFormGuard({
     itemParaEditar: aptidaoParaEditar,
-    universoDoItem: getAptidaoUniversos(aptidaoParaEditar),
+    universoDoItem,
     routeOnDeny: ROUTE_PATHS.APTIDOES,
+    permitirEdicaoParcial: true,
   });
+
+  // Aptidões aceitam associação parcial: um usuário sem acesso a todos os
+  // universos já vinculados ainda pode abrir a edição para adicionar/remover
+  // o(s) seu(s) próprio(s) universo(s) (ver `canTogglePartialUniverso` em
+  // firestore.rules). Fora desse caso, os demais campos ficam bloqueados
+  // para não gerar uma escrita que o Firestore vai rejeitar.
+  const temAcessoTotal =
+    !isEditing ||
+    isAdmin ||
+    (universoDoItem.length > 0 &&
+      universoDoItem.every(id => allowedUniversos.includes(id)));
 
   const editInitialValues = aptidaoParaEditar
     ? {
         ...APTIDAO_INITIAL_VALUES,
         ...aptidaoParaEditar,
-        universos: getAptidaoUniversos(aptidaoParaEditar),
+        universos: universoDoItem,
         progressaoNiveis: aptidaoParaEditar.progressaoNiveis || [],
       }
     : APTIDAO_INITIAL_VALUES;
 
   const handleSubmit = async (values, { setSubmitting }) => {
+    // Sem acesso total, o select de universos só lista os universos do
+    // próprio usuário — preserva os demais universos já vinculados ao invés
+    // de deixar o submit removê-los silenciosamente.
+    const payload = temAcessoTotal
+      ? values
+      : {
+          ...values,
+          universos: [
+            ...universoDoItem.filter(id => !allowedUniversos.includes(id)),
+            ...values.universos.filter(id => allowedUniversos.includes(id)),
+          ],
+        };
+
     if (isEditing) {
-      await updateAptidao(aptidaoParaEditar.id, values);
+      await updateAptidao(aptidaoParaEditar.id, payload);
     } else {
-      await addAptidao(values);
+      await addAptidao(payload);
     }
     setSubmitting(false);
     navigate(ROUTE_PATHS.APTIDOES);
@@ -77,6 +105,25 @@ const NovaAptidao = () => {
         }
         onVoltar={() => navigate(ROUTE_PATHS.APTIDOES)}
       />
+
+      {isEditing && !temAcessoTotal && (
+        <Box
+          sx={{
+            mb: 3,
+            p: 2,
+            border: '1px solid var(--color-accent)',
+            borderRadius: 2,
+            background: 'var(--bg-card)',
+            color: 'var(--text-secondary)',
+          }}
+        >
+          <Typography variant="body2">
+            Esta aptidão pertence a universos que você não administra. Você só
+            pode adicionar ou remover os seus próprios universos nela — os
+            demais campos ficam bloqueados para edição.
+          </Typography>
+        </Box>
+      )}
 
       <Formik
         initialValues={editInitialValues}
@@ -122,6 +169,7 @@ const NovaAptidao = () => {
                             {...field}
                             label="Nome da Aptidão"
                             fullWidth
+                            disabled={!temAcessoTotal}
                             error={touched.nome && Boolean(errors.nome)}
                             helperText={touched.nome && errors.nome}
                             sx={slotInputSx}
@@ -153,6 +201,7 @@ const NovaAptidao = () => {
                           {...field}
                           label="Link da Imagem da Aptidão"
                           fullWidth
+                          disabled={!temAcessoTotal}
                           placeholder="https://..."
                           error={
                             touched.linkImagem && Boolean(errors.linkImagem)
@@ -171,6 +220,7 @@ const NovaAptidao = () => {
                           fullWidth
                           multiline
                           rows={4}
+                          disabled={!temAcessoTotal}
                           error={touched.descricao && Boolean(errors.descricao)}
                           helperText={touched.descricao && errors.descricao}
                           sx={slotInputSx}
@@ -185,6 +235,7 @@ const NovaAptidao = () => {
                           label="Nível Máximo"
                           type="number"
                           fullWidth
+                          disabled={!temAcessoTotal}
                           error={
                             touched.nivelMaximo && Boolean(errors.nivelMaximo)
                           }
@@ -274,6 +325,7 @@ const NovaAptidao = () => {
                                 <Checkbox
                                   {...field}
                                   checked={Boolean(field.value)}
+                                  disabled={!temAcessoTotal}
                                   sx={{
                                     color: 'var(--text-secondary)',
                                     '&.Mui-checked': {
@@ -303,6 +355,7 @@ const NovaAptidao = () => {
                               label="Descrição Curta"
                               fullWidth
                               size="small"
+                              disabled={!temAcessoTotal}
                               sx={slotInputSx}
                             />
                             <FastField
@@ -313,6 +366,7 @@ const NovaAptidao = () => {
                               multiline
                               rows={3}
                               size="small"
+                              disabled={!temAcessoTotal}
                               sx={slotInputSx}
                             />
                           </Box>

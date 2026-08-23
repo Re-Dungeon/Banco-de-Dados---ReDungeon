@@ -13,8 +13,19 @@ vi.mock('service/storage', () => ({
 
 const canCreate = vi.fn(() => true);
 const canWrite = vi.fn(() => true);
+let isAdmin = true;
+let allowedUniversos = [];
 vi.mock('context/AuthContext', () => ({
-  useAuth: () => ({ canCreate, canWrite }),
+  useAuth: () => ({
+    canCreate,
+    canWrite,
+    get isAdmin() {
+      return isAdmin;
+    },
+    get allowedUniversos() {
+      return allowedUniversos;
+    },
+  }),
 }));
 
 import Aptidoes from './Aptidoes';
@@ -36,6 +47,8 @@ describe('Aptidoes (padrão useEntityCRUD + useUniversos + EntityFilters + Entit
     vi.clearAllMocks();
     canCreate.mockReturnValue(true);
     canWrite.mockReturnValue(true);
+    isAdmin = true;
+    allowedUniversos = [];
     getAptidoes.mockResolvedValue(APTIDOES_MOCK);
   });
 
@@ -150,8 +163,10 @@ describe('Aptidoes (padrão useEntityCRUD + useUniversos + EntityFilters + Entit
     ).toBeInTheDocument();
   });
 
-  it('não mostra botões de editar/remover quando canWrite retorna false', async () => {
-    canWrite.mockReturnValue(false);
+  it('não mostra nenhum botão de editar/remover quando canCreate retorna false', async () => {
+    canCreate.mockReturnValue(false);
+    isAdmin = false;
+    allowedUniversos = [];
     renderAptidoes();
 
     await waitFor(() =>
@@ -163,6 +178,26 @@ describe('Aptidoes (padrão useEntityCRUD + useUniversos + EntityFilters + Entit
     ).not.toBeInTheDocument();
     expect(
       screen.queryByLabelText('Editar aptidão Fúria Ancestral'),
+    ).not.toBeInTheDocument();
+  });
+
+  it('mostra editar mas não remover quando o usuário só administra parte dos universos da aptidão', async () => {
+    getAptidoes.mockResolvedValue([
+      { id: 'a1', nome: 'Fúria Ancestral', universos: ['u1', 'u2'] },
+    ]);
+    isAdmin = false;
+    allowedUniversos = ['u1'];
+    renderAptidoes();
+
+    await waitFor(() =>
+      expect(screen.getByText('Fúria Ancestral')).toBeInTheDocument(),
+    );
+
+    expect(
+      screen.getByLabelText('Editar aptidão Fúria Ancestral'),
+    ).toBeInTheDocument();
+    expect(
+      screen.queryByLabelText('Remover aptidão Fúria Ancestral'),
     ).not.toBeInTheDocument();
   });
 });

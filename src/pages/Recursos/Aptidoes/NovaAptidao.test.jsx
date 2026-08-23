@@ -8,17 +8,26 @@ const updateAptidao = vi.fn();
 vi.mock('service/storage', () => ({
   addAptidao: (...args) => addAptidao(...args),
   updateAptidao: (...args) => updateAptidao(...args),
-  getUniversos: vi.fn().mockResolvedValue([{ id: 'u1', Nome: 'Prime' }]),
+  getUniversos: vi.fn().mockResolvedValue([
+    { id: 'u1', Nome: 'Prime' },
+    { id: 'u2', Nome: 'Segundo' },
+  ]),
 }));
 
 const canCreate = vi.fn(() => true);
 const canWrite = vi.fn(() => true);
+let isAdmin = true;
+let allowedUniversos = [];
 vi.mock('context/AuthContext', () => ({
   useAuth: () => ({
     canCreate,
     canWrite,
-    isAdmin: true,
-    allowedUniversos: [],
+    get isAdmin() {
+      return isAdmin;
+    },
+    get allowedUniversos() {
+      return allowedUniversos;
+    },
     loadingPermissions: false,
   }),
 }));
@@ -37,6 +46,8 @@ describe('NovaAptidao (useEntityFormGuard/FormPageHeader/ImagePreviewPanel/FormA
     vi.clearAllMocks();
     canCreate.mockReturnValue(true);
     canWrite.mockReturnValue(true);
+    isAdmin = true;
+    allowedUniversos = [];
   });
 
   it('mostra "Nova Aptidão" e o placeholder de preview antes de preencher a imagem', async () => {
@@ -95,6 +106,37 @@ describe('NovaAptidao (useEntityFormGuard/FormPageHeader/ImagePreviewPanel/FormA
       ),
     );
     expect(addAptidao).not.toHaveBeenCalled();
+  });
+
+  it('em acesso parcial, trava os demais campos e preserva os universos não administrados ao salvar', async () => {
+    updateAptidao.mockResolvedValue(undefined);
+    isAdmin = false;
+    allowedUniversos = ['u1'];
+    const user = userEvent.setup();
+    renderNova({
+      aptidao: {
+        id: 'a1',
+        nome: 'Golpe Rápido',
+        universos: ['u1', 'u2'],
+      },
+    });
+
+    await waitFor(() =>
+      expect(screen.getByText('Editar Aptidão')).toBeInTheDocument(),
+    );
+    expect(screen.getByLabelText('Nome da Aptidão')).toBeDisabled();
+    expect(
+      screen.getByText(/Você só pode adicionar ou remover/),
+    ).toBeInTheDocument();
+
+    await user.click(screen.getByRole('button', { name: 'Salvar Alterações' }));
+
+    await waitFor(() =>
+      expect(updateAptidao).toHaveBeenCalledWith(
+        'a1',
+        expect.objectContaining({ universos: ['u2', 'u1'] }),
+      ),
+    );
   });
 
   it('gera um bloco por nível ao definir o Nível Máximo, cada um sem bônus por padrão', async () => {
