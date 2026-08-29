@@ -7,6 +7,7 @@ import Autocomplete from '@mui/material/Autocomplete';
 import Chip from '@mui/material/Chip';
 import { Formik, Form, FastField, Field } from 'formik';
 import { addArte, updateArte, getCondicoes } from 'service/storage';
+import { getCondicaoUniversos } from '../Condicoes/utils';
 import { ROUTE_PATHS } from 'common/constants/routes';
 import useEntityFormGuard from 'hooks/useEntityFormGuard';
 import FormPageHeader from 'components/FormPageHeader/FormPageHeader';
@@ -92,8 +93,8 @@ const NovaArte = () => {
         onSubmit={handleSubmit}
       >
         {({ values, errors, touched, isSubmitting, setFieldValue }) => {
-          const condicoesDoUniverso = condicoes.filter(
-            c => c.universo === values.universo,
+          const condicoesDoUniverso = condicoes.filter(c =>
+            getCondicaoUniversos(c).includes(values.universo),
           );
 
           return (
@@ -154,8 +155,8 @@ const NovaArte = () => {
                               }))}
                               disableClearable
                               onValueChange={novoUniverso => {
-                                const permitidas = condicoes.filter(
-                                  c => c.universo === novoUniverso,
+                                const permitidas = condicoes.filter(c =>
+                                  getCondicaoUniversos(c).includes(novoUniverso),
                                 );
                                 form.setFieldValue(
                                   'condicoesAplicadas',
