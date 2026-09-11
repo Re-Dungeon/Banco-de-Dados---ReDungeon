@@ -12,6 +12,59 @@ const numeroOpcionalSchema = Yup.number()
     String(originalValue).trim() === '' ? undefined : value,
   );
 
+export const REGRAS_CULTIVO_CATEGORIAS = {
+  atributosPrincipais: 'Atributos Principais',
+  atributosSecundarios: 'Atributos Secundários',
+  status: 'Status',
+};
+
+export const REGRAS_CULTIVO_ATRIBUTOS = [
+  { id: 'forca', label: 'Força', categoria: 'atributosPrincipais' },
+  { id: 'vitalidade', label: 'Vitalidade', categoria: 'atributosPrincipais' },
+  { id: 'agilidade', label: 'Agilidade', categoria: 'atributosPrincipais' },
+  { id: 'inteligencia', label: 'Inteligência', categoria: 'atributosPrincipais' },
+  { id: 'percepcao', label: 'Percepção', categoria: 'atributosPrincipais' },
+  { id: 'sorte', label: 'Sorte', categoria: 'atributosPrincipais' },
+  { id: 'prontidao', label: 'Prontidão', categoria: 'atributosSecundarios' },
+  { id: 'ataque', label: 'Ataque', categoria: 'atributosSecundarios' },
+  { id: 'defesa', label: 'Defesa', categoria: 'atributosSecundarios' },
+  { id: 'reacao', label: 'Reação', categoria: 'atributosSecundarios' },
+  { id: 'precisao', label: 'Precisão', categoria: 'atributosSecundarios' },
+  { id: 'evasao', label: 'Evasão', categoria: 'atributosSecundarios' },
+  { id: 'saude', label: 'Saúde', categoria: 'status' },
+  { id: 'energia', label: 'Energia', categoria: 'status' },
+  { id: 'fadiga', label: 'Fadiga', categoria: 'status' },
+];
+
+export const normalizeRegrasCultivoValues = regrasCultivo => {
+  const existingAtributos = Array.isArray(regrasCultivo?.atributos)
+    ? regrasCultivo.atributos
+    : [];
+
+  const destinosPermitidos = Array.isArray(regrasCultivo?.destinosPermitidos)
+    ? regrasCultivo.destinosPermitidos.filter(destino =>
+        Object.prototype.hasOwnProperty.call(
+          REGRAS_CULTIVO_CATEGORIAS,
+          destino,
+        ),
+      )
+    : [];
+
+  return {
+    pontos: regrasCultivo?.pontos ?? '',
+    destinosPermitidos,
+    atributos: REGRAS_CULTIVO_ATRIBUTOS.map(atributo => {
+      const regraAtual = existingAtributos.find(item => item.id === atributo.id);
+
+      return {
+        id: atributo.id,
+        permitido: Boolean(regraAtual?.permitido),
+        limite: regraAtual?.limite ?? '',
+      };
+    }),
+  };
+};
+
 export const REINO_CULTIVO_SCHEMA = Yup.object({
   nome: nomeSchema,
   universo: Yup.string(),
@@ -21,6 +74,19 @@ export const REINO_CULTIVO_SCHEMA = Yup.object({
   experienciaPorSubReino: numeroOpcionalSchema,
   reinoAnterior: Yup.string(),
   descricao: descricaoSchema,
+  regrasCultivo: Yup.object({
+    pontos: numeroOpcionalSchema,
+    destinosPermitidos: Yup.array().of(
+      Yup.string().oneOf(Object.keys(REGRAS_CULTIVO_CATEGORIAS)),
+    ),
+    atributos: Yup.array().of(
+      Yup.object({
+        id: Yup.string().oneOf(REGRAS_CULTIVO_ATRIBUTOS.map(item => item.id)),
+        permitido: Yup.boolean(),
+        limite: numeroOpcionalSchema,
+      }),
+    ),
+  }),
 });
 
 export const REINO_CULTIVO_INITIAL_VALUES = {
@@ -32,4 +98,5 @@ export const REINO_CULTIVO_INITIAL_VALUES = {
   experienciaPorSubReino: '',
   reinoAnterior: '',
   descricao: '',
+  regrasCultivo: normalizeRegrasCultivoValues(),
 };
