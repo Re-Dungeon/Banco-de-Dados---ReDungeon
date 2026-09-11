@@ -10,140 +10,33 @@ import Typography from '@mui/material/Typography';
 import CloseIcon from '@mui/icons-material/Close';
 import OpenInFullOutlinedIcon from '@mui/icons-material/OpenInFullOutlined';
 
-const CATEGORY_STYLES = {
-  creator: {
-    icon: '👑',
-    accent: '#5be3ff',
-    border: 'rgba(91, 227, 255, 0.34)',
-    glow: 'rgba(91, 227, 255, 0.16)',
-    background:
-      'linear-gradient(135deg, rgba(8, 20, 38, 0.95), rgba(15, 31, 58, 0.9))',
-    color: '#e8f8ff',
-  },
-  type: {
-    icon: '⚔',
-    accent: '#a68dff',
-    border: 'rgba(166, 141, 255, 0.34)',
-    glow: 'rgba(166, 141, 255, 0.16)',
-    background:
-      'linear-gradient(135deg, rgba(19, 14, 38, 0.95), rgba(29, 24, 55, 0.9))',
-    color: '#f0ebff',
-  },
-  rarity: {
-    icon: '✦',
-    accent: '#f2c96d',
-    border: 'rgba(242, 201, 109, 0.34)',
-    glow: 'rgba(242, 201, 109, 0.16)',
-    background:
-      'linear-gradient(135deg, rgba(32, 24, 10, 0.95), rgba(46, 35, 16, 0.9))',
-    color: '#fff5d7',
-  },
-  availability: {
-    icon: '🏪',
-    accent: '#7ce8b2',
-    border: 'rgba(124, 232, 178, 0.34)',
-    glow: 'rgba(124, 232, 178, 0.16)',
-    background:
-      'linear-gradient(135deg, rgba(8, 26, 20, 0.95), rgba(15, 38, 28, 0.9))',
-    color: '#e7fff4',
-  },
-  default: {
-    icon: '✧',
-    accent: '#6ea9ff',
-    border: 'rgba(110, 169, 255, 0.3)',
-    glow: 'rgba(110, 169, 255, 0.14)',
-    background:
-      'linear-gradient(135deg, rgba(9, 18, 34, 0.95), rgba(17, 29, 49, 0.9))',
-    color: '#eaf3ff',
-  },
-};
-
-const TOKEN_PREFIXES = [
-  { symbol: '👑', category: 'creator' },
-  { symbol: '⚔', category: 'type' },
-  { symbol: '✦', category: 'rarity' },
-  { symbol: '⭐', category: 'rarity' },
-  { symbol: '🏪', category: 'availability' },
-];
-
-const parseTokenString = rawValue => {
-  const value = `${rawValue || ''}`.trim();
-
-  for (const { symbol, category } of TOKEN_PREFIXES) {
-    if (
-      value === symbol ||
-      value.startsWith(`${symbol} `) ||
-      value.startsWith(symbol)
-    ) {
-      return {
-        label: value.slice(symbol.length).trim() || symbol,
-        category,
-        icon: symbol,
-      };
-    }
-  }
-
-  return { label: value, category: 'default', icon: undefined };
-};
-
 const normalizeItems = items =>
-  (items || []).filter(Boolean).map(item => {
-    if (typeof item === 'string') {
-      return parseTokenString(item);
-    }
-
-    const rawLabel = item.label || item.value || '';
-    const parsed = parseTokenString(rawLabel);
-
-    return {
-      label: parsed.label,
-      category: item.category || item.type || parsed.category,
-      icon: item.icon || parsed.icon,
-    };
-  });
-
-const getCategoryStyle = item =>
-  CATEGORY_STYLES[item.category] || CATEGORY_STYLES.default;
+  (items || [])
+    .filter(Boolean)
+    .map(item => (typeof item === 'string' ? { label: item } : item));
 
 const tokenPillSx = {
-  position: 'relative',
   display: 'inline-flex',
   alignItems: 'center',
-  gap: 0.75,
-  minHeight: 30,
-  padding: '7px 12px',
-  borderRadius: 2.4,
-  background:
-    'linear-gradient(135deg, rgba(11, 16, 32, 0.92), rgba(21, 28, 47, 0.88))',
+  gap: 0.6,
+  padding: '7px 10px',
+  borderRadius: 999,
+  background: 'linear-gradient(135deg, rgba(11, 16, 32, 0.92), rgba(21, 28, 47, 0.88))',
   border: '1px solid rgba(76, 201, 240, 0.24)',
   color: 'var(--text-primary)',
-  fontSize: '0.78rem',
+  fontSize: '0.74rem',
   fontWeight: 600,
-  letterSpacing: '0.03em',
+  letterSpacing: '0.02em',
   whiteSpace: 'normal',
-  lineHeight: 1.15,
   overflowWrap: 'anywhere',
   wordBreak: 'break-word',
   maxWidth: '100%',
-  boxShadow:
-    'inset 0 1px 0 rgba(255,255,255,0.05), 0 10px 24px rgba(7, 10, 20, 0.28)',
-  backdropFilter: 'blur(14px)',
-  transition:
-    'transform 200ms ease, box-shadow 200ms ease, border-color 200ms ease',
-  '&::before': {
-    content: '""',
-    position: 'absolute',
-    inset: 0,
-    borderRadius: 'inherit',
-    background:
-      'linear-gradient(120deg, rgba(255,255,255,0.06) 0%, transparent 55%)',
-    pointerEvents: 'none',
-    opacity: 0.9,
-  },
+  boxShadow: '0 10px 24px rgba(7, 10, 20, 0.28), inset 0 1px 0 rgba(255,255,255,0.04)',
+  backdropFilter: 'blur(12px)',
+  transition: 'transform 220ms ease, box-shadow 220ms ease, border-color 220ms ease',
   '&:hover': {
-    transform: 'translateY(-1px)',
-    boxShadow:
-      'inset 0 1px 0 rgba(255,255,255,0.06), 0 12px 30px rgba(76, 201, 240, 0.16)',
+    transform: 'translateY(-1px) scale(1.03)',
+    boxShadow: '0 12px 28px rgba(76, 201, 240, 0.16), inset 0 1px 0 rgba(255,255,255,0.04)',
     borderColor: 'rgba(124, 58, 237, 0.48)',
   },
 };
@@ -163,9 +56,7 @@ const CardTokens = ({ items = [], maxVisible = 2 }) => {
 
   return (
     <>
-      <Box
-        sx={{ display: 'flex', flexDirection: 'column', gap: 1, width: '100%' }}
-      >
+      <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1, width: '100%' }}>
         <Box
           sx={{
             display: 'flex',
@@ -179,50 +70,25 @@ const CardTokens = ({ items = [], maxVisible = 2 }) => {
             sx={{
               display: 'flex',
               flexWrap: 'wrap',
-              gap: 0.9,
+              gap: 0.75,
               alignItems: 'center',
               flex: 1,
               minWidth: 0,
               overflow: 'hidden',
             }}
           >
-            {visibleItems.map((item, index) => {
-              const categoryStyle = getCategoryStyle(item);
-              const icon = item.icon || categoryStyle.icon;
-
-              return (
-                <Box
-                  key={`${item.label}-${index}`}
-                  component="span"
-                  sx={{
-                    ...tokenPillSx,
-                    background: categoryStyle.background,
-                    borderColor: categoryStyle.border,
-                    color: categoryStyle.color,
-                    boxShadow: `inset 0 1px 0 rgba(255,255,255,0.06), 0 10px 24px ${categoryStyle.glow}`,
-                    '&:hover': {
-                      ...tokenPillSx['&:hover'],
-                      boxShadow: `inset 0 1px 0 rgba(255,255,255,0.08), 0 12px 30px ${categoryStyle.glow}`,
-                      borderColor: categoryStyle.border,
-                    },
-                  }}
-                >
-                  <Box
-                    component="span"
-                    sx={{
-                      fontSize: '0.88rem',
-                      lineHeight: 1,
-                      filter: 'drop-shadow(0 0 4px rgba(255,255,255,0.18))',
-                    }}
-                  >
-                    {icon}
-                  </Box>
-                  <Box component="span" sx={{ color: 'inherit' }}>
-                    {item.label}
-                  </Box>
-                </Box>
-              );
-            })}
+            {visibleItems.map((item, index) => (
+              <Box
+                key={`${item.label}-${index}`}
+                component="span"
+                sx={{
+                  ...tokenPillSx,
+                  boxShadow: '0 6px 18px rgba(7, 10, 20, 0.18)',
+                }}
+              >
+                {item.label}
+              </Box>
+            ))}
           </Box>
 
           {hasOverflow && (
@@ -235,15 +101,11 @@ const CardTokens = ({ items = [], maxVisible = 2 }) => {
                 alignSelf: 'flex-start',
               }}
             >
-              <Tooltip
-                title={isExpanded ? 'Recolher tokens' : 'Expandir tokens'}
-              >
+              <Tooltip title={isExpanded ? 'Recolher tokens' : 'Expandir tokens'}>
                 <IconButton
                   size="small"
                   onClick={() => setIsExpanded(value => !value)}
-                  aria-label={
-                    isExpanded ? 'Recolher tokens' : 'Expandir tokens'
-                  }
+                  aria-label={isExpanded ? 'Recolher tokens' : 'Expandir tokens'}
                   sx={{
                     color: 'var(--color-accent)',
                     padding: '4px',
@@ -260,10 +122,7 @@ const CardTokens = ({ items = [], maxVisible = 2 }) => {
                     },
                   }}
                 >
-                  <Box
-                    component="span"
-                    sx={{ fontSize: '1rem', lineHeight: 1 }}
-                  >
+                  <Box component="span" sx={{ fontSize: '1rem', lineHeight: 1 }}>
                     {isExpanded ? '−' : '+'}
                   </Box>
                 </IconButton>
@@ -302,55 +161,29 @@ const CardTokens = ({ items = [], maxVisible = 2 }) => {
             sx={{
               display: 'flex',
               flexWrap: 'wrap',
-              gap: 0.9,
+              gap: 0.75,
               alignItems: 'center',
               justifyContent: 'flex-start',
               width: '100%',
               maxHeight: isExpanded ? 220 : 0,
               opacity: isExpanded ? 1 : 0,
               overflow: 'hidden',
-              transition:
-                'max-height 260ms ease, opacity 220ms ease, transform 220ms ease',
+              transition: 'max-height 260ms ease, opacity 220ms ease, transform 220ms ease',
               transform: isExpanded ? 'translateY(0)' : 'translateY(-6px)',
             }}
           >
-            {hiddenItems.map((item, index) => {
-              const categoryStyle = getCategoryStyle(item);
-              const icon = item.icon || categoryStyle.icon;
-
-              return (
-                <Box
-                  key={`${item.label}-${index}`}
-                  component="span"
-                  sx={{
-                    ...tokenPillSx,
-                    background: categoryStyle.background,
-                    borderColor: categoryStyle.border,
-                    color: categoryStyle.color,
-                    boxShadow: `inset 0 1px 0 rgba(255,255,255,0.06), 0 10px 24px ${categoryStyle.glow}`,
-                    '&:hover': {
-                      ...tokenPillSx['&:hover'],
-                      boxShadow: `inset 0 1px 0 rgba(255,255,255,0.08), 0 12px 30px ${categoryStyle.glow}`,
-                      borderColor: categoryStyle.border,
-                    },
-                  }}
-                >
-                  <Box
-                    component="span"
-                    sx={{
-                      fontSize: '0.88rem',
-                      lineHeight: 1,
-                      filter: 'drop-shadow(0 0 4px rgba(255,255,255,0.18))',
-                    }}
-                  >
-                    {icon}
-                  </Box>
-                  <Box component="span" sx={{ color: 'inherit' }}>
-                    {item.label}
-                  </Box>
-                </Box>
-              );
-            })}
+            {hiddenItems.map((item, index) => (
+              <Box
+                key={`${item.label}-${index}`}
+                component="span"
+                sx={{
+                  ...tokenPillSx,
+                  boxShadow: '0 6px 18px rgba(7, 10, 20, 0.18)',
+                }}
+              >
+                {item.label}
+              </Box>
+            ))}
           </Box>
         )}
       </Box>
@@ -365,11 +198,9 @@ const CardTokens = ({ items = [], maxVisible = 2 }) => {
         slotProps={{
           paper: {
             sx: {
-              background:
-                'linear-gradient(135deg, rgba(11, 16, 32, 0.97), rgba(17, 24, 39, 0.96) 60%, rgba(21, 28, 47, 0.98))',
+              background: 'linear-gradient(135deg, rgba(11, 16, 32, 0.97), rgba(17, 24, 39, 0.96) 60%, rgba(21, 28, 47, 0.98))',
               border: '1px solid rgba(124, 58, 237, 0.28)',
-              boxShadow:
-                '0 24px 70px rgba(5, 8, 22, 0.55), inset 0 1px 0 rgba(255,255,255,0.05)',
+              boxShadow: '0 24px 70px rgba(5, 8, 22, 0.55), inset 0 1px 0 rgba(255,255,255,0.05)',
               backdropFilter: 'blur(18px)',
               borderRadius: 4,
               overflow: 'hidden',
@@ -390,25 +221,14 @@ const CardTokens = ({ items = [], maxVisible = 2 }) => {
             alignItems: 'center',
             justifyContent: 'space-between',
             gap: 2,
-            background:
-              'linear-gradient(90deg, rgba(76, 201, 240, 0.08), rgba(124, 58, 237, 0.06))',
+            background: 'linear-gradient(90deg, rgba(76, 201, 240, 0.08), rgba(124, 58, 237, 0.06))',
           }}
         >
           <Box>
-            <Typography
-              variant="h5"
-              sx={{
-                fontWeight: 800,
-                letterSpacing: '0.02em',
-                lineHeight: 1.15,
-              }}
-            >
+            <Typography variant="h5" sx={{ fontWeight: 800, letterSpacing: '0.02em', lineHeight: 1.15 }}>
               Tokens
             </Typography>
-            <Typography
-              variant="body2"
-              sx={{ color: 'var(--text-secondary)', mt: 0.35 }}
-            >
+            <Typography variant="body2" sx={{ color: 'var(--text-secondary)', mt: 0.35 }}>
               {normalizedItems.length} categorias relacionadas
             </Typography>
           </Box>
@@ -420,8 +240,7 @@ const CardTokens = ({ items = [], maxVisible = 2 }) => {
               border: '1px solid rgba(76, 201, 240, 0.18)',
               background: 'rgba(255,255,255,0.03)',
               backdropFilter: 'blur(8px)',
-              transition:
-                'transform 220ms ease, box-shadow 220ms ease, color 220ms ease',
+              transition: 'transform 220ms ease, box-shadow 220ms ease, color 220ms ease',
               '&:hover': {
                 color: 'var(--color-accent)',
                 transform: 'rotate(90deg) scale(1.05)',
@@ -432,14 +251,7 @@ const CardTokens = ({ items = [], maxVisible = 2 }) => {
             <CloseIcon />
           </IconButton>
         </DialogTitle>
-        <DialogContent
-          sx={{
-            px: { xs: 2.25, sm: 3 },
-            pt: { xs: 3, sm: 3.25 },
-            pb: { xs: 2, sm: 2.5 },
-            background: 'rgba(255,255,255,0.015)',
-          }}
-        >
+        <DialogContent sx={{ px: { xs: 2.25, sm: 3 }, pt: { xs: 3, sm: 3.25 }, pb: { xs: 2, sm: 2.5 }, background: 'rgba(255,255,255,0.015)' }}>
           <Box
             sx={{
               display: 'flex',
@@ -453,38 +265,19 @@ const CardTokens = ({ items = [], maxVisible = 2 }) => {
               py: 0.5,
             }}
           >
-            {normalizedItems.map((item, index) => {
-              const categoryStyle = getCategoryStyle(item);
-              const icon = item.icon || categoryStyle.icon;
-
-              return (
-                <Box
-                  key={`${item.label}-${index}`}
-                  component="span"
-                  sx={{
-                    ...tokenPillSx,
-                    background: categoryStyle.background,
-                    borderColor: categoryStyle.border,
-                    color: categoryStyle.color,
-                    boxShadow: `inset 0 1px 0 rgba(255,255,255,0.06), 0 10px 24px ${categoryStyle.glow}`,
-                  }}
-                >
-                  <Box
-                    component="span"
-                    sx={{
-                      fontSize: '0.88rem',
-                      lineHeight: 1,
-                      filter: 'drop-shadow(0 0 4px rgba(255,255,255,0.18))',
-                    }}
-                  >
-                    {icon}
-                  </Box>
-                  <Box component="span" sx={{ color: 'inherit' }}>
-                    {item.label}
-                  </Box>
-                </Box>
-              );
-            })}
+            {normalizedItems.map((item, index) => (
+              <Box
+                key={`${item.label}-${index}`}
+                component="span"
+                sx={{
+                  ...tokenPillSx,
+                  background: 'linear-gradient(135deg, rgba(11, 16, 32, 0.94), rgba(20, 28, 46, 0.9))',
+                  borderColor: 'rgba(96, 165, 250, 0.24)',
+                }}
+              >
+                {item.label}
+              </Box>
+            ))}
           </Box>
         </DialogContent>
         <Box
@@ -494,8 +287,7 @@ const CardTokens = ({ items = [], maxVisible = 2 }) => {
             borderTop: '1px solid rgba(76, 201, 240, 0.14)',
             display: 'flex',
             justifyContent: 'flex-end',
-            background:
-              'linear-gradient(90deg, rgba(255,255,255,0.02), rgba(76, 201, 240, 0.05))',
+            background: 'linear-gradient(90deg, rgba(255,255,255,0.02), rgba(76, 201, 240, 0.05))',
           }}
         >
           <Box
@@ -503,8 +295,7 @@ const CardTokens = ({ items = [], maxVisible = 2 }) => {
             onClick={() => setIsModalOpen(false)}
             sx={{
               border: '1px solid rgba(76, 201, 240, 0.24)',
-              background:
-                'linear-gradient(135deg, rgba(11, 16, 32, 0.9), rgba(21, 28, 47, 0.92))',
+              background: 'linear-gradient(135deg, rgba(11, 16, 32, 0.9), rgba(21, 28, 47, 0.92))',
               color: 'var(--text-primary)',
               px: 2.25,
               py: 1,
@@ -514,8 +305,7 @@ const CardTokens = ({ items = [], maxVisible = 2 }) => {
               letterSpacing: '0.03em',
               boxShadow: '0 10px 24px rgba(7, 10, 20, 0.28)',
               backdropFilter: 'blur(10px)',
-              transition:
-                'transform 220ms ease, box-shadow 220ms ease, border-color 220ms ease',
+              transition: 'transform 220ms ease, box-shadow 220ms ease, border-color 220ms ease',
               '&:hover': {
                 transform: 'translateY(-1px)',
                 boxShadow: '0 0 18px rgba(76, 201, 240, 0.18)',
