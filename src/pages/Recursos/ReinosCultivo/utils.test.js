@@ -3,6 +3,9 @@ import {
   REINO_CULTIVO_SCHEMA,
   REINO_CULTIVO_INITIAL_VALUES,
   normalizeRegrasCultivoValues,
+  REGRAS_CULTIVO_ATRIBUTOS,
+  syncCategoriaAtributos,
+  syncCategoriasPorAtributos,
 } from './utils';
 
 describe('normalizeRegrasCultivoValues', () => {
@@ -46,5 +49,86 @@ describe('REINO_CULTIVO_INITIAL_VALUES', () => {
         expect.objectContaining({ id: 'saude' }),
       ]),
     });
+  });
+});
+
+describe('syncCategoriaAtributos', () => {
+  it('marca automaticamente todos os atributos da categoria ao ativar o destino', () => {
+    const regrasCultivo = {
+      destinosPermitidos: ['status'],
+      atributos: REGRAS_CULTIVO_ATRIBUTOS.map(atributo => ({
+        id: atributo.id,
+        permitido: false,
+        limite: '',
+      })),
+    };
+
+    const resultado = syncCategoriaAtributos(
+      regrasCultivo,
+      'atributosPrincipais',
+      true,
+    );
+
+    expect(resultado.destinosPermitidos).toEqual(
+      expect.arrayContaining(['status', 'atributosPrincipais']),
+    );
+    expect(
+      resultado.atributos
+        .filter(atributo =>
+          ['forca', 'vitalidade', 'agilidade', 'inteligencia', 'percepcao', 'sorte'].includes(
+            atributo.id,
+          ),
+        )
+        .every(atributo => atributo.permitido),
+    ).toBe(true);
+    expect(
+      resultado.atributos.find(atributo => atributo.id === 'saude')?.permitido,
+    ).toBe(false);
+  });
+
+  it('desmarca todos os atributos da categoria ao desativar o destino', () => {
+    const regrasCultivo = {
+      destinosPermitidos: ['atributosPrincipais'],
+      atributos: REGRAS_CULTIVO_ATRIBUTOS.map(atributo => ({
+        id: atributo.id,
+        permitido: true,
+        limite: '',
+      })),
+    };
+
+    const resultado = syncCategoriaAtributos(
+      regrasCultivo,
+      'atributosPrincipais',
+      false,
+    );
+
+    expect(resultado.destinosPermitidos).not.toContain('atributosPrincipais');
+    expect(
+      resultado.atributos
+        .filter(atributo =>
+          ['forca', 'vitalidade', 'agilidade', 'inteligencia', 'percepcao', 'sorte'].includes(
+            atributo.id,
+          ),
+        )
+        .every(atributo => !atributo.permitido),
+    ).toBe(true);
+  });
+});
+
+describe('syncCategoriasPorAtributos', () => {
+  it('ativa o destino da categoria quando todos os atributos daquela categoria forem permitidos', () => {
+    const regrasCultivo = {
+      destinosPermitidos: [],
+      atributos: REGRAS_CULTIVO_ATRIBUTOS.map(atributo => ({
+        id: atributo.id,
+        permitido: atributo.categoria === 'atributosSecundarios',
+        limite: '',
+      })),
+    };
+
+    const resultado = syncCategoriasPorAtributos(regrasCultivo);
+
+    expect(resultado.destinosPermitidos).toContain('atributosSecundarios');
+    expect(resultado.destinosPermitidos).not.toContain('atributosPrincipais');
   });
 });
