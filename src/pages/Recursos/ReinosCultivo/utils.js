@@ -36,6 +36,72 @@ export const REGRAS_CULTIVO_ATRIBUTOS = [
   { id: 'fadiga', label: 'Fadiga', categoria: 'status' },
 ];
 
+export const getAtributosPorCategoria = categoria =>
+  REGRAS_CULTIVO_ATRIBUTOS.filter(atributo => atributo.categoria === categoria);
+
+export const syncCategoriaAtributos = (
+  regrasCultivo = {},
+  categoria,
+  permitido,
+) => {
+  const normalized = normalizeRegrasCultivoValues(regrasCultivo);
+  const atributosCategoria = getAtributosPorCategoria(categoria);
+
+  const atributos = normalized.atributos.map(atributo => {
+    const pertenceACategoria = atributosCategoria.some(
+      item => item.id === atributo.id,
+    );
+
+    if (!pertenceACategoria) return atributo;
+
+    return {
+      ...atributo,
+      permitido,
+    };
+  });
+
+  const destinosPermitidos = Array.from(
+    new Set(
+      permitido
+        ? [...normalized.destinosPermitidos, categoria]
+        : normalized.destinosPermitidos.filter(destino => destino !== categoria),
+    ),
+  );
+
+  return {
+    ...normalized,
+    destinosPermitidos,
+    atributos,
+  };
+};
+
+export const syncCategoriasPorAtributos = regrasCultivo => {
+  const normalized = normalizeRegrasCultivoValues(regrasCultivo);
+  const destinosPermitidos = new Set(normalized.destinosPermitidos);
+
+  Object.keys(REGRAS_CULTIVO_CATEGORIAS).forEach(categoria => {
+    const atributosCategoria = getAtributosPorCategoria(categoria);
+    const categoriaPermitida =
+      atributosCategoria.length > 0 &&
+      atributosCategoria.every(atributo =>
+        normalized.atributos.some(
+          item => item.id === atributo.id && Boolean(item.permitido),
+        ),
+      );
+
+    if (categoriaPermitida) {
+      destinosPermitidos.add(categoria);
+    } else {
+      destinosPermitidos.delete(categoria);
+    }
+  });
+
+  return {
+    ...normalized,
+    destinosPermitidos: Array.from(destinosPermitidos),
+  };
+};
+
 export const normalizeRegrasCultivoValues = regrasCultivo => {
   const existingAtributos = Array.isArray(regrasCultivo?.atributos)
     ? regrasCultivo.atributos

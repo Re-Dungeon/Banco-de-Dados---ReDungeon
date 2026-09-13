@@ -25,6 +25,8 @@ import {
   REGRAS_CULTIVO_CATEGORIAS,
   REGRAS_CULTIVO_ATRIBUTOS,
   normalizeRegrasCultivoValues,
+  syncCategoriaAtributos,
+  syncCategoriasPorAtributos,
 } from './utils';
 
 const DESTINO_ICONS = {
@@ -393,16 +395,15 @@ const NovoReinoCultivo = () => {
                                     field.value?.includes(categoria) || false;
 
                                   const handleChange = event => {
-                                    const nextValues = [...(field.value || [])];
-                                    if (event.target.checked) {
-                                      nextValues.push(categoria);
-                                    } else {
-                                      const index = nextValues.indexOf(categoria);
-                                      if (index >= 0) nextValues.splice(index, 1);
-                                    }
+                                    const nextRegras = syncCategoriaAtributos(
+                                      values.regrasCultivo,
+                                      categoria,
+                                      event.target.checked,
+                                    );
+
                                     form.setFieldValue(
-                                      'regrasCultivo.destinosPermitidos',
-                                      nextValues,
+                                      'regrasCultivo',
+                                      nextRegras,
                                     );
                                   };
 
@@ -410,10 +411,10 @@ const NovoReinoCultivo = () => {
                                     <Box
                                       sx={{
                                         background: selected
-                                          ? 'rgba(98, 128, 255, 0.1)'
+                                          ? 'linear-gradient(180deg, rgba(98, 128, 255, 0.18), rgba(10, 16, 28, 0.84))'
                                           : 'rgba(10, 16, 28, 0.7)',
                                         border: selected
-                                          ? '1px solid rgba(212, 175, 55, 0.7)'
+                                          ? '1px solid rgba(81, 201, 168, 0.8)'
                                           : '1px solid rgba(119, 158, 255, 0.18)',
                                         borderRadius: 2,
                                         p: 1.5,
@@ -422,13 +423,13 @@ const NovoReinoCultivo = () => {
                                         flexDirection: 'column',
                                         justifyContent: 'space-between',
                                         transition:
-                                          'border-color 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease',
+                                          'border-color 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease, background 0.2s ease',
                                         boxShadow: selected
-                                          ? '0 0 0 1px rgba(212, 175, 55, 0.18), 0 10px 24px rgba(20, 28, 46, 0.25)'
+                                          ? '0 0 0 1px rgba(81, 201, 168, 0.25), 0 16px 28px rgba(15, 19, 34, 0.36)'
                                           : 'none',
                                         '&:hover': {
                                           borderColor: selected
-                                            ? 'rgba(212, 175, 55, 0.9)'
+                                            ? 'rgba(81, 201, 168, 0.95)'
                                             : 'rgba(119, 158, 255, 0.35)',
                                           transform: 'translateY(-1px)',
                                         },
@@ -444,20 +445,23 @@ const NovoReinoCultivo = () => {
                                       >
                                         <Box
                                           sx={{
-                                            width: 28,
-                                            height: 28,
+                                            width: 30,
+                                            height: 30,
                                             display: 'flex',
                                             alignItems: 'center',
                                             justifyContent: 'center',
                                             borderRadius: '50%',
                                             background: selected
-                                              ? 'rgba(212, 175, 55, 0.15)'
+                                              ? 'radial-gradient(circle, rgba(81, 201, 168, 0.35), rgba(81, 201, 168, 0.08))'
                                               : 'rgba(111, 128, 166, 0.08)',
                                             color: selected
                                               ? 'var(--color-accent)'
                                               : 'var(--text-secondary)',
                                             fontSize: '1rem',
                                             fontWeight: 700,
+                                            boxShadow: selected
+                                              ? '0 0 18px rgba(81, 201, 168, 0.42)'
+                                              : 'none',
                                           }}
                                         >
                                           {DESTINO_ICONS[categoria] || '✦'}
@@ -553,18 +557,33 @@ const NovoReinoCultivo = () => {
 
                                 if (atributoIndex === -1) return null;
 
+                                const atributoPermitido =
+                                  Boolean(
+                                    values.regrasCultivo.atributos[atributoIndex]
+                                      ?.permitido,
+                                  ) || false;
+
                                 return (
                                   <Box
                                     key={atributo.id}
                                     sx={{
-                                      background: 'rgba(16, 24, 43, 0.88)',
-                                      border: '1px solid rgba(119, 158, 255, 0.18)',
+                                      background: atributoPermitido
+                                        ? 'linear-gradient(180deg, rgba(30, 67, 56, 0.82), rgba(16, 24, 43, 0.9))'
+                                        : 'rgba(16, 24, 43, 0.88)',
+                                      border: atributoPermitido
+                                        ? '1px solid rgba(81, 201, 168, 0.8)'
+                                        : '1px solid rgba(119, 158, 255, 0.18)',
                                       borderRadius: 1.75,
                                       p: 1.5,
+                                      boxShadow: atributoPermitido
+                                        ? '0 0 0 1px rgba(81, 201, 168, 0.18), 0 12px 22px rgba(12, 18, 31, 0.24)'
+                                        : 'none',
                                       transition:
-                                        'border-color 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease',
+                                        'border-color 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease, background 0.2s ease',
                                       '&:hover': {
-                                        borderColor: 'rgba(212, 175, 55, 0.45)',
+                                        borderColor: atributoPermitido
+                                          ? 'rgba(81, 201, 168, 0.95)'
+                                          : 'rgba(212, 175, 55, 0.45)',
                                         transform: 'translateY(-1px)',
                                       },
                                     }}
@@ -591,12 +610,19 @@ const NovoReinoCultivo = () => {
                                             width: 22,
                                             height: 22,
                                             borderRadius: '50%',
-                                            background: 'rgba(110, 149, 255, 0.14)',
-                                            color: 'var(--text-secondary)',
+                                            background: atributoPermitido
+                                              ? 'radial-gradient(circle, rgba(81, 201, 168, 0.35), rgba(81, 201, 168, 0.08))'
+                                              : 'rgba(110, 149, 255, 0.14)',
+                                            color: atributoPermitido
+                                              ? 'var(--color-accent)'
+                                              : 'var(--text-secondary)',
                                             display: 'flex',
                                             alignItems: 'center',
                                             justifyContent: 'center',
                                             fontSize: '0.75rem',
+                                            boxShadow: atributoPermitido
+                                              ? '0 0 12px rgba(81, 201, 168, 0.3)'
+                                              : 'none',
                                           }}
                                         >
                                           {DESTINO_ICONS[categoria] || '✦'}
@@ -604,7 +630,9 @@ const NovoReinoCultivo = () => {
                                         <Typography
                                           variant="body2"
                                           sx={{
-                                            color: 'var(--text-primary)',
+                                            color: atributoPermitido
+                                              ? 'var(--text-primary)'
+                                              : 'var(--text-secondary)',
                                             fontWeight: 700,
                                             whiteSpace: 'nowrap',
                                             overflow: 'hidden',
@@ -637,14 +665,16 @@ const NovoReinoCultivo = () => {
                                               borderRadius: 1,
                                               border: '1px solid rgba(119, 158, 255, 0.12)',
                                               background: field.value
-                                                ? 'rgba(24, 39, 63, 0.85)'
+                                                ? 'linear-gradient(90deg, rgba(36, 77, 66, 0.9), rgba(24, 39, 63, 0.85))'
                                                 : 'rgba(9, 15, 25, 0.5)',
                                             }}
                                           >
                                             <Typography
                                               variant="caption"
                                               sx={{
-                                                color: 'var(--text-secondary)',
+                                                color: field.value
+                                                  ? 'var(--text-primary)'
+                                                  : 'var(--text-secondary)',
                                                 textTransform: 'uppercase',
                                                 letterSpacing: 0.8,
                                               }}
@@ -653,12 +683,29 @@ const NovoReinoCultivo = () => {
                                             </Typography>
                                             <Checkbox
                                               checked={Boolean(field.value)}
-                                              onChange={event =>
+                                              onChange={event => {
+                                                const nextRegras = {
+                                                  ...values.regrasCultivo,
+                                                  atributos:
+                                                    values.regrasCultivo.atributos.map(
+                                                      item =>
+                                                        item.id === atributo.id
+                                                          ? {
+                                                              ...item,
+                                                              permitido:
+                                                                event.target.checked,
+                                                            }
+                                                          : item,
+                                                    ),
+                                                };
+
                                                 form.setFieldValue(
-                                                  `regrasCultivo.atributos[${atributoIndex}].permitido`,
-                                                  event.target.checked,
-                                                )
-                                              }
+                                                  'regrasCultivo',
+                                                  syncCategoriasPorAtributos(
+                                                    nextRegras,
+                                                  ),
+                                                );
+                                              }}
                                               sx={{
                                                 color: 'var(--text-muted)',
                                                 '&.Mui-checked': {
