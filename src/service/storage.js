@@ -224,6 +224,18 @@ export const removeReinoCultivo = id =>
 export const updateReinoCultivo = (id, updates) =>
   updateFirestoreItem(REINOS_CULTIVO_COLLECTION, id, updates);
 
+// ── Trickster Coin (Firestore) ──────────────────────────────────────────────
+const TRICKSTER_COIN_COLLECTION = 'tricksterCoin';
+
+export const getTricksterCoinBeneficios = () =>
+  getFirestoreItems(TRICKSTER_COIN_COLLECTION);
+export const addTricksterCoinBeneficio = beneficio =>
+  addFirestoreItem(TRICKSTER_COIN_COLLECTION, beneficio);
+export const removeTricksterCoinBeneficio = id =>
+  removeFirestoreItem(TRICKSTER_COIN_COLLECTION, id);
+export const updateTricksterCoinBeneficio = (id, updates) =>
+  updateFirestoreItem(TRICKSTER_COIN_COLLECTION, id, updates);
+
 // ── Universo (Firestore) ────────────────────────────────────────────────────────
 
 const UNIVERSO_COLLECTION = 'Universo';

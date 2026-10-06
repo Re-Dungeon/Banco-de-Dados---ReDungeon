@@ -13,6 +13,7 @@ export const NAV_ITEMS = [
   { path: '/recursos/aptidoes', icon: '🎯', label: 'Aptidões' },
   { path: '/recursos/corpos-especiais', icon: '🧍', label: 'Corpos Especiais' },
   { path: '/recursos/reinos-cultivo', icon: '🌀', label: 'Reinos de Cultivo' },
+  { path: '/trickster-coin', icon: '🪙', label: 'Trickster Coin' },
   { path: '/regras', icon: '📋', label: 'Regras' },
 ];
 

@@ -1,5 +1,17 @@
 export const PATCH_NOTES = [
   {
+    version: '3.2.0',
+    date: '2026-10-06',
+    changes: [
+      'Nova aba de gestão da Trickster Coin no painel administrativo, com cadastro, edição e remoção de benefícios por universo',
+      'Implementação do CRUD real da Trickster Coin com integração ao Firestore e validações de formulário para nome, descrição, link de imagem e universo',
+      'Ajuste do filtro superior da página para universo, substituindo o filtro de tag e deixando a navegação mais consistente com o restante do app',
+      'Melhorias visuais e de UX nos cards de benefício, incluindo fallback de imagem para casos de URL indisponível ou bloqueada',
+      'Diagnóstico e correção do problema de imagens externas: confirmou-se que o 403 era causado pela origem da URL e não pela aplicação, com tratamento visual para evitar quebra da interface',
+      'Atualização da identificação visual do app para Re:Dungeon V3.2 no topo da navegação',
+    ],
+  },
+  {
     version: '3.1.1',
     date: '2026-07-19',
     changes: [

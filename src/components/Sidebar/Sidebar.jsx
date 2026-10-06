@@ -55,10 +55,7 @@ const Sidebar = ({ open, onClose }) => {
           <CloseIcon />
         </IconButton>
         <LogoSection>
-          <LogoImage
-            src="https://i.imgur.com/GdBanRI.png"
-            alt="Re:Dungeon Logo"
-          />
+          <LogoImage aria-label="Re:Dungeon Logo">R</LogoImage>
           <Box>
             <Typography
               variant="h6"
@@ -79,7 +76,7 @@ const Sidebar = ({ open, onClose }) => {
                 textTransform: 'uppercase',
               }}
             >
-              V3.1
+              V3.2
             </Typography>
           </Box>
         </LogoSection>

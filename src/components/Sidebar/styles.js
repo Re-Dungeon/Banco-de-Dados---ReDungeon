@@ -50,10 +50,19 @@ export const LogoSection = styled(Box)`
   gap: 16px;
 `;
 
-export const LogoImage = styled.img`
+export const LogoImage = styled(Box)`
   width: 56px;
   height: 56px;
-  filter: drop-shadow(0 0 16px rgba(96, 165, 250, 0.6));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 14px;
+  background: linear-gradient(135deg, #6f2da8 0%, #00d9ff 100%);
+  color: #f8fafc;
+  font-size: 1.4rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  box-shadow: 0 0 16px rgba(96, 165, 250, 0.45);
 `;
 
 export const StyledNavLink = styled(NavLink)`
