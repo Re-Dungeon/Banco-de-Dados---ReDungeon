@@ -25,6 +25,7 @@ const Origens = lazy(() => import('pages/Recursos/Origens/Origens'));
 const NovaOrigem = lazy(() => import('pages/Recursos/Origens/NovaOrigem'));
 const CardFlux = lazy(() => import('pages/Recursos/CardFlux/CardFlux'));
 const NovoCardFlux = lazy(() => import('pages/Recursos/CardFlux/NovoCardFlux'));
+const TricksterCoin = lazy(() => import('pages/TricksterCoin/TricksterCoin'));
 const Regras = lazy(() => import('pages/Regras/Regras'));
 const NovaRegra = lazy(() => import('pages/Regras/NovaRegra'));
 const VeiasAstrais = lazy(
@@ -75,6 +76,7 @@ export const ROUTES = [
   { path: ROUTE_PATHS.NOVA_ORIGEM.slice(1), element: <NovaOrigem /> },
   { path: ROUTE_PATHS.CARDFLUX.slice(1), element: <CardFlux /> },
   { path: ROUTE_PATHS.NOVO_CARDFLUX.slice(1), element: <NovoCardFlux /> },
+  { path: ROUTE_PATHS.TRICKSTER_COIN.slice(1), element: <TricksterCoin /> },
   { path: ROUTE_PATHS.REGRAS.slice(1), element: <Regras /> },
   { path: ROUTE_PATHS.NOVA_REGRA.slice(1), element: <NovaRegra /> },
   { path: ROUTE_PATHS.VEIAS_ASTRAIS.slice(1), element: <VeiasAstrais /> },

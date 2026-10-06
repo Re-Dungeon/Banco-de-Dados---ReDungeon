@@ -63,17 +63,57 @@ const SearchableSelect = ({
   listboxMaxHeight,
   compactSelection = false,
   compactMaxVisible = 2,
+  showSelectAll = false,
+  selectAllLabel = 'Todos os itens',
+  selectAllValue = '__SELECT_ALL__',
 }) => {
-  const sortedOptions = useMemo(
-    () =>
-      [...options].sort((a, b) =>
+  const sortedOptions = useMemo(() => {
+    const deduplicatedOptions = [...options].reduce((acc, option) => {
+      if (!option || option.value === undefined || option.value === null) {
+        return acc;
+      }
+
+      const optionKey = String(option.value);
+      if (acc.seen.has(optionKey)) {
+        return acc;
+      }
+
+      acc.seen.add(optionKey);
+      acc.options.push(option);
+      return acc;
+    }, { seen: new Set(), options: [] }).options;
+
+    if (!showSelectAll || !multiple) {
+      return [...deduplicatedOptions].sort((a, b) =>
+        a.label.localeCompare(b.label, 'pt-BR', { sensitivity: 'base' }),
+      );
+    }
+
+    const selectAllOption = { value: selectAllValue, label: selectAllLabel };
+    const normalizedOptions = deduplicatedOptions.filter(
+      option => String(option.value) !== String(selectAllValue),
+    );
+
+    return [
+      selectAllOption,
+      ...normalizedOptions.sort((a, b) =>
         a.label.localeCompare(b.label, 'pt-BR', { sensitivity: 'base' }),
       ),
-    [options],
-  );
+    ];
+  }, [options, showSelectAll, selectAllLabel, selectAllValue, multiple]);
 
   const [previewAnchor, setPreviewAnchor] = useState(null);
   const selectedValues = Array.isArray(value) ? value : [];
+  const selectableOptions = showSelectAll && multiple
+    ? sortedOptions.filter(option => option.value !== selectAllValue)
+    : sortedOptions;
+  const allSelected =
+    showSelectAll &&
+    multiple &&
+    selectableOptions.length > 0 &&
+    selectableOptions.every(option =>
+      selectedValues.some(selected => selected.value === option.value),
+    );
 
   const handleRemoveTag = option => {
     if (!multiple || !Array.isArray(value)) return;
@@ -119,14 +159,18 @@ const SearchableSelect = ({
             }),
           }}
           renderOption={(liProps, option, { selected }) => {
-            const { key, ...optionProps } = liProps;
+            const { key: liKey, ...optionProps } = liProps;
+            const isSelectAllOption = showSelectAll && option.value === selectAllValue;
+            const resolvedSelected = isSelectAllOption ? allSelected : selected;
+            const stableKey = `option-${String(option.value ?? option.label ?? liKey ?? 'item')}`;
+
             return (
-              <li key={key} {...optionProps}>
+              <li key={stableKey} {...optionProps}>
                 {multiple && (
                   <Checkbox
                     icon={uncheckedIcon}
                     checkedIcon={checkedIcon}
-                    checked={selected}
+                    checked={resolvedSelected}
                     sx={{
                       color: 'var(--text-secondary)',
                       '&.Mui-checked': { color: 'var(--color-accent)' },
@@ -264,6 +308,9 @@ SearchableSelect.propTypes = {
   listboxMaxHeight: PropTypes.number,
   compactSelection: PropTypes.bool,
   compactMaxVisible: PropTypes.number,
+  showSelectAll: PropTypes.bool,
+  selectAllLabel: PropTypes.string,
+  selectAllValue: PropTypes.string,
 };
 
 export default SearchableSelect;

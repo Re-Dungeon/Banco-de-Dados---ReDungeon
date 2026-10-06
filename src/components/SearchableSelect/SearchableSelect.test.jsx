@@ -38,4 +38,33 @@ describe('SearchableSelect', () => {
     expect(screen.getAllByText('Universo do Claudio').length).toBeGreaterThan(0);
     expect(screen.getAllByText('The Last Human').length).toBeGreaterThan(0);
   });
+
+  it('deduplica a opção especial de selecionar todos antes do render', async () => {
+    const user = userEvent.setup();
+    const options = [
+      { value: '__TRICKSTER_COIN_SELECT_ALL__', label: 'Todos os Universos' },
+      { value: 'u1', label: 'Bleach' },
+      { value: '__TRICKSTER_COIN_SELECT_ALL__', label: 'Todos os Universos' },
+      { value: 'u2', label: 'The Last Human' },
+    ];
+
+    render(
+      <SearchableSelect
+        label="Universos"
+        name="universos"
+        multiple
+        options={options}
+        value={[]}
+        onChange={() => {}}
+        onBlur={() => {}}
+        showSelectAll
+        selectAllLabel="Todos os Universos"
+        selectAllValue="__TRICKSTER_COIN_SELECT_ALL__"
+      />,
+    );
+
+    await user.click(screen.getByRole('combobox'));
+
+    expect(screen.getAllByText('Todos os Universos')).toHaveLength(1);
+  });
 });

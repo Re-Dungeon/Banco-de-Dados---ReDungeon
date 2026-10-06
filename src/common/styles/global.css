@@ -79,12 +79,7 @@ html {
 
 body {
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-  background-color: var(--color-dark);
-  background-image: url('https://i.imgur.com/REkKA1N.png');
-  background-size: cover;
-  background-repeat: no-repeat;
-  background-position: center;
-  background-attachment: fixed;
+  background: linear-gradient(135deg, #050816 0%, #0b1020 100%);
   color: var(--color-text);
   line-height: 1.6;
   font-size: 14px;
