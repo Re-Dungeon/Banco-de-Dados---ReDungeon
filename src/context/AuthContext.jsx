@@ -29,6 +29,15 @@ export const AuthProvider = ({ children }) => {
       clearTimeout(timeout);
       setCurrentUser(user);
       setLoading(false);
+
+      if (import.meta.env.DEV) {
+        // eslint-disable-next-line no-console
+        console.info('[Auth debug]', {
+          uid: user?.uid ?? null,
+          isAuthenticated: Boolean(user),
+          loading: false,
+        });
+      }
     });
     return () => {
       clearTimeout(timeout);
