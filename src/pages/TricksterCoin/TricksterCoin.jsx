@@ -204,7 +204,7 @@ const getInitialValues = benefit => {
 };
 
 const TricksterCoin = () => {
-  const { canCreate } = useAuth();
+  const { currentUser, loading, isAdmin, loadingPermissions, canCreate } = useAuth();
   const { confirmDelete, deleteConfirmationDialog } = useDeleteConfirmation();
   const [benefits, setBenefits] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -251,6 +251,27 @@ const TricksterCoin = () => {
   }, [universos]);
 
   const refreshBenefits = useCallback(async () => {
+    if (loading || loadingPermissions) {
+      setIsLoading(true);
+      return;
+    }
+
+    if (!currentUser) {
+      setBenefits([]);
+      setLoadError('Você precisa estar autenticado para acessar a Trickster Coin.');
+      setIsLoading(false);
+      return;
+    }
+
+    if (!isAdmin) {
+      setBenefits([]);
+      setLoadError(
+        'Você não possui acesso à Trickster Coin. Verifique o documento userPermissions/{uid} e o campo isAdmin.',
+      );
+      setIsLoading(false);
+      return;
+    }
+
     setIsLoading(true);
     setLoadError('');
 
@@ -261,22 +282,69 @@ const TricksterCoin = () => {
       // eslint-disable-next-line no-console
       console.error('Erro ao carregar benefícios da Trickster Coin:', error);
       setBenefits([]);
-      setLoadError('Não foi possível carregar os benefícios da Trickster Coin.');
+      setLoadError(
+        'Não foi possível estabelecer comunicação com o Firestore para carregar os benefícios da Trickster Coin.',
+      );
     } finally {
       setIsLoading(false);
     }
-  }, []);
+  }, [currentUser, isAdmin, loading, loadingPermissions]);
 
   useEffect(() => {
     let active = true;
 
-    getTricksterCoinBeneficios()
-      .then(items => {
+    const loadBenefits = async () => {
+      if (loading || loadingPermissions) {
+        if (import.meta.env.DEV) {
+          // eslint-disable-next-line no-console
+          console.info('[TricksterCoin debug] aguardando autenticação/permissões', {
+            uid: currentUser?.uid ?? null,
+            loading,
+            loadingPermissions,
+            isAdmin,
+          });
+        }
+        return;
+      }
+
+      if (!currentUser) {
+        if (active) {
+          setBenefits([]);
+          setLoadError('Você precisa estar autenticado para acessar a Trickster Coin.');
+          setIsLoading(false);
+        }
+        return;
+      }
+
+      if (!isAdmin) {
+        if (active) {
+          setBenefits([]);
+          setLoadError(
+            'Você não possui acesso à Trickster Coin. Verifique o documento userPermissions/{uid} e o campo isAdmin.',
+          );
+          setIsLoading(false);
+        }
+        return;
+      }
+
+      if (import.meta.env.DEV) {
+        // eslint-disable-next-line no-console
+        console.info('[TricksterCoin debug] executando leitura da coleção tricksterCoin', {
+          uid: currentUser.uid,
+          isAdmin,
+        });
+      }
+
+      setIsLoading(true);
+      setLoadError('');
+
+      try {
+        const items = await getTricksterCoinBeneficios();
         if (active) {
           setBenefits(Array.isArray(items) ? items : []);
+          setLoadError('');
         }
-      })
-      .catch(error => {
+      } catch (error) {
         if (!active) {
           return;
         }
@@ -284,18 +352,22 @@ const TricksterCoin = () => {
         // eslint-disable-next-line no-console
         console.error('Erro ao carregar benefícios da Trickster Coin:', error);
         setBenefits([]);
-        setLoadError('Não foi possível carregar os benefícios da Trickster Coin.');
-      })
-      .finally(() => {
+        setLoadError(
+          'Não foi possível estabelecer comunicação com o Firestore para carregar os benefícios da Trickster Coin.',
+        );
+      } finally {
         if (active) {
           setIsLoading(false);
         }
-      });
+      }
+    };
+
+    loadBenefits();
 
     return () => {
       active = false;
     };
-  }, []);
+  }, [currentUser, isAdmin, loading, loadingPermissions]);
 
   const benefitTags = useMemo(
     () => getTricksterCoinTagOptions(benefits),
@@ -543,6 +615,36 @@ const TricksterCoin = () => {
           {loadError}
         </Box>
       )}
+
+      {!loading && !loadingPermissions && !currentUser && !loadError ? (
+        <Box
+          sx={{
+            mb: 2,
+            p: 1.5,
+            borderRadius: 2,
+            border: '1px solid rgba(239, 68, 68, 0.3)',
+            background: 'rgba(239, 68, 68, 0.08)',
+            color: '#fca5a5',
+          }}
+        >
+          Você precisa estar autenticado para acessar a Trickster Coin.
+        </Box>
+      ) : null}
+
+      {!loading && !loadingPermissions && currentUser && !isAdmin && !loadError ? (
+        <Box
+          sx={{
+            mb: 2,
+            p: 1.5,
+            borderRadius: 2,
+            border: '1px solid rgba(239, 68, 68, 0.3)',
+            background: 'rgba(239, 68, 68, 0.08)',
+            color: '#fca5a5',
+          }}
+        >
+          {'Você não possui acesso à Trickster Coin. Verifique o documento userPermissions/{uid} e o campo isAdmin.'}
+        </Box>
+      ) : null}
 
       {actionMessage && (
         <Box

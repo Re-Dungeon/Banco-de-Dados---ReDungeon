@@ -20,9 +20,23 @@ const usePermissions = currentUser => {
         const { isAdmin: admin, universos } = await getUserPermissions(
           currentUser.uid,
         );
+
+        if (import.meta.env.DEV) {
+          // eslint-disable-next-line no-console
+          console.info('[Permissions debug]', {
+            uid: currentUser.uid,
+            isAdmin: admin,
+            universos,
+          });
+        }
+
         setIsAdmin(admin);
         setAllowedUniversos(universos);
-      } catch {
+      } catch (error) {
+        if (import.meta.env.DEV) {
+          // eslint-disable-next-line no-console
+          console.error('[Permissions debug] erro ao obter permissões:', error);
+        }
         setIsAdmin(false);
         setAllowedUniversos([]);
       } finally {
