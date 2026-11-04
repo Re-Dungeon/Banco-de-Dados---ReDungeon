@@ -21,6 +21,7 @@ import useUniversos from 'hooks/useUniversos';
 import { ordenarPorNome, ORDEM_ASC } from 'common/utils/ordenacao';
 import EntityFilters from 'components/EntityFilters/EntityFilters';
 import EntityViewDialog from 'components/EntityViewDialog/EntityViewDialog';
+import PageHeader from 'components/PageHeader/PageHeader';
 import { CAMPOS_POR_TIPO } from './utils';
 import {
   RacaCard,
@@ -83,38 +84,24 @@ const Origens = () => {
 
   return (
     <Box className="page-container" id="redungeon-origens" data-page="origens">
-      <Box
-        sx={{
-          display: 'flex',
-          alignItems: 'flex-start',
-          justifyContent: 'space-between',
-          mb: 3,
-        }}
-      >
-        <Box>
-          <Typography
-            variant="h5"
-            sx={{ color: 'var(--text-primary)', fontWeight: 700, mb: 0.5 }}
-          >
-            Origens
-          </Typography>
-          <Typography variant="body2" sx={{ color: 'var(--text-secondary)' }}>
-            Gerencie as origens, regiões e cenários da campanha.
-          </Typography>
-        </Box>
-        {canCreate() && (
-          <Button
-            variant="contained"
-            onClick={() => navigate(ROUTE_PATHS.NOVA_ORIGEM)}
-            sx={{
-              background: 'var(--color-primary)',
-              '&:hover': { background: '#5a2090' },
-            }}
-          >
-            + Nova Origem
-          </Button>
-        )}
-      </Box>
+      <PageHeader
+        title="Origens"
+        description="Gerencie as origens, regiões e cenários da campanha."
+        actions={
+          canCreate() ? (
+            <Button
+              variant="contained"
+              onClick={() => navigate(ROUTE_PATHS.NOVA_ORIGEM)}
+              sx={{
+                background: 'var(--color-primary)',
+                '&:hover': { background: 'var(--color-primary-dark)' },
+              }}
+            >
+              + Nova Origem
+            </Button>
+          ) : null
+        }
+      />
 
       {loading ? (
         <Box sx={{ display: 'flex', justifyContent: 'center', py: 8 }}>
@@ -258,7 +245,7 @@ const Origens = () => {
               }}
               sx={{
                 background: 'var(--color-primary)',
-                '&:hover': { background: '#5a2090' },
+                '&:hover': { background: 'var(--color-primary-dark)' },
               }}
             >
               Editar

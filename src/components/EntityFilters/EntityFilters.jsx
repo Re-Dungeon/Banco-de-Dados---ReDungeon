@@ -72,6 +72,7 @@ const EntityFilters = ({
             onChange={(e, newValue) => filtro.onChange(newValue?.value ?? '')}
             placeholder={filtro.allLabel || 'Todos'}
             listboxMaxHeight={menuMaxHeight}
+            sortOptions={false}
           />
         );
       })}

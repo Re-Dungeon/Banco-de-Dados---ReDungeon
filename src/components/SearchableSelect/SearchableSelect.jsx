@@ -40,10 +40,9 @@ const checkedIcon = <CheckBoxIcon fontSize="small" />;
 const uncheckedIcon = <CheckBoxOutlineBlankIcon fontSize="small" />;
 
 /**
- * Select digitável (filtra opções ao digitar) com opções sempre listadas em
- * ordem alfabética. Substitui o `<Select>`/`<MenuItem>` do MUI em toda a
- * aplicação. É um componente controlado e não sabe nada de Formik — veja
- * `components/FormSelect` para o adaptador usado em `<Field>`/`<FastField>`.
+ * Select digitável com suporte opcional a ordenação alfabética. Em casos em
+ * que a ordem visual da lista tem significado de negócio, a prop `sortOptions`
+ * pode ser desativada para manter a ordem original enviada pela aplicação.
  */
 const SearchableSelect = ({
   label,
@@ -66,6 +65,7 @@ const SearchableSelect = ({
   showSelectAll = false,
   selectAllLabel = 'Todos os itens',
   selectAllValue = '__SELECT_ALL__',
+  sortOptions = true,
 }) => {
   const sortedOptions = useMemo(() => {
     const deduplicatedOptions = [...options].reduce((acc, option) => {
@@ -82,6 +82,10 @@ const SearchableSelect = ({
       acc.options.push(option);
       return acc;
     }, { seen: new Set(), options: [] }).options;
+
+    if (!sortOptions) {
+      return deduplicatedOptions;
+    }
 
     if (!showSelectAll || !multiple) {
       return [...deduplicatedOptions].sort((a, b) =>
@@ -100,7 +104,7 @@ const SearchableSelect = ({
         a.label.localeCompare(b.label, 'pt-BR', { sensitivity: 'base' }),
       ),
     ];
-  }, [options, showSelectAll, selectAllLabel, selectAllValue, multiple]);
+  }, [options, showSelectAll, selectAllLabel, selectAllValue, multiple, sortOptions]);
 
   const [previewAnchor, setPreviewAnchor] = useState(null);
   const selectedValues = Array.isArray(value) ? value : [];
@@ -311,6 +315,7 @@ SearchableSelect.propTypes = {
   showSelectAll: PropTypes.bool,
   selectAllLabel: PropTypes.string,
   selectAllValue: PropTypes.string,
+  sortOptions: PropTypes.bool,
 };
 
 export default SearchableSelect;

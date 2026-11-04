@@ -39,8 +39,8 @@ export const CATEGORIAS_RECEITA = [
 export const TIPOS_ARTE = [
   'Energia',
   'Fadiga',
-  'Misto (Energia e Fadiga)',
-  'Neutra',
+  'Saúde',
+  'Neutro',
 ];
 
 export const ACAO_ARTE = ['Imediata', 'Sustentada', 'Duradoura'];

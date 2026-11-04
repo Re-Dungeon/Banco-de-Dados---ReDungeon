@@ -2,10 +2,22 @@ import React, { useState } from 'react';
 import { Outlet } from 'react-router-dom';
 import Sidebar from 'components/Sidebar/Sidebar';
 import Header from 'components/Header/Header';
+import ProtectedRoute from 'components/ProtectedRoute/ProtectedRoute';
+import PageLoadingScreen from 'components/PageLoadingScreen/PageLoadingScreen';
+import { useAuth } from 'context/AuthContext';
 import { AppContainer, MainWrapper, ContentWrapper } from './styles';
 
 const Layout = () => {
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
+  const { currentUser, loading, loadingPreferences } = useAuth();
+
+  if (loading || (currentUser && loadingPreferences)) {
+    return <PageLoadingScreen visible />;
+  }
+
+  if (!currentUser) {
+    return <ProtectedRoute />;
+  }
 
   return (
     <AppContainer className="redungeon-container">

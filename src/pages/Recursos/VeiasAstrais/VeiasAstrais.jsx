@@ -23,6 +23,7 @@ import useUniversos from 'hooks/useUniversos';
 import { ordenarPorNome, ORDEM_ASC } from 'common/utils/ordenacao';
 import EntityFilters from 'components/EntityFilters/EntityFilters';
 import EntityViewDialog from 'components/EntityViewDialog/EntityViewDialog';
+import PageHeader from 'components/PageHeader/PageHeader';
 import {
   RacaCard,
   RacaImageFrame,
@@ -114,39 +115,24 @@ const VeiasAstrais = () => {
       id="redungeon-veias-astrais"
       data-page="veias-astrais"
     >
-      <Box
-        sx={{
-          display: 'flex',
-          alignItems: 'flex-start',
-          justifyContent: 'space-between',
-          mb: 3,
-        }}
-      >
-        <Box>
-          <Typography
-            variant="h5"
-            sx={{ color: 'var(--text-primary)', fontWeight: 700, mb: 0.5 }}
-          >
-            Veias Astrais
-          </Typography>
-          <Typography variant="body2" sx={{ color: 'var(--text-secondary)' }}>
-            Gerencie as veias astrais concedidas pelas divindades e
-            constelações.
-          </Typography>
-        </Box>
-        {canCreate() && (
-          <Button
-            variant="contained"
-            onClick={() => navigate(ROUTE_PATHS.NOVA_VEIA_ASTRAL)}
-            sx={{
-              background: 'var(--color-primary)',
-              '&:hover': { background: '#5a2090' },
-            }}
-          >
-            + Nova Veia Astral
-          </Button>
-        )}
-      </Box>
+      <PageHeader
+        title="Veias Astrais"
+        description="Gerencie as veias astrais concedidas pelas divindades e constelações."
+        actions={
+          canCreate() ? (
+            <Button
+              variant="contained"
+              onClick={() => navigate(ROUTE_PATHS.NOVA_VEIA_ASTRAL)}
+              sx={{
+                background: 'var(--color-primary)',
+                '&:hover': { background: 'var(--color-primary-dark)' },
+              }}
+            >
+              + Nova Veia Astral
+            </Button>
+          ) : null
+        }
+      />
 
       {loading ? (
         <Box sx={{ display: 'flex', justifyContent: 'center', py: 8 }}>
@@ -350,7 +336,7 @@ const VeiasAstrais = () => {
               }}
               sx={{
                 background: 'var(--color-primary)',
-                '&:hover': { background: '#5a2090' },
+                '&:hover': { background: 'var(--color-primary-dark)' },
               }}
             >
               Editar

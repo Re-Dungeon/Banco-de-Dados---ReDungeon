@@ -8,90 +8,73 @@ import Typography from '@mui/material/Typography';
 
 export const StyledDialog = styled(Dialog)`
   .MuiDialog-paper {
-    background: linear-gradient(180deg, #050816 0%, #0B1220 100%) !important;
+    background: linear-gradient(180deg, rgba(5, 8, 22, 0.96) 0%, rgba(11, 16, 32, 0.97) 100%) !important;
     backdrop-filter: blur(20px) !important;
     -webkit-backdrop-filter: blur(20px) !important;
-    border: 1px solid rgba(59, 130, 246, 0.14) !important;
-    border-radius: 24px !important;
+    border: 1px solid rgba(148, 163, 184, 0.16) !important;
+    border-radius: 28px !important;
     min-width: 380px;
-    max-width: 420px;
-    box-shadow: 0 28px 80px rgba(2, 6, 23, 0.75), 0 12px 34px rgba(59,130,246,0.06) !important;
+    max-width: 440px;
+    width: min(90vw, 440px) !important;
+    box-shadow: 0 28px 80px rgba(2, 6, 23, 0.9), 0 14px 36px rgba(96, 165, 250, 0.08) !important;
     position: relative;
     overflow: hidden !important;
     padding: 0 !important;
+    transition: transform 0.2s ease, opacity 0.2s ease !important;
 
-    /* subtile radial glow behind modal */
     &::before {
       content: '';
       position: absolute;
-      left: 50%;
-      top: -48px;
-      transform: translateX(-50%);
-      width: 420px;
-      height: 260px;
-      background: radial-gradient(ellipse at center, rgba(59,130,246,0.06) 0%, rgba(59,130,246,0.02) 30%, transparent 60%);
+      inset: -15% 15% auto 15%;
+      height: 220px;
+      background: radial-gradient(circle at center, rgba(96, 165, 250, 0.12), rgba(59, 130, 246, 0.04) 28%, transparent 68%);
       filter: blur(28px);
       pointer-events: none;
       z-index: 0;
     }
 
-    /* thin decorative top line */
     &::after {
       content: '';
       position: absolute;
-      left: 12px;
-      right: 12px;
-      top: 6px;
-      height: 3px;
-      background: linear-gradient(90deg, rgba(124,77,255,0) 0%, rgba(124,77,255,0.18) 50%, rgba(59,130,246,0.12) 100%);
-      border-radius: 6px;
+      left: 18px;
+      right: 18px;
+      top: 10px;
+      height: 2px;
+      background: linear-gradient(90deg, rgba(124, 77, 255, 0) 0%, rgba(124, 77, 255, 0.3) 50%, rgba(59, 130, 246, 0.18) 100%);
+      border-radius: 999px;
       z-index: 1;
       opacity: 0.9;
       pointer-events: none;
-    }
-
-    /* close button smaller + hover effect */
-    .MuiDialogContent-root .MuiIconButton-root {
-      width: 28px !important;
-      height: 28px !important;
-      color: rgba(255,255,255,0.6) !important;
-      transition: color 0.18s ease, background 0.18s ease !important;
-    }
-
-    .MuiDialogContent-root .MuiIconButton-root:hover {
-      color: #3B82F6 !important;
-      background: rgba(59,130,246,0.06) !important;
     }
   }
 `;
 
 export const StyledDialogContent = styled(DialogContent)`
-  padding: 32px !important;
+  padding: 24px 24px 26px !important;
   display: flex;
   flex-direction: column;
-  gap: 20px;
+  gap: 22px;
   position: relative;
   z-index: 2;
   box-sizing: border-box;
   overflow: hidden;
   align-items: stretch;
-  /* posiciona o box do close button fora do fluxo para não alterar layout */
+
   & > .MuiBox-root:first-child {
     position: absolute;
-    right: 12px;
-    top: 12px;
+    right: 14px;
+    top: 14px;
     margin: 0 !important;
     z-index: 3;
   }
 
-  /* garantir que o form ocupe o espaço interno corretamente */
   & > form {
     width: 100%;
     box-sizing: border-box;
     margin: 0;
     padding: 0;
   }
-  /* icons inside inputs via background images (avoid forwarding props) */
+
   .MuiFormControl-root {
     width: 100%;
     box-sizing: border-box;
@@ -102,63 +85,62 @@ export const StyledDialogContent = styled(DialogContent)`
   .MuiFormControl-root:nth-of-type(2) .MuiOutlinedInput-root {
     position: relative;
     padding-left: 46px;
-    width: 100%;
-    box-sizing: border-box;
+    display: flex;
+    align-items: center;
   }
 
-  /* garantir que helper text, alerts e botão sigam a largura do form */
+  .MuiFormControl-root:nth-of-type(1) .MuiOutlinedInput-root::before,
+  .MuiFormControl-root:nth-of-type(2) .MuiOutlinedInput-root::before {
+    content: '';
+    position: absolute;
+    left: 14px;
+    top: 50%;
+    width: 18px;
+    height: 18px;
+    transform: translateY(-50%);
+    pointer-events: none;
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: contain;
+  }
+
+  .MuiFormControl-root:nth-of-type(1) .MuiOutlinedInput-root::before {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none'%3E%3Cpath d='M4 7.5C4 6.39543 4.89543 5.5 6 5.5H18C19.1046 5.5 20 6.39543 20 7.5V16.5C20 17.6046 19.1046 18.5 18 18.5H6C4.89543 18.5 4 17.6046 4 16.5V7.5Z' stroke='%2394A3B8' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3Cpath d='M4.5 7L12 12.5L19.5 7' stroke='%2394A3B8' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  }
+
+  .MuiFormControl-root:nth-of-type(2) .MuiOutlinedInput-root::before {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none'%3E%3Crect x='4.5' y='10.5' width='15' height='9' rx='2' stroke='%2394A3B8' stroke-width='1.5'/%3E%3Cpath d='M8 10.5V8.5C8 6.567 9.567 5 11.5 5H12.5C14.433 5 16 6.567 16 8.5V10.5' stroke='%2394A3B8' stroke-width='1.5' stroke-linecap='round'/%3E%3C/svg%3E");
+  }
+
   .MuiFormHelperText-root,
   .ErrorAlert,
   .MuiButton-root {
     width: 100%;
     box-sizing: border-box;
   }
-  .MuiFormControl-root:nth-of-type(1) .MuiOutlinedInput-root::before {
-    content: '';
-    position: absolute;
-    left: 14px;
-    top: 50%;
-    transform: translateY(-50%);
-    width: 18px;
-    height: 18px;
-    background: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0%200%2024%2024'><path d='M20%204H4C2.9%204%202%204.9%202%206V18C2%2019.1%202.9%2020%204%2020H20C21.1%2020%2022%2019.1%2022%2018V6C22%204.9%2021.1%204%2020%204Z' stroke='%2394A3B8' stroke-width='1.2' stroke-linecap='round' stroke-linejoin='round' fill='none'/><path d='M22%206L12%2013L2%206' stroke='%2394A3B8' stroke-width='1.2' stroke-linecap='round' stroke-linejoin='round' fill='none'/></svg>") no-repeat center/contain;
-    pointer-events: none;
-  }
 
-  .MuiFormControl-root:nth-of-type(2) .MuiOutlinedInput-root {
-    position: relative;
-    padding-left: 46px;
-    width: 100%;
-    box-sizing: border-box;
-  }
-  .MuiFormControl-root:nth-of-type(2) .MuiOutlinedInput-root::before {
-    content: '';
-    position: absolute;
-    left: 14px;
-    top: 50%;
-    transform: translateY(-50%);
-    width: 16px;
-    height: 16px;
-    background: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0%200%2024%2024'><rect x='3' y='11' width='18' height='10' rx='2' stroke='%2394A3B8' stroke-width='1.2' fill='none'/><path d='M7%2011V8C7%205.79086%208.79086%204%2011%204C13.2091%204%2015%205.79086%2015%208V11' stroke='%2394A3B8' stroke-width='1.2' stroke-linecap='round' fill='none'/></svg>") no-repeat center/contain;
-    pointer-events: none;
+  @media (max-width: 480px) {
+    padding: 20px 18px 22px !important;
   }
 `;
 
 export const ModalTitle = styled(Typography)`
-  color: #E6EEF8 !important;
+  color: #e2e8f0 !important;
   font-weight: 700 !important;
-  font-size: 32px !important;
+  font-size: clamp(2rem, 4vw, 2.6rem) !important;
+  letter-spacing: -0.04em;
+  line-height: 1.1;
   text-align: center;
-  margin-top: 12px !important;
-  letter-spacing: -0.02em;
+  margin: 0 !important;
 `;
 
 export const ModalSubtitle = styled(Typography)`
-  color: #94A3B8 !important;
-  font-size: 0.95rem !important;
+  color: rgba(148, 163, 184, 0.96) !important;
+  font-size: 0.92rem !important;
   text-align: center;
-  margin-top: -4px !important;
-  max-width: 360px;
+  margin: 0 !important;
+  max-width: 320px;
+  line-height: 1.5;
 `;
 
 export const StyledTextField = muiStyled(TextField)(() => ({
@@ -166,72 +148,89 @@ export const StyledTextField = muiStyled(TextField)(() => ({
   maxWidth: '100%',
   '& .MuiOutlinedInput-root': {
     color: 'var(--text-primary)',
-    background: 'rgba(59, 130, 246, 0.18)',
-    borderRadius: 12,
-    height: 52,
+    background: 'rgba(15, 23, 42, 0.8)',
+    borderRadius: 14,
+    minHeight: 56,
     transition: 'all 0.2s ease',
     boxSizing: 'border-box',
+    border: '1px solid rgba(148, 163, 184, 0.14)',
+    paddingLeft: 48,
+    display: 'flex',
+    alignItems: 'center',
     '& fieldset': {
       borderColor: 'transparent',
-      borderWidth: 1,
+      borderWidth: 0,
+    },
+    '&:hover': {
+      borderColor: 'rgba(96, 165, 250, 0.24)',
+      boxShadow: '0 0 0 1px rgba(96,165,250,0.15)',
     },
     '&:hover fieldset': {
-      borderColor: 'rgba(59,130,246,0.06)',
+      borderColor: 'rgba(96, 165, 250, 0.18)',
+    },
+    '&.Mui-focused': {
+      boxShadow: '0 0 0 1px rgba(124, 58, 237, 0.38), 0 0 20px rgba(124, 58, 237, 0.12)',
     },
     '&.Mui-focused fieldset': {
-      borderColor: '#3B82F6',
-      boxShadow: '0 8px 32px rgba(59,130,246,0.12)',
+      borderColor: 'rgba(124, 58, 237, 0.8)',
+      borderWidth: 1,
     },
     '& input::placeholder': {
-      color: '#CBD5E1',
+      color: '#94A3B8',
       opacity: 1,
     },
     '& .MuiInputBase-input': {
-      height: 52,
+      height: 24,
       paddingTop: 14,
       paddingBottom: 14,
       boxSizing: 'border-box',
+      fontSize: '0.96rem',
+      paddingLeft: 0,
+      marginLeft: 0,
+      lineHeight: 1.4,
     },
   },
   '& .MuiInputLabel-root': {
     color: '#94A3B8',
+    fontSize: '0.9rem',
     '&.Mui-focused': {
-      color: '#E6EEF8',
+      color: '#E2E8F0',
     },
   },
   '& .MuiFormHelperText-root': {
     color: '#f87171',
+    marginLeft: 0,
+    marginTop: 8,
+    fontSize: '0.76rem',
   },
-  /* adornment/icon color */
-  '& .MuiInputAdornment-root svg path, & .MuiInputAdornment-root svg rect': {
-    stroke: '#94A3B8',
-  },
-  /* responsive */
-  ['@media (max-width:480px)']: {
-    width: '100%',
+  '@media (max-width:480px)': {
     '& .MuiOutlinedInput-root': {
-      height: 48,
-      '& .MuiInputBase-input': { height: 48, paddingTop: 12, paddingBottom: 12 },
+      minHeight: 52,
+      paddingLeft: 44,
+      '& .MuiInputBase-input': { fontSize: '0.94rem' },
     },
   },
 }));
 
 export const SubmitButton = styled(Button)`
-  background: linear-gradient(90deg, #7C3AED 0%, #9333EA 100%) !important;
-  color: #fff !important;
-  height: 52px !important;
+  background: linear-gradient(135deg, rgba(124, 58, 237, 0.95) 0%, rgba(59, 130, 246, 0.88) 100%) !important;
+  color: #f8fafc !important;
+  height: 54px !important;
   padding: 0 20px !important;
-  font-weight: 600 !important;
-  font-size: 0.95rem !important;
-  border-radius: 12px !important;
-  transition: transform 0.18s ease, box-shadow 0.18s ease !important;
+  font-weight: 700 !important;
+  font-size: 1rem !important;
+  border-radius: 14px !important;
+  transition: transform 0.18s ease, box-shadow 0.18s ease, filter 0.18s ease !important;
   width: 100% !important;
   box-sizing: border-box !important;
   display: block !important;
+  border: 1px solid rgba(148, 163, 184, 0.14) !important;
+  box-shadow: 0 12px 30px rgba(124, 58, 237, 0.22) !important;
 
   &:hover {
     transform: translateY(-1px) !important;
-    box-shadow: 0 12px 36px rgba(147,51,234,0.18) !important;
+    box-shadow: 0 16px 34px rgba(124, 58, 237, 0.28) !important;
+    filter: brightness(1.03) !important;
   }
 
   &:active {
@@ -239,7 +238,8 @@ export const SubmitButton = styled(Button)`
   }
 
   &:disabled {
-    opacity: 0.6 !important;
+    opacity: 0.7 !important;
+    box-shadow: none !important;
   }
 `;
 

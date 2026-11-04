@@ -188,6 +188,7 @@ const NovaArte = () => {
                               form={form}
                               label="Tipo"
                               options={TIPOS_ARTE}
+                              sortOptions={false}
                             />
                           )}
                         </Field>

@@ -75,6 +75,7 @@ const TricksterCoinCard = ({
 }) => {
   const imageSource = String(benefit?.linkImagem ?? '').trim();
   const [failedImageUrls, setFailedImageUrls] = useState({});
+  const [loadedImageUrl, setLoadedImageUrl] = useState('');
   const bonusEntries = normalizeBonusEntries(benefit?.bonus, benefit?.tipoBonus ?? 'Neutro');
   const tokens = normalizeTokensValue(benefit?.tokens);
   const bonusPreview = bonusEntries.slice(0, 3);
@@ -83,12 +84,14 @@ const TricksterCoinCard = ({
   const statusStyles = getStatusStyles(benefit.status || 'Ativo');
   const hasFailedImage = Boolean(imageSource) && Boolean(failedImageUrls[imageSource]);
   const shouldRenderImage = Boolean(imageSource) && !hasFailedImage;
+  const isImageLoaded = shouldRenderImage && loadedImageUrl === imageSource;
 
   const handleImageError = () => {
     if (!imageSource) {
       return;
     }
 
+    setLoadedImageUrl('');
     setFailedImageUrls(previous => ({
       ...previous,
       [imageSource]: true,
@@ -123,23 +126,38 @@ const TricksterCoinCard = ({
       >
         {shouldRenderImage ? (
           <Box
-            component="img"
-            key={`trickster-coin-image-${imageSource}`}
-            src={imageSource}
-            alt={benefit.nome}
-            onError={handleImageError}
-            onLoad={() => {
-              if (failedImageUrls[imageSource]) {
-                setFailedImageUrls(previous => ({ ...previous, [imageSource]: false }));
-              }
-            }}
+            className={isImageLoaded ? 're-image-shell' : 're-image-shell is-loading'}
             sx={{
+              position: 'absolute',
+              inset: 0,
               width: '100%',
               height: '100%',
-              objectFit: 'cover',
-              display: 'block',
+              borderRadius: 0,
             }}
-          />
+          >
+            <Box
+              component="img"
+              key={`trickster-coin-image-${imageSource}`}
+              src={imageSource}
+              alt={benefit.nome}
+              onError={handleImageError}
+              onLoad={() => {
+                setLoadedImageUrl(imageSource);
+                if (failedImageUrls[imageSource]) {
+                  setFailedImageUrls(previous => ({ ...previous, [imageSource]: false }));
+                }
+              }}
+              sx={{
+                width: '100%',
+                height: '100%',
+                objectFit: 'cover',
+                display: 'block',
+                opacity: isImageLoaded ? 1 : 0,
+                transition: 'opacity 280ms ease',
+              }}
+            />
+            {!isImageLoaded && <Box className="re-image-shimmer" aria-hidden="true" />}
+          </Box>
         ) : (
           <Box
             sx={{

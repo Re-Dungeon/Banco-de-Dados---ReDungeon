@@ -31,6 +31,7 @@ import useDeleteConfirmation from 'hooks/useDeleteConfirmation';
 import useUniversos from 'hooks/useUniversos';
 import { ordenarPorNome, ORDEM_ASC } from 'common/utils/ordenacao';
 import EntityFilters from 'components/EntityFilters/EntityFilters';
+import PageHeader from 'components/PageHeader/PageHeader';
 import {
   RacaCard,
   RacaImageFrame,
@@ -96,38 +97,24 @@ const Regras = () => {
 
   return (
     <Box className="page-container" id="redungeon-regras" data-page="regras">
-      <Box
-        sx={{
-          display: 'flex',
-          alignItems: 'flex-start',
-          justifyContent: 'space-between',
-          mb: 3,
-        }}
-      >
-        <Box>
-          <Typography
-            variant="h5"
-            sx={{ color: 'var(--text-primary)', fontWeight: 700, mb: 0.5 }}
-          >
-            Regras
-          </Typography>
-          <Typography variant="body2" sx={{ color: 'var(--text-secondary)' }}>
-            Consulte e customize as regras do seu jogo.
-          </Typography>
-        </Box>
-        {canCreate() && (
-          <Button
-            variant="contained"
-            onClick={() => navigate(ROUTE_PATHS.NOVA_REGRA)}
-            sx={{
-              background: 'var(--color-primary)',
-              '&:hover': { background: '#5a2090' },
-            }}
-          >
-            + Nova Regra
-          </Button>
-        )}
-      </Box>
+      <PageHeader
+        title="Regras"
+        description="Consulte e customize as regras do seu jogo."
+        actions={
+          canCreate() ? (
+            <Button
+              variant="contained"
+              onClick={() => navigate(ROUTE_PATHS.NOVA_REGRA)}
+              sx={{
+                background: 'var(--color-primary)',
+                '&:hover': { background: 'var(--color-primary-dark)' },
+              }}
+            >
+              + Nova Regra
+            </Button>
+          ) : null
+        }
+      />
 
       {loading ? (
         <Box sx={{ display: 'flex', justifyContent: 'center', py: 8 }}>
@@ -261,7 +248,7 @@ const Regras = () => {
             </Box>
             <Box sx={{ ml: 'auto', display: 'flex', alignItems: 'center', gap: 1 }}>
               {canWrite(getRegraUniversos(regraVisualizando)) && (
-                <Button variant="contained" onClick={() => { navigate(ROUTE_PATHS.NOVA_REGRA, { state: { regra: regraVisualizando } }); setRegraVisualizando(null); }} sx={{ background: 'var(--color-primary)', '&:hover': { background: '#5a2090' } }}>Editar</Button>
+                <Button variant="contained" onClick={() => { navigate(ROUTE_PATHS.NOVA_REGRA, { state: { regra: regraVisualizando } }); setRegraVisualizando(null); }} sx={{ background: 'var(--color-primary)', '&:hover': { background: 'var(--color-primary-dark)' } }}>Editar</Button>
               )}
             </Box>
           </Box>

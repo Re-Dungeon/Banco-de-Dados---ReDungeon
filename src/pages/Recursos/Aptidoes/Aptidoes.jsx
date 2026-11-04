@@ -23,6 +23,7 @@ import useDeleteConfirmation from 'hooks/useDeleteConfirmation';
 import useUniversos from 'hooks/useUniversos';
 import { ordenarPorNome, ORDEM_ASC } from 'common/utils/ordenacao';
 import EntityFilters from 'components/EntityFilters/EntityFilters';
+import PageHeader from 'components/PageHeader/PageHeader';
 import Dialog from '@mui/material/Dialog';
 import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
@@ -92,38 +93,24 @@ const Aptidoes = () => {
       id="redungeon-aptidoes"
       data-page="aptidoes"
     >
-      <Box
-        sx={{
-          display: 'flex',
-          alignItems: 'flex-start',
-          justifyContent: 'space-between',
-          mb: 3,
-        }}
-      >
-        <Box>
-          <Typography
-            variant="h5"
-            sx={{ color: 'var(--text-primary)', fontWeight: 700, mb: 0.5 }}
-          >
-            Aptidões
-          </Typography>
-          <Typography variant="body2" sx={{ color: 'var(--text-secondary)' }}>
-            Gerencie as aptidões disponíveis na campanha.
-          </Typography>
-        </Box>
-        {canCreate() && (
-          <Button
-            variant="contained"
-            onClick={() => navigate(ROUTE_PATHS.NOVA_APTIDAO)}
-            sx={{
-              background: 'var(--color-primary)',
-              '&:hover': { background: '#5a2090' },
-            }}
-          >
-            + Nova Aptidão
-          </Button>
-        )}
-      </Box>
+      <PageHeader
+        title="Aptidões"
+        description="Gerencie as aptidões disponíveis na campanha."
+        actions={
+          canCreate() ? (
+            <Button
+              variant="contained"
+              onClick={() => navigate(ROUTE_PATHS.NOVA_APTIDAO)}
+              sx={{
+                background: 'var(--color-primary)',
+                '&:hover': { background: 'var(--color-primary-dark)' },
+              }}
+            >
+              + Nova Aptidão
+            </Button>
+          ) : null
+        }
+      />
 
       {loading ? (
         <Box sx={{ display: 'flex', justifyContent: 'center', py: 8 }}>

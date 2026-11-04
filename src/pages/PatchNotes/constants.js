@@ -1,5 +1,16 @@
 export const PATCH_NOTES = [
   {
+    version: '3.3.0',
+    date: '2026-11-03',
+    changes: [
+      'Atualização visual do menu lateral com nova identidade de navegação, melhor legibilidade e refinamento da experiência geral do app',
+      'Redesign visual da tela de login para uma apresentação mais imersiva e moderna, mantendo a mesma lógica de autenticação e fluxo do sistema',
+      'Ajuste na gestão de custos das Artes: o tipo de custo agora considera somente Energia, Fadiga, Saúde e Neutro',
+      'Refinamento visual dos cards e destaques da navegação para manter o padrão escuro e fantasy do Re:Dungeon',
+      'Ajustes de consistência visual para manter fundos, cards, menus, modais e textos alinhados ao padrão escuro do Re',
+    ],
+  },
+  {
     version: '3.2.0',
     date: '2026-10-06',
     changes: [

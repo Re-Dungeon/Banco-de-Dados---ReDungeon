@@ -20,6 +20,7 @@ import useUniversos from 'hooks/useUniversos';
 import { ordenarPorNome, ORDEM_ASC } from 'common/utils/ordenacao';
 import EntityFilters from 'components/EntityFilters/EntityFilters';
 import EntityViewDialog from 'components/EntityViewDialog/EntityViewDialog';
+import PageHeader from 'components/PageHeader/PageHeader';
 import { TIPOS_ITEM } from './utils';
 import {
   RacaCard,
@@ -76,38 +77,24 @@ const Itens = () => {
 
   return (
     <Box className="page-container" id="redungeon-itens" data-page="itens">
-      <Box
-        sx={{
-          display: 'flex',
-          alignItems: 'flex-start',
-          justifyContent: 'space-between',
-          mb: 3,
-        }}
-      >
-        <Box>
-          <Typography
-            variant="h5"
-            sx={{ color: 'var(--text-primary)', fontWeight: 700, mb: 0.5 }}
-          >
-            Itens
-          </Typography>
-          <Typography variant="body2" sx={{ color: 'var(--text-secondary)' }}>
-            Gerencie os itens disponíveis na campanha.
-          </Typography>
-        </Box>
-        {canCreate() && (
-          <Button
-            variant="contained"
-            onClick={() => navigate(ROUTE_PATHS.NOVO_ITEM)}
-            sx={{
-              background: 'var(--color-primary)',
-              '&:hover': { background: '#5a2090' },
-            }}
-          >
-            + Novo Item
-          </Button>
-        )}
-      </Box>
+      <PageHeader
+        title="Itens"
+        description="Gerencie os itens disponíveis na campanha."
+        actions={
+          canCreate() ? (
+            <Button
+              variant="contained"
+              onClick={() => navigate(ROUTE_PATHS.NOVO_ITEM)}
+              sx={{
+                background: 'var(--color-primary)',
+                '&:hover': { background: 'var(--color-primary-dark)' },
+              }}
+            >
+              + Novo Item
+            </Button>
+          ) : null
+        }
+      />
 
       {loading ? (
         <Box sx={{ display: 'flex', justifyContent: 'center', py: 8 }}>

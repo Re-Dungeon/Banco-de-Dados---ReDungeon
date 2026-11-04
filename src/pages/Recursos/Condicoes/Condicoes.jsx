@@ -20,6 +20,7 @@ import useUniversos from 'hooks/useUniversos';
 import { ordenarPorNome, ORDEM_ASC } from 'common/utils/ordenacao';
 import EntityFilters from 'components/EntityFilters/EntityFilters';
 import EntityViewDialog from 'components/EntityViewDialog/EntityViewDialog';
+import PageHeader from 'components/PageHeader/PageHeader';
 import {
   RacaCard,
   RacaImageFrame,
@@ -72,38 +73,24 @@ const Condicoes = () => {
       id="redungeon-condicoes"
       data-page="condicoes"
     >
-      <Box
-        sx={{
-          display: 'flex',
-          alignItems: 'flex-start',
-          justifyContent: 'space-between',
-          mb: 3,
-        }}
-      >
-        <Box>
-          <Typography
-            variant="h5"
-            sx={{ color: 'var(--text-primary)', fontWeight: 700, mb: 0.5 }}
-          >
-            Condições
-          </Typography>
-          <Typography variant="body2" sx={{ color: 'var(--text-secondary)' }}>
-            Gerencie as condições disponíveis na campanha.
-          </Typography>
-        </Box>
-        {canCreate() && (
-          <Button
-            variant="contained"
-            onClick={() => navigate(ROUTE_PATHS.NOVA_CONDICAO)}
-            sx={{
-              background: 'var(--color-primary)',
-              '&:hover': { background: '#5a2090' },
-            }}
-          >
-            + Nova Condição
-          </Button>
-        )}
-      </Box>
+      <PageHeader
+        title="Condições"
+        description="Gerencie as condições disponíveis na campanha."
+        actions={
+          canCreate() ? (
+            <Button
+              variant="contained"
+              onClick={() => navigate(ROUTE_PATHS.NOVA_CONDICAO)}
+              sx={{
+                background: 'var(--color-primary)',
+                '&:hover': { background: 'var(--color-primary-dark)' },
+              }}
+            >
+              + Nova Condição
+            </Button>
+          ) : null
+        }
+      />
 
       {loading ? (
         <Box sx={{ display: 'flex', justifyContent: 'center', py: 8 }}>
@@ -268,7 +255,7 @@ const Condicoes = () => {
               }}
               sx={{
                 background: 'var(--color-primary)',
-                '&:hover': { background: '#5a2090' },
+                '&:hover': { background: 'var(--color-primary-dark)' },
               }}
             >
               Editar

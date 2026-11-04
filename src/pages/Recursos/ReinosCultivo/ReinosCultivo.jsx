@@ -18,6 +18,7 @@ import useUniversos from 'hooks/useUniversos';
 import { ordenarPorNome, ORDEM_ASC } from 'common/utils/ordenacao';
 import EntityFilters from 'components/EntityFilters/EntityFilters';
 import EntityViewDialog from 'components/EntityViewDialog/EntityViewDialog';
+import PageHeader from 'components/PageHeader/PageHeader';
 import {
   RacaCard,
   RacaImageFrame,
@@ -83,38 +84,24 @@ const ReinosCultivo = () => {
       id="redungeon-reinos-cultivo"
       data-page="reinos-cultivo"
     >
-      <Box
-        sx={{
-          display: 'flex',
-          alignItems: 'flex-start',
-          justifyContent: 'space-between',
-          mb: 3,
-        }}
-      >
-        <Box>
-          <Typography
-            variant="h5"
-            sx={{ color: 'var(--text-primary)', fontWeight: 700, mb: 0.5 }}
-          >
-            Reinos de Cultivo
-          </Typography>
-          <Typography variant="body2" sx={{ color: 'var(--text-secondary)' }}>
-            Gerencie os reinos de cultivo disponíveis na campanha.
-          </Typography>
-        </Box>
-        {canCreate() && (
-          <Button
-            variant="contained"
-            onClick={() => navigate(ROUTE_PATHS.NOVO_REINO_CULTIVO)}
-            sx={{
-              background: 'var(--color-primary)',
-              '&:hover': { background: '#5a2090' },
-            }}
-          >
-            + Novo Reino de Cultivo
-          </Button>
-        )}
-      </Box>
+      <PageHeader
+        title="Reinos de Cultivo"
+        description="Gerencie os reinos de cultivo disponíveis na campanha."
+        actions={
+          canCreate() ? (
+            <Button
+              variant="contained"
+              onClick={() => navigate(ROUTE_PATHS.NOVO_REINO_CULTIVO)}
+              sx={{
+                background: 'var(--color-primary)',
+                '&:hover': { background: 'var(--color-primary-dark)' },
+              }}
+            >
+              + Novo Reino de Cultivo
+            </Button>
+          ) : null
+        }
+      />
 
       {loading ? (
         <Box sx={{ display: 'flex', justifyContent: 'center', py: 8 }}>
@@ -310,7 +297,7 @@ const ReinosCultivo = () => {
               }}
               sx={{
                 background: 'var(--color-primary)',
-                '&:hover': { background: '#5a2090' },
+                '&:hover': { background: 'var(--color-primary-dark)' },
               }}
             >
               Editar
