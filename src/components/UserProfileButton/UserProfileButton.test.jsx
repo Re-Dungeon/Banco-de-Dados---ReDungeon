@@ -24,6 +24,12 @@ vi.mock('context/AuthContext', () => ({
   useAuth: () => mockAuthState,
 }));
 
+vi.mock('service/firebase', () => ({
+  auth: { currentUser: null },
+  googleProvider: { setCustomParameters: () => undefined },
+  db: {},
+}));
+
 import UserProfileButton from './UserProfileButton';
 
 describe('UserProfileButton', () => {

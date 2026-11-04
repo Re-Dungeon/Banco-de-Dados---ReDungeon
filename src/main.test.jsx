@@ -1,3 +1,4 @@
+import PropTypes from 'prop-types';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 const createRootMock = vi.fn(() => ({
@@ -8,6 +9,25 @@ vi.mock('react-dom/client', () => ({
   default: {
     createRoot: createRootMock,
   },
+}));
+
+vi.mock('./App.jsx', () => ({
+  default: () => null,
+}));
+
+const MockAuthProvider = ({ children }) => <>{children}</>;
+MockAuthProvider.propTypes = {
+  children: PropTypes.node.isRequired,
+};
+
+vi.mock('context/AuthContext', () => ({
+  AuthProvider: MockAuthProvider,
+  useAuth: () => ({
+    currentUser: null,
+    loading: false,
+    userSettings: null,
+    loadingPreferences: false,
+  }),
 }));
 
 describe('bootstrapAppRoot', () => {

@@ -11,8 +11,24 @@ const firebaseConfig = {
   appId: import.meta.env.VITE_FIREBASE_APP_ID,
 };
 
-const app = initializeApp(firebaseConfig);
+const hasFirebaseConfig = Object.values(firebaseConfig).every(
+  value => typeof value === 'string' && value.trim().length > 0,
+);
 
-export const auth = getAuth(app);
-export const googleProvider = new GoogleAuthProvider();
-export const db = getFirestore(app);
+if (!hasFirebaseConfig && import.meta.env.MODE !== 'test') {
+  throw new Error(
+    'Firebase configuration is missing. Set the VITE_FIREBASE_* variables before starting the app.',
+  );
+}
+
+const app = hasFirebaseConfig ? initializeApp(firebaseConfig) : null;
+
+const noopGoogleProvider = {
+  setCustomParameters: () => undefined,
+};
+
+export const auth = hasFirebaseConfig ? getAuth(app) : { currentUser: null };
+export const googleProvider = hasFirebaseConfig
+  ? new GoogleAuthProvider()
+  : noopGoogleProvider;
+export const db = hasFirebaseConfig ? getFirestore(app) : {};
