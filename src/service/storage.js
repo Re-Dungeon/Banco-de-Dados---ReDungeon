@@ -6,6 +6,7 @@ import {
   deleteDoc,
   doc,
   updateDoc,
+  setDoc,
   serverTimestamp,
 } from 'firebase/firestore';
 import { db } from './firebase';
@@ -254,4 +255,98 @@ export const getUserPermissions = async uid => {
     isAdmin: data.isAdmin ?? false,
     universos: Array.isArray(data.universos) ? data.universos : [],
   };
+};
+
+export const DEFAULT_USER_SETTINGS = Object.freeze({
+  nomeExibicao: '',
+  fotoPerfilUrl: '',
+  tema: 'dark',
+  corDestaque: '#6F2DA8',
+  notificacoes: { ativadas: true },
+});
+
+const normalizeProfileImageUrl = value => {
+  if (typeof value !== 'string') return '';
+
+  const normalized = value.trim();
+
+  if (!normalized) {
+    return '';
+  }
+
+  if (!/^https:\/\//i.test(normalized)) {
+    return '';
+  }
+
+  return normalized;
+};
+
+const normalizeUserSettings = settings => ({
+  nomeExibicao: String(settings?.nomeExibicao ?? '').trim(),
+  fotoPerfilUrl: normalizeProfileImageUrl(settings?.fotoPerfilUrl),
+  tema: 'dark',
+  corDestaque:
+    typeof settings?.corDestaque === 'string' &&
+    /^#[0-9A-Fa-f]{3,6}$/.test(settings.corDestaque)
+      ? settings.corDestaque
+      : '#6F2DA8',
+  notificacoes: {
+    ativadas: settings?.notificacoes?.ativadas !== false,
+  },
+});
+
+export const getUserSettings = async uid => {
+  if (!uid) {
+    return {
+      ...DEFAULT_USER_SETTINGS,
+      notificacoes: { ...DEFAULT_USER_SETTINGS.notificacoes },
+    };
+  }
+
+  const snap = await getDoc(doc(db, 'users', uid, 'settings', 'preferences'));
+  if (!snap.exists()) {
+    return {
+      ...DEFAULT_USER_SETTINGS,
+      notificacoes: { ...DEFAULT_USER_SETTINGS.notificacoes },
+    };
+  }
+
+  const data = snap.data();
+  return {
+    nomeExibicao: String(data.nomeExibicao ?? '').trim(),
+    fotoPerfilUrl: normalizeProfileImageUrl(data.fotoPerfilUrl),
+    tema: 'dark',
+    corDestaque:
+      typeof data.corDestaque === 'string' && /^#[0-9A-Fa-f]{3,6}$/.test(data.corDestaque)
+        ? data.corDestaque
+        : '#6F2DA8',
+    notificacoes: {
+      ativadas: data.notificacoes?.ativadas !== false,
+    },
+  };
+};
+
+export const saveUserSettings = async (uid, settings) => {
+  if (!uid) {
+    throw new Error('O UID do usuário é obrigatório para salvar preferências.');
+  }
+
+  const payload = normalizeUserSettings(settings);
+
+  try {
+    await setDoc(doc(db, 'users', uid, 'settings', 'preferences'), payload, {
+      merge: true,
+    });
+
+    return payload;
+  } catch (error) {
+    // eslint-disable-next-line no-console
+    console.error('[storage] saveUserSettings failed', {
+      code: error?.code ?? null,
+      message: error?.message ?? String(error),
+      operation:
+        'setDoc(doc(db, "users", uid, "settings", "preferences"), payload, { merge: true })',
+    });
+    throw error;
+  }
 };

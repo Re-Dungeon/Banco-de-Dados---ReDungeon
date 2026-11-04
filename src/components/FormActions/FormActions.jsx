@@ -18,7 +18,7 @@ const FormActions = ({ onCancelar, isSubmitting, labelSalvar }) => (
       disabled={isSubmitting}
       sx={{
         background: 'var(--color-primary)',
-        '&:hover': { background: '#5a2090' },
+        '&:hover': { background: 'var(--color-primary-dark)' },
       }}
     >
       {labelSalvar}

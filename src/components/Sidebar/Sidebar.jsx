@@ -5,15 +5,14 @@ import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
-import Divider from '@mui/material/Divider';
 import Typography from '@mui/material/Typography';
-import Avatar from '@mui/material/Avatar';
-import Tooltip from '@mui/material/Tooltip';
 import IconButton from '@mui/material/IconButton';
+import Collapse from '@mui/material/Collapse';
 import CloseIcon from '@mui/icons-material/Close';
-import { NAV_ITEMS, NAV_ITEMS_SECONDARY } from 'common/constants/navItems';
+import KeyboardArrowRightRoundedIcon from '@mui/icons-material/KeyboardArrowRightRounded';
+import { NAV_GROUPS } from 'common/constants/navItems';
 import { useAuth } from 'context/AuthContext';
-import LoginModal from 'components/LoginModal/LoginModal';
+import { useLocation } from 'react-router-dom';
 import {
   SidebarWrapper,
   SidebarOverlay,
@@ -21,19 +20,41 @@ import {
   LogoImage,
   StyledNavLink,
   NavItemButton,
-  UserButton,
+  GroupSection,
+  SectionButton,
+  SectionTitle,
+  SectionChevron,
+  SectionItems,
 } from './styles';
 
-const Sidebar = ({ open, onClose }) => {
-  const [loginModalOpen, setLoginModalOpen] = useState(false);
-  const { currentUser, logout } = useAuth();
+const matchesRoute = (currentPath, itemPath) =>
+  currentPath === itemPath || currentPath.startsWith(`${itemPath}/`);
 
-  const handleUserButtonClick = () => {
-    if (currentUser) {
-      logout();
-    } else {
-      setLoginModalOpen(true);
+const Sidebar = ({ open, onClose }) => {
+  const location = useLocation();
+  const { currentUser } = useAuth();
+  const [manualExpandedGroups, setManualExpandedGroups] = useState({});
+
+  const activeGroups = NAV_GROUPS.reduce((groups, group) => {
+    if (group.items.some(item => matchesRoute(location.pathname, item.path))) {
+      groups[group.id] = true;
     }
+
+    return groups;
+  }, {});
+
+  const toggleGroup = groupId => {
+    const nextExpanded = Object.prototype.hasOwnProperty.call(
+      manualExpandedGroups,
+      groupId,
+    )
+      ? manualExpandedGroups[groupId]
+      : Boolean(activeGroups[groupId]);
+
+    setManualExpandedGroups(previous => ({
+      ...previous,
+      [groupId]: !nextExpanded,
+    }));
   };
 
   return (
@@ -76,7 +97,7 @@ const Sidebar = ({ open, onClose }) => {
                 textTransform: 'uppercase',
               }}
             >
-              V3.2
+              V3.3
             </Typography>
           </Box>
         </LogoSection>
@@ -84,98 +105,73 @@ const Sidebar = ({ open, onClose }) => {
         <Box sx={{ flex: 1, overflowY: 'auto', py: 1 }}>
           {currentUser && (
             <>
-              <List disablePadding>
-                {NAV_ITEMS.map(item => (
-                  <ListItem key={item.path} disablePadding>
-                    <StyledNavLink to={item.path} onClick={onClose}>
-                      <NavItemButton className="nav-item-btn">
-                        <ListItemIcon sx={{ fontSize: 18 }}>
-                          {item.icon}
-                        </ListItemIcon>
-                        <ListItemText
-                          primary={
-                            <Typography sx={{ fontSize: 14, fontWeight: 500 }}>
-                              {item.label}
-                            </Typography>
-                          }
-                        />
-                      </NavItemButton>
-                    </StyledNavLink>
-                  </ListItem>
-                ))}
-              </List>
+              {NAV_GROUPS.map(group => {
+                const isExpanded = Object.prototype.hasOwnProperty.call(
+                  manualExpandedGroups,
+                  group.id,
+                )
+                  ? manualExpandedGroups[group.id]
+                  : Boolean(activeGroups[group.id]);
 
-              <Divider
-                sx={{ mx: 2, my: 1, borderColor: 'rgba(255,255,255,0.08)' }}
-              />
+                return (
+                  <GroupSection key={group.id}>
+                    <SectionButton
+                      type="button"
+                      aria-expanded={isExpanded}
+                      aria-controls={`sidebar-section-${group.id}`}
+                      onClick={() => toggleGroup(group.id)}
+                    >
+                      <SectionTitle>{group.title}</SectionTitle>
+                      <SectionChevron $expanded={isExpanded} aria-hidden="true">
+                        <KeyboardArrowRightRoundedIcon fontSize="small" />
+                      </SectionChevron>
+                    </SectionButton>
 
-              <List disablePadding>
-                {NAV_ITEMS_SECONDARY.map(item => (
-                  <ListItem key={item.path} disablePadding>
-                    <StyledNavLink to={item.path} onClick={onClose}>
-                      <NavItemButton className="nav-item-btn">
-                        <ListItemIcon sx={{ fontSize: 18 }}>
-                          {item.icon}
-                        </ListItemIcon>
-                        <ListItemText
-                          primary={
-                            <Typography sx={{ fontSize: 14, fontWeight: 500 }}>
-                              {item.label}
-                            </Typography>
-                          }
-                        />
-                      </NavItemButton>
-                    </StyledNavLink>
-                  </ListItem>
-                ))}
-              </List>
+                    <Collapse in={isExpanded} timeout={180} unmountOnExit>
+                      <SectionItems id={`sidebar-section-${group.id}`}>
+                        <List disablePadding sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}>
+                          {group.items.map(item => {
+                            const Icon = item.icon;
+                            const isActive =
+                              item.path === location.pathname ||
+                              location.pathname.startsWith(`${item.path}/`);
+
+                            return (
+                              <ListItem key={item.path} disablePadding>
+                                <StyledNavLink
+                                  to={item.path}
+                                  end={item.path === '/recursos'}
+                                  onClick={onClose}
+                                  className={({ isActive: navIsActive }) =>
+                                    navIsActive ? 'active' : ''
+                                  }
+                                >
+                                  <NavItemButton className="nav-item-btn" selected={isActive}>
+                                    <ListItemIcon>
+                                      <Icon fontSize="small" />
+                                    </ListItemIcon>
+                                    <ListItemText
+                                      primary={
+                                        <Typography sx={{ fontSize: 14, fontWeight: 500 }}>
+                                          {item.label}
+                                        </Typography>
+                                      }
+                                    />
+                                  </NavItemButton>
+                                </StyledNavLink>
+                              </ListItem>
+                            );
+                          })}
+                        </List>
+                      </SectionItems>
+                    </Collapse>
+                  </GroupSection>
+                );
+              })}
             </>
           )}
         </Box>
 
-        <Tooltip
-          title={currentUser ? 'Sair da conta' : 'Fazer login'}
-          placement="top"
-        >
-          <UserButton
-            id="btn-user-profile"
-            onClick={handleUserButtonClick}
-            aria-label={currentUser ? 'Sair da conta' : 'Fazer login'}
-          >
-            <Avatar
-              src={currentUser?.photoURL || undefined}
-              sx={{
-                width: 32,
-                height: 32,
-                bgcolor: 'primary.main',
-                fontSize: 16,
-              }}
-            >
-              {currentUser
-                ? currentUser.displayName?.[0]?.toUpperCase() || '👤'
-                : '👤'}
-            </Avatar>
-            <Typography
-              variant="body2"
-              sx={{
-                color: 'var(--text-secondary)',
-                overflow: 'hidden',
-                textOverflow: 'ellipsis',
-                whiteSpace: 'nowrap',
-                maxWidth: 120,
-              }}
-            >
-              {currentUser
-                ? currentUser.displayName || currentUser.email
-                : 'Usuário'}
-            </Typography>
-          </UserButton>
-        </Tooltip>
-
-        <LoginModal
-          open={loginModalOpen}
-          onClose={() => setLoginModalOpen(false)}
-        />
       </SidebarWrapper>
     </>
   );

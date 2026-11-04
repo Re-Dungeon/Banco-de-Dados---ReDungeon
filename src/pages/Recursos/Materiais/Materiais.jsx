@@ -20,6 +20,7 @@ import useUniversos from 'hooks/useUniversos';
 import { ordenarPorNome, ORDEM_ASC } from 'common/utils/ordenacao';
 import EntityFilters from 'components/EntityFilters/EntityFilters';
 import EntityViewDialog from 'components/EntityViewDialog/EntityViewDialog';
+import PageHeader from 'components/PageHeader/PageHeader';
 import {
   RacaCard,
   RacaImageFrame,
@@ -61,21 +62,24 @@ const Materiais = () => {
 
   return (
     <Box className="page-container" id="redungeon-materiais" data-page="materiais">
-      <Box sx={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', mb: 3 }}>
-        <Box>
-          <Typography variant="h5" sx={{ color: 'var(--text-primary)', fontWeight: 700, mb: 0.5 }}>
-            Materiais
-          </Typography>
-          <Typography variant="body2" sx={{ color: 'var(--text-secondary)' }}>
-            Gerencie os materiais e recursos do jogo.
-          </Typography>
-        </Box>
-        {canCreate() && (
-          <Button variant="contained" onClick={() => navigate(ROUTE_PATHS.NOVO_MATERIAL)} sx={{ background: 'var(--color-primary)', '&:hover': { background: '#5a2090' } }}>
-            + Novo Material
-          </Button>
-        )}
-      </Box>
+      <PageHeader
+        title="Materiais"
+        description="Gerencie os materiais e recursos do jogo."
+        actions={
+          canCreate() ? (
+            <Button
+              variant="contained"
+              onClick={() => navigate(ROUTE_PATHS.NOVO_MATERIAL)}
+              sx={{
+                background: 'var(--color-primary)',
+                '&:hover': { background: 'var(--color-primary-dark)' },
+              }}
+            >
+              + Novo Material
+            </Button>
+          ) : null
+        }
+      />
 
       {loading ? (
         <Box sx={{ display: 'flex', justifyContent: 'center', py: 8 }}>
@@ -190,7 +194,7 @@ const Materiais = () => {
         imagem={materialVisualizando?.linkImagem}
         imagemSx={{ height: 'auto', maxHeight: 220 }}
         actions={canWrite(materialVisualizando?.universo) && (
-          <Button variant="contained" onClick={() => { navigate(ROUTE_PATHS.NOVO_MATERIAL, { state: { material: materialVisualizando } }); setMaterialVisualizando(null); }} sx={{ background: 'var(--color-primary)', '&:hover': { background: '#5a2090' } }}>Editar</Button>
+          <Button variant="contained" onClick={() => { navigate(ROUTE_PATHS.NOVO_MATERIAL, { state: { material: materialVisualizando } }); setMaterialVisualizando(null); }} sx={{ background: 'var(--color-primary)', '&:hover': { background: 'var(--color-primary-dark)' } }}>Editar</Button>
         )}
       >
         {(materialVisualizando?.valorMercado || materialVisualizando?.quantidadeBase) && (

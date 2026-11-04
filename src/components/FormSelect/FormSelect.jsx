@@ -29,6 +29,7 @@ const FormSelect = ({
   onValueChange,
   compactSelection = false,
   compactMaxVisible,
+  sortOptions = true,
 }) => {
   const normalizedOptions = useMemo(
     () => options.map(normalizeOption),
@@ -71,6 +72,7 @@ const FormSelect = ({
       sx={sx}
       compactSelection={compactSelection}
       compactMaxVisible={compactMaxVisible}
+      sortOptions={sortOptions}
     />
   );
 };
@@ -97,6 +99,7 @@ FormSelect.propTypes = {
   onValueChange: PropTypes.func,
   compactSelection: PropTypes.bool,
   compactMaxVisible: PropTypes.number,
+  sortOptions: PropTypes.bool,
 };
 
 export default FormSelect;

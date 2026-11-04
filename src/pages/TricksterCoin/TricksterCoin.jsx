@@ -15,6 +15,7 @@ import Typography from '@mui/material/Typography';
 import CloseIcon from '@mui/icons-material/Close';
 import DeleteOutlineIcon from '@mui/icons-material/DeleteOutlined';
 import MonetizationOnOutlinedIcon from '@mui/icons-material/MonetizationOnOutlined';
+import PageHeader from 'components/PageHeader/PageHeader';
 import SearchableSelect from 'components/SearchableSelect/SearchableSelect';
 import { Field, FieldArray, Form, Formik } from 'formik';
 import { useAuth } from 'context/AuthContext';
@@ -566,40 +567,26 @@ const TricksterCoin = () => {
 
   return (
     <Box className="page-container" id="redungeon-trickster-coin" data-page="trickster-coin">
-      <Box
-        sx={{
-          display: 'flex',
-          alignItems: 'flex-start',
-          justifyContent: 'space-between',
-          gap: 2,
-          mb: 3,
-          flexWrap: 'wrap',
-        }}
-      >
-        <Box>
-          <Typography variant="h5" sx={{ color: 'var(--text-primary)', fontWeight: 700, mb: 0.5 }}>
-            Trickster Coin
-          </Typography>
-          <Typography variant="body2" sx={{ color: 'var(--text-secondary)' }}>
-            Gerencie os benefícios disponíveis para os jogadores.
-          </Typography>
-        </Box>
-
-        {canCreate() && (
-          <Button
-            id="trickster-coin-new-benefit"
-            variant="contained"
-            onClick={handleOpenCreateModal}
-            sx={{
-              background: 'var(--color-primary)',
-              '&:hover': { background: '#5a2090' },
-              whiteSpace: 'nowrap',
-            }}
-          >
-            + Novo Benefício
-          </Button>
-        )}
-      </Box>
+      <PageHeader
+        title="Trickster Coin"
+        description="Gerencie os benefícios disponíveis para os jogadores."
+        actions={
+          canCreate() ? (
+            <Button
+              id="trickster-coin-new-benefit"
+              variant="contained"
+              onClick={handleOpenCreateModal}
+              sx={{
+                background: 'var(--color-primary)',
+                '&:hover': { background: 'var(--color-primary-dark)' },
+                whiteSpace: 'nowrap',
+              }}
+            >
+              + Novo Benefício
+            </Button>
+          ) : null
+        }
+      />
 
       {loadError && (
         <Box

@@ -77,6 +77,15 @@ service cloud.firestore {
       allow write: if isAdmin();
     }
 
+    // ── user settings (preferências pessoais por UID) ────────────────────────
+    // Bloqueia acesso a dados de outros usuários, preservando a regra atual de
+    // permissões administrativas e sem misturar preferências com userPermissions.
+    // A rota real usada pela aplicação é users/{userId}/settings/preferences,
+    // mas o padrão com {document} também cobre esse e outros docs futuros.
+    match /users/{userId}/settings/{document} {
+      allow read, write: if isAuth() && request.auth.uid == userId;
+    }
+
     // ── Universo ───────────────────────────────────────────────────────────────
     // Leitura para qualquer usuário autenticado; escrita apenas para admins.
     match /Universo/{universoId} {

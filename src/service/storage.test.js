@@ -10,6 +10,7 @@ vi.mock('firebase/firestore', () => ({
   deleteDoc: vi.fn(),
   doc: vi.fn((_db, name, id) => ({ __doc: name, id })),
   updateDoc: vi.fn(),
+  setDoc: vi.fn(),
   serverTimestamp: vi.fn(() => '__serverTimestamp__'),
 }));
 
@@ -21,6 +22,7 @@ import {
   deleteDoc,
   doc,
   updateDoc,
+  setDoc,
 } from 'firebase/firestore';
 import {
   getRacas,
@@ -28,6 +30,8 @@ import {
   removeRaca,
   updateRaca,
   getUserPermissions,
+  getUserSettings,
+  saveUserSettings,
 } from './storage';
 
 describe('storage.js — CRUD de Raças (padrão Firestore repetido em todas as entidades)', () => {
@@ -130,5 +134,97 @@ describe('storage.js — getUserPermissions', () => {
     const result = await getUserPermissions('uid-sem-universos');
 
     expect(result).toEqual({ isAdmin: false, universos: [] });
+  });
+});
+
+describe('storage.js — user settings', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  it('retorna valores padrão ao não existir documento de configurações', async () => {
+    getDoc.mockResolvedValue({ exists: () => false });
+
+    const result = await getUserSettings('uid-sem-settings');
+
+    expect(result).toEqual({
+      nomeExibicao: '',
+      fotoPerfilUrl: '',
+      tema: 'dark',
+      corDestaque: '#6F2DA8',
+      notificacoes: { ativadas: true },
+    });
+  });
+
+  it('normaliza preferências antigas com tema light para dark sem remover outras configurações', async () => {
+    getDoc.mockResolvedValue({
+      exists: () => true,
+      data: () => ({
+        nomeExibicao: 'Jogador',
+        fotoPerfilUrl: 'https://example.com/avatar.jpg',
+        tema: 'light',
+        corDestaque: '#00D9FF',
+        notificacoes: { ativadas: false },
+      }),
+    });
+
+    const result = await getUserSettings('uid-legacy-light');
+
+    expect(result).toEqual({
+      nomeExibicao: 'Jogador',
+      fotoPerfilUrl: 'https://example.com/avatar.jpg',
+      tema: 'dark',
+      corDestaque: '#00D9FF',
+      notificacoes: { ativadas: false },
+    });
+  });
+
+  it('salva as configurações do usuário usando o caminho users/{uid}/settings/preferences', async () => {
+    const settings = {
+      nomeExibicao: 'Jogador',
+      tema: 'dark',
+      corDestaque: '#00D9FF',
+      notificacoes: { ativadas: true },
+    };
+
+    await saveUserSettings('uid-1', settings);
+
+    expect(doc).toHaveBeenCalledWith({}, 'users', 'uid-1', 'settings', 'preferences');
+    expect(setDoc).toHaveBeenCalledWith(
+      { __doc: 'users', id: 'uid-1' },
+      expect.objectContaining({
+        nomeExibicao: 'Jogador',
+        tema: 'dark',
+        notificacoes: { ativadas: true },
+      }),
+      { merge: true },
+    );
+  });
+
+  it('registra o código e a mensagem do erro real quando a gravação do Firestore falha', async () => {
+    const consoleError = vi
+      .spyOn(console, 'error')
+      .mockImplementation(() => {});
+    const firestoreError = {
+      code: 'permission-denied',
+      message: 'Missing or insufficient permissions.',
+    };
+    setDoc.mockRejectedValue(firestoreError);
+
+    await expect(saveUserSettings('uid-1', { nomeExibicao: 'Jogador' })).rejects.toMatchObject({
+      code: 'permission-denied',
+      message: 'Missing or insufficient permissions.',
+    });
+
+    expect(consoleError).toHaveBeenCalledWith(
+      '[storage] saveUserSettings failed',
+      expect.objectContaining({
+        code: 'permission-denied',
+        message: 'Missing or insufficient permissions.',
+        operation: 'setDoc(doc(db, "users", uid, "settings", "preferences"), payload, { merge: true })',
+      }),
+    );
+
+    consoleError.mockRestore();
   });
 });

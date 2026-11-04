@@ -13,13 +13,27 @@ import Typography from '@mui/material/Typography';
  */
 const ImagePreviewPanel = ({ src, alt }) => {
   const [failedSrc, setFailedSrc] = useState('');
+  const [loadedSrc, setLoadedSrc] = useState('');
   const imgError = Boolean(src?.trim() && failedSrc === src);
   const hasPreview = Boolean(src?.trim()) && !imgError;
+  const isLoaded = hasPreview && loadedSrc === src;
+  const isLoading = hasPreview && !isLoaded;
+
   const statusText = useMemo(() => {
     if (!src?.trim()) return 'Aguardando imagem';
     if (imgError) return 'Falha ao carregar';
+    if (isLoading) return 'Carregando imagem';
     return 'Prévia carregada';
-  }, [imgError, src]);
+  }, [imgError, isLoading, src]);
+
+  const handleLoad = () => {
+    setLoadedSrc(src);
+  };
+
+  const handleError = () => {
+    setLoadedSrc('');
+    setFailedSrc(src);
+  };
 
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
@@ -47,6 +61,7 @@ const ImagePreviewPanel = ({ src, alt }) => {
         }}
       >
         <Box
+          className={`re-image-shell ${isLoading && hasPreview ? 'is-loading' : ''}`}
           sx={{
             minHeight: '280px',
             borderRadius: '18px',
@@ -62,20 +77,29 @@ const ImagePreviewPanel = ({ src, alt }) => {
               transform: 'translateY(-2px) scale(1.01)',
               boxShadow: '0 12px 28px rgba(41, 182, 246, 0.12)',
             },
+            '& .re-image-shimmer': {
+              opacity: isLoading && hasPreview ? 1 : 0,
+            },
           }}
         >
           {hasPreview ? (
-            <img
-              src={src}
-              alt={alt}
-              onError={() => setFailedSrc(src)}
-              style={{
-                width: '100%',
-                height: '100%',
-                objectFit: 'cover',
-                display: 'block',
-              }}
-            />
+            <>
+              <img
+                src={src}
+                alt={alt}
+                onLoad={handleLoad}
+                onError={handleError}
+                style={{
+                  width: '100%',
+                  height: '100%',
+                  objectFit: 'cover',
+                  display: 'block',
+                  opacity: isLoaded ? 1 : 0,
+                  transition: 'opacity 280ms ease',
+                }}
+              />
+              {isLoading && <Box className="re-image-shimmer" aria-hidden="true" />}
+            </>
           ) : (
             <Typography
               variant="body2"

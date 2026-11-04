@@ -21,6 +21,7 @@ import useUniversos from 'hooks/useUniversos';
 import { ordenarPorNome, ORDEM_ASC } from 'common/utils/ordenacao';
 import EntityFilters from 'components/EntityFilters/EntityFilters';
 import EntityViewDialog from 'components/EntityViewDialog/EntityViewDialog';
+import PageHeader from 'components/PageHeader/PageHeader';
 import {
   RacaCard,
   RacaImageFrame,
@@ -102,38 +103,24 @@ const CardFlux = () => {
       id="redungeon-cardflux"
       data-page="cardflux"
     >
-      <Box
-        sx={{
-          display: 'flex',
-          alignItems: 'flex-start',
-          justifyContent: 'space-between',
-          mb: 3,
-        }}
-      >
-        <Box>
-          <Typography
-            variant="h5"
-            sx={{ color: 'var(--text-primary)', fontWeight: 700, mb: 0.5 }}
-          >
-            CardFlux
-          </Typography>
-          <Typography variant="body2" sx={{ color: 'var(--text-secondary)' }}>
-            Gerencie os eventos e cartas narrativas da campanha.
-          </Typography>
-        </Box>
-        {canCreate() && (
-          <Button
-            variant="contained"
-            onClick={() => navigate(ROUTE_PATHS.NOVO_CARDFLUX)}
-            sx={{
-              background: 'var(--color-primary)',
-              '&:hover': { background: '#5a2090' },
-            }}
-          >
-            + Novo CardFlux
-          </Button>
-        )}
-      </Box>
+      <PageHeader
+        title="CardFlux"
+        description="Gerencie os eventos e cartas narrativas da campanha."
+        actions={
+          canCreate() ? (
+            <Button
+              variant="contained"
+              onClick={() => navigate(ROUTE_PATHS.NOVO_CARDFLUX)}
+              sx={{
+                background: 'var(--color-primary)',
+                '&:hover': { background: 'var(--color-primary-dark)' },
+              }}
+            >
+              + Novo CardFlux
+            </Button>
+          ) : null
+        }
+      />
 
       {loading ? (
         <Box sx={{ display: 'flex', justifyContent: 'center', py: 8 }}>
@@ -609,14 +596,14 @@ const CardFlux = () => {
                 setCardFluxVisualizando(null);
               }}
               sx={{
-                background: 'linear-gradient(135deg, var(--color-primary) 0%, #5a2090 100%)',
+                background: 'linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-dark) 100%)',
                 borderRadius: 2,
                 boxShadow: '0 10px 24px rgba(111, 45, 168, 0.25)',
                 textTransform: 'none',
                 px: 2.2,
                 transition: 'all 0.2s ease',
                 '&:hover': {
-                  background: 'linear-gradient(135deg, #7c32be 0%, #5a2090 100%)',
+                  background: 'linear-gradient(135deg, var(--color-primary-light) 0%, var(--color-primary-dark) 100%)',
                   transform: 'translateY(-1px)',
                 },
               }}

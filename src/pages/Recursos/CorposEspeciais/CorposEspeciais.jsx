@@ -71,7 +71,7 @@ const CorposEspeciais = () => {
           <Typography variant="body2" sx={{ color: 'var(--text-secondary)' }}>Gerencie os corpos especiais disponíveis na campanha.</Typography>
         </Box>
         {canCreate() && (
-          <Button variant="contained" onClick={() => navigate(ROUTE_PATHS.NOVO_CORPO_ESPECIAL)} sx={{ background: 'var(--color-primary)', '&:hover': { background: '#5a2090' } }}>
+          <Button variant="contained" onClick={() => navigate(ROUTE_PATHS.NOVO_CORPO_ESPECIAL)} sx={{ background: 'var(--color-primary)', '&:hover': { background: 'var(--color-primary-dark)' } }}>
             + Novo Corpo Especial
           </Button>
         )}
