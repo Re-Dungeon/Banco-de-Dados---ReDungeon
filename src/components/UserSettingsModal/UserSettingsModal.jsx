@@ -4,6 +4,7 @@ import { sendPasswordResetEmail } from 'firebase/auth';
 import Avatar from '@mui/material/Avatar';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
+import Chip from '@mui/material/Chip';
 import Dialog from '@mui/material/Dialog';
 import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
@@ -18,9 +19,21 @@ import PaletteOutlinedIcon from '@mui/icons-material/PaletteOutlined';
 import PersonOutlineOutlinedIcon from '@mui/icons-material/PersonOutlineOutlined';
 import NotificationsOutlinedIcon from '@mui/icons-material/NotificationsOutlined';
 import ShieldOutlinedIcon from '@mui/icons-material/ShieldOutlined';
+import HeadsetMicOutlinedIcon from '@mui/icons-material/HeadsetMicOutlined';
+import BugReportOutlinedIcon from '@mui/icons-material/BugReportOutlined';
+import LightbulbOutlinedIcon from '@mui/icons-material/LightbulbOutlined';
+import HelpOutlineOutlinedIcon from '@mui/icons-material/HelpOutlineOutlined';
+import BuildCircleOutlinedIcon from '@mui/icons-material/BuildCircleOutlined';
+import MoreHorizOutlinedIcon from '@mui/icons-material/MoreHorizOutlined';
 import { useAuth } from 'context/AuthContext';
 import { auth } from 'service/firebase';
-import { DEFAULT_USER_SETTINGS, saveUserSettings } from 'service/storage';
+import {
+  DEFAULT_USER_SETTINGS,
+  saveUserSettings,
+  createSupportTicket,
+  getSupportTicketsByUser,
+  getSupportAppContext,
+} from 'service/storage';
 
 const DEFAULT_SETTINGS = {
   nomeExibicao: '',
@@ -53,10 +66,60 @@ const normalizeProfileImageUrl = value => {
   return normalized;
 };
 
+const SUPPORT_CATEGORIES = [
+  { value: 'bug', label: 'Bug', icon: BugReportOutlinedIcon },
+  { value: 'suggestion', label: 'Sugestão', icon: LightbulbOutlinedIcon },
+  { value: 'question', label: 'Dúvida', icon: HelpOutlineOutlinedIcon },
+  { value: 'system-problem', label: 'Problema', icon: BuildCircleOutlinedIcon },
+  { value: 'other', label: 'Outro', icon: MoreHorizOutlinedIcon },
+];
+
+const SUPPORT_CATEGORY_LABELS = SUPPORT_CATEGORIES.reduce((accumulator, category) => {
+  accumulator[category.value] = category.label;
+  return accumulator;
+}, {});
+
+const getSupportTicketStatusLabel = status => {
+  const normalized = String(status || 'open').toLowerCase();
+
+  if (normalized === 'in-progress' || normalized === 'in_progress' || normalized === 'em andamento') {
+    return 'Em andamento';
+  }
+
+  if (normalized === 'answered' || normalized === 'respondido') {
+    return 'Respondido';
+  }
+
+  if (normalized === 'resolved' || normalized === 'resolvido') {
+    return 'Resolvido';
+  }
+
+  return 'Aberto';
+};
+
+const getSupportTicketStatusColor = status => {
+  const normalized = String(status || 'open').toLowerCase();
+
+  if (normalized === 'in-progress' || normalized === 'in_progress') {
+    return 'info';
+  }
+
+  if (normalized === 'answered' || normalized === 'respondido') {
+    return 'success';
+  }
+
+  if (normalized === 'resolved' || normalized === 'resolvido') {
+    return 'default';
+  }
+
+  return 'warning';
+};
+
 const sectionMeta = {
   perfil: { label: 'Perfil', icon: PersonOutlineOutlinedIcon },
   aparencia: { label: 'Aparência', icon: PaletteOutlinedIcon },
   preferencias: { label: 'Preferências', icon: NotificationsOutlinedIcon },
+  suporte: { label: 'Suporte e Ajuda', icon: HeadsetMicOutlinedIcon },
   administracao: { label: 'Administração', icon: ShieldOutlinedIcon },
 };
 
@@ -104,6 +167,19 @@ const UserSettingsModal = ({ open, onClose, onPreferencesUpdated }) => {
   const [saving, setSaving] = useState(false);
   const [resettingPassword, setResettingPassword] = useState(false);
   const [resetDialogOpen, setResetDialogOpen] = useState(false);
+  const [supportForm, setSupportForm] = useState({
+    category: '',
+    title: '',
+    description: '',
+    attachments: [''],
+  });
+  const [supportTickets, setSupportTickets] = useState([]);
+  const [supportTicketsLoading, setSupportTicketsLoading] = useState(false);
+  const [supportTicketSubmitting, setSupportTicketSubmitting] = useState(false);
+  const [supportTicketError, setSupportTicketError] = useState('');
+  const [supportTicketSuccess, setSupportTicketSuccess] = useState('');
+  const [selectedSupportTicket, setSelectedSupportTicket] = useState(null);
+  const [supportContext] = useState(() => getSupportAppContext());
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
 
@@ -131,7 +207,7 @@ const UserSettingsModal = ({ open, onClose, onPreferencesUpdated }) => {
   }, [currentUser, userSettings]);
 
   const order = useMemo(
-    () => ['perfil', 'aparencia', 'preferencias', 'administracao'],
+    () => ['perfil', 'aparencia', 'preferencias', 'suporte', 'administracao'],
     [],
   );
 
@@ -155,7 +231,169 @@ const UserSettingsModal = ({ open, onClose, onPreferencesUpdated }) => {
   const handleClose = () => {
     setSuccess('');
     setError('');
+    setSupportTicketError('');
+    setSupportTicketSuccess('');
     onClose();
+  };
+
+  const resetSupportTicketForm = useCallback((clearMessages = true) => {
+    setSupportForm({
+      category: '',
+      title: '',
+      description: '',
+      attachments: [''],
+    });
+
+    if (clearMessages) {
+      setSupportTicketError('');
+      setSupportTicketSuccess('');
+    }
+  }, []);
+
+  const hasSupportTicketContent =
+    supportForm.title.trim() ||
+    supportForm.description.trim() ||
+    supportForm.category ||
+    supportForm.attachments.some(value => value.trim());
+
+  const handleSupportFieldChange = (field, value) => {
+    setSupportForm(previous => ({
+      ...previous,
+      [field]: value,
+    }));
+  };
+
+  const handleSupportAttachmentChange = (index, value) => {
+    setSupportForm(previous => ({
+      ...previous,
+      attachments: previous.attachments.map((item, itemIndex) =>
+        itemIndex === index ? value : item,
+      ),
+    }));
+  };
+
+  const addSupportAttachment = () => {
+    setSupportForm(previous => ({
+      ...previous,
+      attachments: [...previous.attachments, ''],
+    }));
+  };
+
+  const removeSupportAttachment = index => {
+    setSupportForm(previous => ({
+      ...previous,
+      attachments: previous.attachments.filter((_, itemIndex) => itemIndex !== index),
+    }));
+  };
+
+  const refreshSupportTickets = useCallback(async () => {
+    if (!currentUser?.uid) {
+      setSupportTickets([]);
+      return;
+    }
+
+    setSupportTicketsLoading(true);
+
+    try {
+      const tickets = await getSupportTicketsByUser(currentUser.uid);
+      setSupportTickets(Array.isArray(tickets) ? tickets : []);
+    } catch (error) {
+      // eslint-disable-next-line no-console
+      console.error('[UserSettingsModal] getSupportTicketsByUser failed', {
+        code: error?.code ?? null,
+        message: error?.message ?? String(error),
+        operation: 'getSupportTicketsByUser(currentUser.uid)',
+      });
+      setSupportTickets([]);
+    } finally {
+      setSupportTicketsLoading(false);
+    }
+  }, [currentUser]);
+
+  const handleClearSupportForm = () => {
+    if (!hasSupportTicketContent) {
+      resetSupportTicketForm();
+      return;
+    }
+
+    const shouldClear = window.confirm(
+      'Limpar os campos do ticket atual? Essa ação não pode ser desfeita.',
+    );
+
+    if (shouldClear) {
+      resetSupportTicketForm();
+    }
+  };
+
+  const handleSubmitSupportTicket = async () => {
+    if (!currentUser?.uid) {
+      setSupportTicketError('Você precisa estar autenticado para enviar um ticket.');
+      return;
+    }
+
+    const trimmedTitle = supportForm.title.trim();
+    const trimmedDescription = supportForm.description.trim();
+    const sanitizedAttachments = supportForm.attachments
+      .map(item => item.trim())
+      .filter(Boolean);
+
+    const hasInvalidAttachment = sanitizedAttachments.some(
+      value => !/^https?:\/\/[^\s]+$/i.test(value),
+    );
+
+    if (!trimmedTitle) {
+      setSupportTicketError('Informe um título para o ticket.');
+      return;
+    }
+
+    if (trimmedTitle.length > 120) {
+      setSupportTicketError('O título do ticket deve ter até 120 caracteres.');
+      return;
+    }
+
+    if (!trimmedDescription) {
+      setSupportTicketError('Descreva o problema ou a sua solicitação.');
+      return;
+    }
+
+    if (hasInvalidAttachment) {
+      setSupportTicketError('Um ou mais links de anexo não são URLs válidas.');
+      return;
+    }
+
+    setSupportTicketSubmitting(true);
+    setSupportTicketError('');
+    setSupportTicketSuccess('');
+
+    try {
+      const payload = {
+        userId: currentUser.uid,
+        userEmail: currentUser.email || '',
+        userDisplayName: settings.nomeExibicao || currentUser.displayName || 'Usuário',
+        sourceApp: supportContext.sourceApp,
+        sourceAppName: supportContext.sourceAppName,
+        sourceUrl: supportContext.sourceUrl,
+        category: supportForm.category,
+        title: trimmedTitle,
+        description: trimmedDescription,
+        attachments: sanitizedAttachments,
+      };
+
+      await createSupportTicket(payload);
+      resetSupportTicketForm(false);
+      setSupportTicketSuccess('Ticket enviado com sucesso. Nossa equipe vai analisar sua solicitação.');
+      await refreshSupportTickets();
+    } catch (error) {
+      // eslint-disable-next-line no-console
+      console.error('[UserSettingsModal] createSupportTicket failed', {
+        code: error?.code ?? null,
+        message: error?.message ?? String(error),
+        operation: 'createSupportTicket(payload)',
+      });
+      setSupportTicketError('Não foi possível enviar o ticket. Verifique sua conexão e tente novamente.');
+    } finally {
+      setSupportTicketSubmitting(false);
+    }
   };
 
   const handleSave = async () => {
@@ -613,6 +851,365 @@ const UserSettingsModal = ({ open, onClose, onPreferencesUpdated }) => {
       );
     }
 
+    if (selectedSection === 'suporte') {
+      return (
+        <Stack spacing={2.5} sx={{ pb: 2 }}>
+          <Box
+            sx={{
+              p: 2,
+              borderRadius: 3,
+              background: 'linear-gradient(135deg, rgba(111, 45, 168, 0.14), rgba(15, 23, 42, 0.6))',
+              border: '1px solid rgba(148, 163, 184, 0.18)',
+              boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.04)',
+            }}
+          >
+            <Stack direction="row" spacing={1.5} sx={{ alignItems: 'center' }}>
+              <Box
+                sx={{
+                  width: 40,
+                  height: 40,
+                  display: 'grid',
+                  placeItems: 'center',
+                  borderRadius: 2,
+                  background: 'rgba(111, 45, 168, 0.16)',
+                  color: 'var(--text-primary)',
+                  border: '1px solid rgba(111, 45, 168, 0.3)',
+                }}
+              >
+                <HeadsetMicOutlinedIcon fontSize="small" />
+              </Box>
+              <Box>
+                <Typography variant="h6" sx={{ color: 'var(--text-primary)', fontWeight: 700, lineHeight: 1.2 }}>
+                  Abrir Ticket de Suporte
+                </Typography>
+                <Typography variant="body2" sx={{ color: 'var(--text-secondary)' }}>
+                  Descreva sua solicitação e nossa equipe ajudará você.
+                </Typography>
+              </Box>
+            </Stack>
+          </Box>
+
+          <Box
+            sx={{
+              p: 2,
+              borderRadius: 3,
+              background: 'rgba(148, 163, 184, 0.05)',
+              border: '1px solid rgba(148, 163, 184, 0.18)',
+            }}
+          >
+            <Typography variant="subtitle2" sx={{ color: 'var(--text-primary)', fontWeight: 700, mb: 1.5 }}>
+              Categoria
+            </Typography>
+
+            <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1} sx={{ flexWrap: 'wrap', gap: 1 }}>
+              {SUPPORT_CATEGORIES.map(({ value, label, icon: Icon }) => {
+                const selected = supportForm.category === value;
+
+                return (
+                  <Button
+                    key={value}
+                    variant={selected ? 'contained' : 'outlined'}
+                    startIcon={<Icon fontSize="small" />}
+                    onClick={() => handleSupportFieldChange('category', value)}
+                    sx={{
+                      flex: { xs: '1 1 100%', sm: '1 1 auto' },
+                      minWidth: { xs: '100%', sm: 130 },
+                      justifyContent: 'center',
+                      borderRadius: 2,
+                      textTransform: 'none',
+                      color: selected ? '#fff' : 'var(--text-primary)',
+                      borderColor: selected ? 'rgba(111, 45, 168, 0.4)' : 'rgba(148, 163, 184, 0.22)',
+                      background: selected
+                        ? 'linear-gradient(135deg, rgba(111, 45, 168, 0.95), rgba(96, 208, 255, 0.25))'
+                        : 'rgba(15, 23, 42, 0.15)',
+                      boxShadow: selected ? '0 0 0 1px rgba(255, 255, 255, 0.06), 0 10px 22px rgba(111, 45, 168, 0.2)' : 'none',
+                      '&:hover': {
+                        borderColor: selected ? 'rgba(111, 45, 168, 0.6)' : 'rgba(148, 163, 184, 0.32)',
+                      },
+                    }}
+                  >
+                    {label}
+                  </Button>
+                );
+              })}
+            </Stack>
+          </Box>
+
+          <Box
+            sx={{
+              p: 2,
+              borderRadius: 3,
+              background: 'rgba(148, 163, 184, 0.05)',
+              border: '1px solid rgba(148, 163, 184, 0.18)',
+            }}
+          >
+            <Stack spacing={2}>
+              <TextField
+                label="Título do ticket"
+                value={supportForm.title}
+                onChange={event => handleSupportFieldChange('title', event.target.value.slice(0, 120))}
+                placeholder="Ex.: Erro ao salvar uma ficha"
+                fullWidth
+                required
+                slotProps={{
+                  input: {
+                    sx: {
+                      background: 'rgba(15, 23, 42, 0.25)',
+                      borderRadius: 2,
+                      color: 'var(--text-primary)',
+                    },
+                  },
+                }}
+              />
+
+              <TextField
+                label="Descrição"
+                value={supportForm.description}
+                onChange={event => handleSupportFieldChange('description', event.target.value)}
+                multiline
+                minRows={6}
+                maxRows={12}
+                placeholder="Conte com detalhes o que aconteceu ou o que você gostaria de sugerir..."
+                fullWidth
+                required
+                slotProps={{
+                  input: {
+                    sx: {
+                      minHeight: 180,
+                      resize: 'vertical',
+                      overflow: 'auto',
+                      background: 'rgba(15, 23, 42, 0.25)',
+                      borderRadius: 2,
+                      color: 'var(--text-primary)',
+                    },
+                  },
+                }}
+              />
+            </Stack>
+          </Box>
+
+          <Box
+            sx={{
+              p: 2,
+              borderRadius: 3,
+              background: 'rgba(148, 163, 184, 0.05)',
+              border: '1px solid rgba(148, 163, 184, 0.18)',
+            }}
+          >
+            <Typography variant="subtitle2" sx={{ color: 'var(--text-primary)', fontWeight: 700, mb: 1 }}>
+              Anexos (opcional)
+            </Typography>
+            <Typography variant="body2" sx={{ color: 'var(--text-secondary)', mb: 1.5 }}>
+              Adicione links úteis para imagens, vídeos, screenshots ou referências.
+            </Typography>
+
+            <Stack spacing={1.5}>
+              {supportForm.attachments.map((attachment, index) => (
+                <Box key={`attachment-${index}`} sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
+                  <TextField
+                    value={attachment}
+                    onChange={event => handleSupportAttachmentChange(index, event.target.value)}
+                    placeholder="https://exemplo.com/imagem.png"
+                    fullWidth
+                    slotProps={{
+                      input: {
+                        sx: {
+                          background: 'rgba(15, 23, 42, 0.25)',
+                          borderRadius: 2,
+                          color: 'var(--text-primary)',
+                        },
+                      },
+                    }}
+                  />
+                  {supportForm.attachments.length > 1 && (
+                    <Button
+                      variant="outlined"
+                      color="inherit"
+                      onClick={() => removeSupportAttachment(index)}
+                      sx={{
+                        borderRadius: 2,
+                        textTransform: 'none',
+                        color: 'var(--text-primary)',
+                        borderColor: 'rgba(148, 163, 184, 0.2)',
+                        minWidth: 90,
+                      }}
+                    >
+                      Remover
+                    </Button>
+                  )}
+                </Box>
+              ))}
+
+              <Button
+                variant="outlined"
+                onClick={addSupportAttachment}
+                sx={{
+                  alignSelf: 'flex-start',
+                  borderRadius: 2,
+                  textTransform: 'none',
+                  color: 'var(--text-primary)',
+                  borderColor: 'rgba(148, 163, 184, 0.2)',
+                }}
+              >
+                Adicionar link
+              </Button>
+            </Stack>
+          </Box>
+
+          {(supportTicketError || supportTicketSuccess) && (
+            <Typography
+              sx={{
+                color: supportTicketError ? '#fca5a5' : '#86efac',
+                fontWeight: 600,
+                px: 0.5,
+              }}
+            >
+              {supportTicketError || supportTicketSuccess}
+            </Typography>
+          )}
+
+          <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 1.5, flexWrap: 'wrap' }}>
+            <Button
+              variant="outlined"
+              onClick={handleClearSupportForm}
+              sx={{
+                borderRadius: 2,
+                textTransform: 'none',
+                color: 'var(--text-primary)',
+                borderColor: 'rgba(148, 163, 184, 0.2)',
+              }}
+            >
+              Limpar
+            </Button>
+            <Button
+              variant="contained"
+              onClick={handleSubmitSupportTicket}
+              disabled={supportTicketSubmitting || supportTicketsLoading}
+              sx={{
+                background: 'linear-gradient(135deg, var(--color-primary), var(--color-accent))',
+                color: '#fff',
+                borderRadius: 2,
+                textTransform: 'none',
+                boxShadow: '0 8px 20px rgba(111, 45, 168, 0.25)',
+              }}
+            >
+              {supportTicketSubmitting ? 'Enviando...' : 'Enviar Ticket'}
+            </Button>
+          </Box>
+
+          <Box
+            sx={{
+              p: 2,
+              borderRadius: 3,
+              background: 'rgba(148, 163, 184, 0.05)',
+              border: '1px solid rgba(148, 163, 184, 0.18)',
+            }}
+          >
+            <Typography variant="subtitle1" sx={{ color: 'var(--text-primary)', fontWeight: 700, mb: 2 }}>
+              Meus Tickets
+            </Typography>
+
+            {supportTicketsLoading ? (
+              <Typography variant="body2" sx={{ color: 'var(--text-secondary)' }}>
+                Carregando tickets...
+              </Typography>
+            ) : supportTickets.length === 0 ? (
+              <Typography variant="body2" sx={{ color: 'var(--text-secondary)' }}>
+                Nenhum ticket enviado até o momento.
+              </Typography>
+            ) : (
+              <Stack spacing={1.5}>
+                {supportTickets.map(ticket => {
+                  const statusLabel = getSupportTicketStatusLabel(ticket.status);
+                  const statusColor = getSupportTicketStatusColor(ticket.status);
+                  const categoryLabel = SUPPORT_CATEGORY_LABELS[ticket.category] || 'Outro';
+                  const createdDate = ticket.createdAt?.seconds
+                    ? new Date(ticket.createdAt.seconds * 1000)
+                    : new Date();
+
+                  return (
+                    <Box
+                      key={ticket.id}
+                      sx={{
+                        p: 1.5,
+                        borderRadius: 2,
+                        background: selectedSupportTicket?.id === ticket.id
+                          ? 'rgba(111, 45, 168, 0.12)'
+                          : 'rgba(15, 23, 42, 0.18)',
+                        border: selectedSupportTicket?.id === ticket.id
+                          ? '1px solid rgba(111, 45, 168, 0.36)'
+                          : '1px solid rgba(148, 163, 184, 0.18)',
+                        cursor: 'pointer',
+                        transition: 'all 0.2s ease',
+                        '&:hover': {
+                          borderColor: 'rgba(148, 163, 184, 0.28)',
+                        },
+                      }}
+                      onClick={() => setSelectedSupportTicket(ticket)}
+                    >
+                      <Stack spacing={1}>
+                        <Stack direction="row" spacing={1} sx={{ justifyContent: 'space-between', alignItems: 'flex-start', gap: 1 }}>
+                          <Box sx={{ minWidth: 0, flex: 1 }}>
+                            <Typography variant="subtitle2" sx={{ color: 'var(--text-primary)', fontWeight: 700, wordBreak: 'break-word' }}>
+                              {ticket.title || 'Ticket sem título'}
+                            </Typography>
+                            <Typography variant="caption" sx={{ color: 'var(--text-secondary)' }}>
+                              {categoryLabel} • {new Date(createdDate).toLocaleDateString('pt-BR')}
+                            </Typography>
+                          </Box>
+                          <Chip
+                            label={statusLabel}
+                            size="small"
+                            color={statusColor}
+                            sx={{
+                              background: statusColor === 'warning' ? 'rgba(245, 158, 11, 0.12)' : statusColor === 'info' ? 'rgba(96, 208, 255, 0.12)' : statusColor === 'success' ? 'rgba(34, 197, 94, 0.12)' : 'rgba(148, 163, 184, 0.12)',
+                              color: statusColor === 'warning' ? '#fbbf24' : statusColor === 'info' ? '#8ad9ff' : statusColor === 'success' ? '#86efac' : 'var(--text-secondary)',
+                              border: '1px solid rgba(148, 163, 184, 0.18)',
+                              fontWeight: 600,
+                            }}
+                          />
+                        </Stack>
+                      </Stack>
+                    </Box>
+                  );
+                })}
+              </Stack>
+            )}
+
+            {selectedSupportTicket && (
+              <Box
+                sx={{
+                  mt: 2,
+                  p: 2,
+                  borderRadius: 2,
+                  background: 'rgba(15, 23, 42, 0.25)',
+                  border: '1px solid rgba(148, 163, 184, 0.18)',
+                }}
+              >
+                <Typography variant="subtitle2" sx={{ color: 'var(--text-primary)', fontWeight: 700, mb: 1 }}>
+                  Detalhes do ticket
+                </Typography>
+                <Typography variant="body2" sx={{ color: 'var(--text-secondary)', whiteSpace: 'pre-wrap', mb: 1.5 }}>
+                  {selectedSupportTicket.description || 'Sem descrição.'}
+                </Typography>
+
+                {selectedSupportTicket.adminResponse && (
+                  <Box sx={{ p: 1.5, borderRadius: 2, background: 'rgba(111, 45, 168, 0.12)', border: '1px solid rgba(111, 45, 168, 0.2)' }}>
+                    <Typography variant="caption" sx={{ color: 'var(--text-secondary)', display: 'block', mb: 0.5 }}>
+                      Resposta administrativa
+                    </Typography>
+                    <Typography variant="body2" sx={{ color: 'var(--text-primary)', whiteSpace: 'pre-wrap' }}>
+                      {selectedSupportTicket.adminResponse}
+                    </Typography>
+                  </Box>
+                )}
+              </Box>
+            )}
+          </Box>
+        </Stack>
+      );
+    }
+
     return (
       <Box
         sx={{
@@ -754,7 +1351,12 @@ const UserSettingsModal = ({ open, onClose, onPreferencesUpdated }) => {
         slots={{ transition: Fade }}
         slotProps={{
           transition: {
-            onEntered: syncSettingsFromContext,
+            onEntered: () => {
+              syncSettingsFromContext();
+              if (currentUser?.uid) {
+                void refreshSupportTickets();
+              }
+            },
           },
           paper: {
             sx: {
@@ -780,12 +1382,13 @@ const UserSettingsModal = ({ open, onClose, onPreferencesUpdated }) => {
           Configurações da conta
         </DialogTitle>
 
-        <DialogContent sx={{ p: 0 }}>
+        <DialogContent sx={{ p: 0, overflow: 'hidden' }}>
           <Box
             sx={{
               display: 'flex',
               flexDirection: { xs: 'column', md: 'row' },
               minHeight: 420,
+              maxHeight: '78vh',
             }}
           >
             <Box
@@ -828,7 +1431,21 @@ const UserSettingsModal = ({ open, onClose, onPreferencesUpdated }) => {
               </Stack>
             </Box>
 
-            <Box sx={{ flex: 1, p: { xs: 2, md: 3 } }}>
+            <Box
+              sx={{
+                flex: 1,
+                p: { xs: 2, md: 3 },
+                overflowY: 'auto',
+                scrollbarWidth: 'thin',
+                '&::-webkit-scrollbar': {
+                  width: '8px',
+                },
+                '&::-webkit-scrollbar-thumb': {
+                  background: 'rgba(148, 163, 184, 0.25)',
+                  borderRadius: '999px',
+                },
+              }}
+            >
               {loading ? (
                 <Typography sx={{ color: 'var(--text-secondary)' }}>
                   Carregando preferências...
@@ -854,7 +1471,16 @@ const UserSettingsModal = ({ open, onClose, onPreferencesUpdated }) => {
           </Box>
         </DialogContent>
 
-        <DialogActions sx={{ p: 2.5, borderTop: '1px solid rgba(148, 163, 184, 0.18)' }}>
+        <DialogActions
+          sx={{
+            p: 2.5,
+            borderTop: '1px solid rgba(148, 163, 184, 0.18)',
+            background: 'rgba(15, 23, 42, 0.85)',
+            position: 'sticky',
+            bottom: 0,
+            zIndex: 2,
+          }}
+        >
           <Button onClick={handleClose} color="inherit" sx={{ color: 'var(--text-secondary)' }}>
             Cancelar
           </Button>

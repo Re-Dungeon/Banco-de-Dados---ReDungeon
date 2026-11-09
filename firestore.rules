@@ -86,6 +86,25 @@ service cloud.firestore {
       allow read, write: if isAuth() && request.auth.uid == userId;
     }
 
+    // ── supportTickets ───────────────────────────────────────────────────────
+    // Usuários autenticados só podem criar e ler seus próprios tickets; admins
+    // mantêm controle para atender, responder e gerenciar status.
+    match /supportTickets/{ticketId} {
+      allow read: if isAuth() && (
+        request.auth.uid == resource.data.userId ||
+        isAdmin()
+      );
+      allow create: if isAuth() &&
+        request.resource.data.userId == request.auth.uid &&
+        request.resource.data.status == 'open' &&
+        request.resource.data.title is string &&
+        request.resource.data.description is string &&
+        request.resource.data.sourceApp is string &&
+        request.resource.data.sourceAppName is string;
+      allow update: if isAdmin();
+      allow delete: if isAdmin();
+    }
+
     // ── Universo ───────────────────────────────────────────────────────────────
     // Leitura para qualquer usuário autenticado; escrita apenas para admins.
     match /Universo/{universoId} {

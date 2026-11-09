@@ -31,6 +31,7 @@ export const ROUTE_PATHS = {
   NOVO_CORPO_ESPECIAL: '/recursos/corpos-especiais/novo',
   REINOS_CULTIVO: '/recursos/reinos-cultivo',
   NOVO_REINO_CULTIVO: '/recursos/reinos-cultivo/novo',
+  TICKETS: '/tickets',
   PATCH_NOTES: '/patch-notes',
   SOBRE: '/sobre',
 };
@@ -68,6 +69,7 @@ export const PAGE_TITLES = {
   [ROUTE_PATHS.NOVO_CORPO_ESPECIAL]: 'Novo Corpo Especial',
   [ROUTE_PATHS.REINOS_CULTIVO]: 'Reinos de Cultivo',
   [ROUTE_PATHS.NOVO_REINO_CULTIVO]: 'Novo Reino de Cultivo',
+  [ROUTE_PATHS.TICKETS]: 'Tickets',
   [ROUTE_PATHS.PATCH_NOTES]: 'Patch Notes',
   [ROUTE_PATHS.SOBRE]: 'Sobre',
 };

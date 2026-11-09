@@ -32,10 +32,15 @@ const matchesRoute = (currentPath, itemPath) =>
 
 const Sidebar = ({ open, onClose }) => {
   const location = useLocation();
-  const { currentUser } = useAuth();
+  const { currentUser, isAdmin } = useAuth();
   const [manualExpandedGroups, setManualExpandedGroups] = useState({});
 
-  const activeGroups = NAV_GROUPS.reduce((groups, group) => {
+  const visibleNavGroups = NAV_GROUPS.map(group => ({
+    ...group,
+    items: group.items.filter(item => !item.requiresAdmin || isAdmin),
+  })).filter(group => group.items.length > 0);
+
+  const activeGroups = visibleNavGroups.reduce((groups, group) => {
     if (group.items.some(item => matchesRoute(location.pathname, item.path))) {
       groups[group.id] = true;
     }
@@ -105,7 +110,7 @@ const Sidebar = ({ open, onClose }) => {
         <Box sx={{ flex: 1, overflowY: 'auto', py: 1 }}>
           {currentUser && (
             <>
-              {NAV_GROUPS.map(group => {
+              {visibleNavGroups.map(group => {
                 const isExpanded = Object.prototype.hasOwnProperty.call(
                   manualExpandedGroups,
                   group.id,
