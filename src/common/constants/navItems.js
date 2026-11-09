@@ -15,6 +15,7 @@ import Inventory2OutlinedIcon from '@mui/icons-material/Inventory2Outlined';
 import ConstructionOutlinedIcon from '@mui/icons-material/ConstructionOutlined';
 import ReceiptLongOutlinedIcon from '@mui/icons-material/ReceiptLongOutlined';
 import DescriptionOutlinedIcon from '@mui/icons-material/DescriptionOutlined';
+import SupportAgentOutlinedIcon from '@mui/icons-material/SupportAgentOutlined';
 import ArticleOutlinedIcon from '@mui/icons-material/ArticleOutlined';
 import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
 import { ROUTE_PATHS } from './routes';
@@ -73,6 +74,12 @@ export const NAV_GROUPS = [
     title: 'Outros',
     items: [
       { path: ROUTE_PATHS.REGRAS, label: 'Regras', icon: DescriptionOutlinedIcon },
+      {
+        path: ROUTE_PATHS.TICKETS,
+        label: 'Tickets',
+        icon: SupportAgentOutlinedIcon,
+        requiresAdmin: true,
+      },
       { path: ROUTE_PATHS.PATCH_NOTES, label: 'Patch Notes', icon: ArticleOutlinedIcon },
       { path: ROUTE_PATHS.SOBRE, label: 'Sobre', icon: InfoOutlinedIcon },
     ],

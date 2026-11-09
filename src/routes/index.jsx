@@ -1,6 +1,7 @@
 import React, { lazy } from 'react';
 import { Navigate } from 'react-router-dom';
 import { ROUTE_PATHS } from 'common/constants/routes';
+import { useAuth } from 'context/AuthContext';
 
 const Recursos = lazy(() => import('pages/Recursos/Recursos'));
 const Racas = lazy(() => import('pages/Recursos/Racas/Racas'));
@@ -53,7 +54,22 @@ const NovoReinoCultivo = lazy(
   () => import('pages/Recursos/ReinosCultivo/NovoReinoCultivo'),
 );
 const PatchNotes = lazy(() => import('pages/PatchNotes/PatchNotes'));
+const Tickets = lazy(() => import('pages/Tickets/Tickets'));
 const Sobre = lazy(() => import('pages/Sobre/Sobre'));
+
+const TicketsRoute = () => {
+  const { currentUser, loading, isAdmin, loadingPermissions } = useAuth();
+
+  if (loading || loadingPermissions) {
+    return null;
+  }
+
+  if (!currentUser || !isAdmin) {
+    return <Navigate to={ROUTE_PATHS.RECURSOS} replace />;
+  }
+
+  return <Tickets />;
+};
 
 export const ROUTES = [
   { index: true, element: <Navigate to={ROUTE_PATHS.RACAS} replace /> },
@@ -101,6 +117,7 @@ export const ROUTES = [
     path: ROUTE_PATHS.NOVO_REINO_CULTIVO.slice(1),
     element: <NovoReinoCultivo />,
   },
+  { path: ROUTE_PATHS.TICKETS.slice(1), element: <TicketsRoute /> },
   { path: ROUTE_PATHS.PATCH_NOTES.slice(1), element: <PatchNotes /> },
   { path: ROUTE_PATHS.SOBRE.slice(1), element: <Sobre /> },
 ];

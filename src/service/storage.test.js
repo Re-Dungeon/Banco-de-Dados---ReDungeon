@@ -12,6 +12,9 @@ vi.mock('firebase/firestore', () => ({
   updateDoc: vi.fn(),
   setDoc: vi.fn(),
   serverTimestamp: vi.fn(() => '__serverTimestamp__'),
+  query: vi.fn((...args) => ({ __query: args })),
+  where: vi.fn((field, op, value) => ({ __where: { field, op, value } })),
+  orderBy: vi.fn((field, direction) => ({ __orderBy: { field, direction } })),
 }));
 
 import {
@@ -23,6 +26,8 @@ import {
   doc,
   updateDoc,
   setDoc,
+  where,
+  orderBy,
 } from 'firebase/firestore';
 import {
   getRacas,
@@ -32,6 +37,12 @@ import {
   getUserPermissions,
   getUserSettings,
   saveUserSettings,
+  createSupportTicket,
+  getSupportTicketsByUser,
+  getSupportTickets,
+  updateSupportTicket,
+  deleteSupportTicket,
+  getSupportAppContext,
 } from './storage';
 
 describe('storage.js — CRUD de Raças (padrão Firestore repetido em todas as entidades)', () => {
@@ -134,6 +145,105 @@ describe('storage.js — getUserPermissions', () => {
     const result = await getUserPermissions('uid-sem-universos');
 
     expect(result).toEqual({ isAdmin: false, universos: [] });
+  });
+});
+
+describe('storage.js — support tickets', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  it('monta a configuração da aplicação para identificar a origem do ticket', () => {
+    const result = getSupportAppContext();
+
+    expect(result).toMatchObject({
+      sourceApp: 'database',
+      sourceAppName: 'Banco de Dados',
+      sourceUrl: expect.any(String),
+    });
+  });
+
+  it('cria um ticket com metadados do usuário e da aplicação de origem', async () => {
+    addDoc.mockResolvedValue({ id: 'ticket-1' });
+
+    const payload = {
+      userId: 'uid-1',
+      userEmail: 'jogador@email.com',
+      userDisplayName: 'Jogador Teste',
+      category: 'bug',
+      title: 'Erro ao salvar item',
+      description: 'Descrição do problema',
+      attachments: ['https://example.com/print.png'],
+    };
+
+    const result = await createSupportTicket(payload);
+
+    expect(addDoc).toHaveBeenCalledWith(
+      { __collection: 'supportTickets' },
+      expect.objectContaining({
+        userId: 'uid-1',
+        userEmail: 'jogador@email.com',
+        userDisplayName: 'Jogador Teste',
+        sourceApp: 'database',
+        sourceAppName: 'Banco de Dados',
+        category: 'bug',
+        title: 'Erro ao salvar item',
+        description: 'Descrição do problema',
+        attachments: ['https://example.com/print.png'],
+        status: 'open',
+        createdAt: '__serverTimestamp__',
+        updatedAt: '__serverTimestamp__',
+      }),
+    );
+    expect(result).toEqual(expect.objectContaining({ id: 'ticket-1' }));
+  });
+
+  it('lista apenas os tickets do usuário atual em ordem decrescente de criação', async () => {
+    getDocs.mockResolvedValue({
+      docs: [{ id: 'ticket-1', data: () => ({ userId: 'uid-1', title: 'Primeiro' }) }],
+    });
+
+    const result = await getSupportTicketsByUser('uid-1');
+
+    expect(where).toHaveBeenCalledWith('userId', '==', 'uid-1');
+    expect(orderBy).toHaveBeenCalledWith('createdAt', 'desc');
+    expect(result).toEqual([{ id: 'ticket-1', userId: 'uid-1', title: 'Primeiro' }]);
+  });
+
+  it('lista todos os tickets para a visão administrativa em ordem decrescente de criação', async () => {
+    getDocs.mockResolvedValue({
+      docs: [{ id: 'ticket-1', data: () => ({ title: 'Ticket Geral' }) }],
+    });
+
+    const result = await getSupportTickets();
+
+    expect(collection).toHaveBeenCalledWith({}, 'supportTickets');
+    expect(result).toEqual([{ id: 'ticket-1', title: 'Ticket Geral' }]);
+  });
+
+  it('atualiza status e resposta administrativa do ticket sem remover outros dados', async () => {
+    await updateSupportTicket('ticket-1', {
+      status: 'in-progress',
+      adminResponse: 'Vamos verificar isso.',
+      respondedAt: new Date('2024-01-01T00:00:00Z'),
+    });
+
+    expect(updateDoc).toHaveBeenCalledWith(
+      { __doc: 'supportTickets', id: 'ticket-1' },
+      expect.objectContaining({
+        status: 'in-progress',
+        adminResponse: 'Vamos verificar isso.',
+        respondedAt: expect.any(Date),
+        updatedAt: '__serverTimestamp__',
+      }),
+    );
+  });
+
+  it('exclui o documento do ticket mantendo a coleção e o id corretos', async () => {
+    await deleteSupportTicket('ticket-1');
+
+    expect(doc).toHaveBeenCalledWith({}, 'supportTickets', 'ticket-1');
+    expect(deleteDoc).toHaveBeenCalledWith({ __doc: 'supportTickets', id: 'ticket-1' });
   });
 });
 

@@ -135,15 +135,6 @@ export const AuthProvider = ({ children }) => {
       setCurrentUser(user);
       setLoadingPreferences(true);
       void refreshUserPreferences(user.uid);
-
-      if (import.meta.env.DEV) {
-        // eslint-disable-next-line no-console
-        console.info('[Auth debug]', {
-          uid: user.uid,
-          isAuthenticated: true,
-          loading: false,
-        });
-      }
     });
 
     return () => unsubscribe();

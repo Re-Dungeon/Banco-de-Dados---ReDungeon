@@ -48,6 +48,11 @@ vi.mock('service/storage', () => ({
     notificacoes: { ativadas: true },
   },
   saveUserSettings: saveUserSettingsMock,
+  getSupportAppContext: () => ({
+    sourceApp: 'database',
+    sourceAppName: 'Banco de Dados',
+    sourceUrl: 'https://re-dungeon.app',
+  }),
 }));
 
 import UserSettingsModal from './UserSettingsModal';

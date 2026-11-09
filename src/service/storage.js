@@ -8,6 +8,9 @@ import {
   updateDoc,
   setDoc,
   serverTimestamp,
+  query,
+  where,
+  orderBy,
 } from 'firebase/firestore';
 import { db } from './firebase';
 
@@ -264,6 +267,188 @@ export const DEFAULT_USER_SETTINGS = Object.freeze({
   corDestaque: '#6F2DA8',
   notificacoes: { ativadas: true },
 });
+
+const SUPPORT_APP_CONFIG = Object.freeze({
+  database: {
+    sourceApp: 'database',
+    sourceAppName: 'Banco de Dados',
+    sourceUrl:
+      import.meta.env.VITE_SUPPORT_DATABASE_URL ||
+      import.meta.env.VITE_RE_DATABASE_URL ||
+      (typeof window !== 'undefined' ? window.location.origin : 'https://re-dungeon.app'),
+  },
+  'player-sheet': {
+    sourceApp: 'player-sheet',
+    sourceAppName: 'Ficha de Jogador',
+    sourceUrl:
+      import.meta.env.VITE_SUPPORT_PLAYER_SHEET_URL ||
+      import.meta.env.VITE_RE_PLAYER_SHEET_URL ||
+      (typeof window !== 'undefined' ? window.location.origin : 'https://re-player-sheet.app'),
+  },
+  'gm-shield': {
+    sourceApp: 'gm-shield',
+    sourceAppName: 'Escudo do Mestre',
+    sourceUrl:
+      import.meta.env.VITE_SUPPORT_GM_SHIELD_URL ||
+      import.meta.env.VITE_RE_GM_SHIELD_URL ||
+      (typeof window !== 'undefined' ? window.location.origin : 'https://re-gm-shield.app'),
+  },
+});
+
+export const getSupportAppContext = appId => {
+  const resolvedAppId =
+    typeof appId === 'string' && SUPPORT_APP_CONFIG[appId]
+      ? appId
+      : import.meta.env.VITE_SUPPORT_APP_ID ||
+        import.meta.env.VITE_RE_APP_ID ||
+        'database';
+
+  const config = SUPPORT_APP_CONFIG[resolvedAppId] || SUPPORT_APP_CONFIG.database;
+
+  return {
+    ...config,
+    sourceUrl: config.sourceUrl ||
+      (typeof window !== 'undefined' ? window.location.origin : 'https://re-dungeon.app'),
+  };
+};
+
+const SUPPORT_TICKETS_COLLECTION = 'supportTickets';
+
+export const createSupportTicket = async payload => {
+  const sourceContext = getSupportAppContext(payload?.sourceApp);
+  const normalizedTitle = String(payload?.title ?? '').trim();
+  const normalizedDescription = String(payload?.description ?? '').trim();
+  const attachments = Array.isArray(payload?.attachments)
+    ? payload.attachments
+        .map(item => String(item ?? '').trim())
+        .filter(item => item.length > 0)
+    : [];
+
+  const ticketData = {
+    userId: payload?.userId ?? '',
+    userEmail: String(payload?.userEmail ?? '').trim(),
+    userDisplayName: String(payload?.userDisplayName ?? '').trim(),
+    sourceApp: payload?.sourceApp || sourceContext.sourceApp,
+    sourceAppName: payload?.sourceAppName || sourceContext.sourceAppName,
+    sourceUrl: payload?.sourceUrl || sourceContext.sourceUrl,
+    category: String(payload?.category ?? '').trim(),
+    title: normalizedTitle,
+    description: normalizedDescription,
+    attachments,
+    status: 'open',
+    adminResponse: null,
+    respondedAt: null,
+    createdAt: serverTimestamp(),
+    updatedAt: serverTimestamp(),
+  };
+
+  try {
+    const docRef = await addDoc(collection(db, SUPPORT_TICKETS_COLLECTION), ticketData);
+    return { id: docRef.id, ...ticketData };
+  } catch (error) {
+    // eslint-disable-next-line no-console
+    console.error('[storage] createSupportTicket failed', {
+      code: error?.code ?? null,
+      message: error?.message ?? String(error),
+      operation: 'addDoc(collection(db, "supportTickets"), ticketData)',
+    });
+    throw error;
+  }
+};
+
+export const getSupportTicketsByUser = async userId => {
+  if (!userId) {
+    return [];
+  }
+
+  try {
+    const ticketQuery = query(
+      collection(db, SUPPORT_TICKETS_COLLECTION),
+      where('userId', '==', userId),
+      orderBy('createdAt', 'desc'),
+    );
+    const snapshot = await getDocs(ticketQuery);
+    return snapshot.docs.map(docItem => ({ id: docItem.id, ...docItem.data() }));
+  } catch (error) {
+    // eslint-disable-next-line no-console
+    console.error('[storage] getSupportTicketsByUser failed', {
+      code: error?.code ?? null,
+      message: error?.message ?? String(error),
+      operation: 'query(collection(db, "supportTickets"), where("userId", "==", userId), orderBy("createdAt", "desc"))',
+    });
+    throw error;
+  }
+};
+
+export const getSupportTickets = async () => {
+  try {
+    const ticketQuery = query(
+      collection(db, SUPPORT_TICKETS_COLLECTION),
+      orderBy('createdAt', 'desc'),
+    );
+    const snapshot = await getDocs(ticketQuery);
+    return snapshot.docs.map(docItem => ({ id: docItem.id, ...docItem.data() }));
+  } catch (error) {
+    // eslint-disable-next-line no-console
+    console.error('[storage] getSupportTickets failed', {
+      code: error?.code ?? null,
+      message: error?.message ?? String(error),
+      operation: 'query(collection(db, "supportTickets"), orderBy("createdAt", "desc"))',
+    });
+    throw error;
+  }
+};
+
+export const updateSupportTicket = async (ticketId, updates) => {
+  if (!ticketId) {
+    throw new Error('O id do ticket é obrigatório para atualizar o registro.');
+  }
+
+  const normalizedUpdates = {
+    ...updates,
+    updatedAt: serverTimestamp(),
+  };
+
+  if (
+    Object.prototype.hasOwnProperty.call(normalizedUpdates, 'adminResponse') &&
+    typeof normalizedUpdates.adminResponse === 'string'
+  ) {
+    normalizedUpdates.respondedAt =
+      normalizedUpdates.respondedAt ?? new Date();
+  }
+
+  try {
+    await updateDoc(doc(db, SUPPORT_TICKETS_COLLECTION, ticketId), normalizedUpdates);
+    return normalizedUpdates;
+  } catch (error) {
+    // eslint-disable-next-line no-console
+    console.error('[storage] updateSupportTicket failed', {
+      code: error?.code ?? null,
+      message: error?.message ?? String(error),
+      operation: 'updateDoc(doc(db, "supportTickets", ticketId), payload)',
+    });
+    throw error;
+  }
+};
+
+export const deleteSupportTicket = async ticketId => {
+  if (!ticketId) {
+    throw new Error('O id do ticket é obrigatório para excluir o registro.');
+  }
+
+  try {
+    await deleteDoc(doc(db, SUPPORT_TICKETS_COLLECTION, ticketId));
+    return true;
+  } catch (error) {
+    // eslint-disable-next-line no-console
+    console.error('[storage] deleteSupportTicket failed', {
+      code: error?.code ?? null,
+      message: error?.message ?? String(error),
+      operation: 'deleteDoc(doc(db, "supportTickets", ticketId))',
+    });
+    throw error;
+  }
+};
 
 const normalizeProfileImageUrl = value => {
   if (typeof value !== 'string') return '';
