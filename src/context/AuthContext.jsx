@@ -63,8 +63,10 @@ export const AuthProvider = ({ children }) => {
   const [userSettings, setUserSettings] = useState(DEFAULT_USER_SETTINGS);
   const [loadingPreferences, setLoadingPreferences] = useState(false);
   const requestIdRef = useRef(0);
+  const lastLoadedSettingsUidRef = useRef(null);
 
   const resetUserSettings = useCallback(() => {
+    lastLoadedSettingsUidRef.current = null;
     setUserSettings(DEFAULT_USER_SETTINGS);
     applySavedTheme(DEFAULT_USER_SETTINGS);
   }, []);
@@ -77,9 +79,14 @@ export const AuthProvider = ({ children }) => {
       }
 
       if (overrideSettings) {
+        lastLoadedSettingsUidRef.current = uid;
         setUserSettings(overrideSettings);
         applySavedTheme(overrideSettings);
         return overrideSettings;
+      }
+
+      if (lastLoadedSettingsUidRef.current === uid) {
+        return userSettings || DEFAULT_USER_SETTINGS;
       }
 
       const requestId = ++requestIdRef.current;
@@ -92,6 +99,7 @@ export const AuthProvider = ({ children }) => {
           return nextSettings;
         }
 
+        lastLoadedSettingsUidRef.current = uid;
         setUserSettings(nextSettings);
         applySavedTheme(nextSettings);
         return nextSettings;
@@ -117,7 +125,7 @@ export const AuthProvider = ({ children }) => {
         }
       }
     },
-    [currentUser, resetUserSettings],
+    [currentUser, resetUserSettings, userSettings],
   );
 
   useEffect(() => {
@@ -126,9 +134,16 @@ export const AuthProvider = ({ children }) => {
 
       if (!user?.uid) {
         requestIdRef.current += 1;
+        lastLoadedSettingsUidRef.current = null;
         setCurrentUser(null);
         setLoadingPreferences(false);
         resetUserSettings();
+        return;
+      }
+
+      if (lastLoadedSettingsUidRef.current === user.uid && currentUser?.uid === user.uid) {
+        setCurrentUser(user);
+        setLoadingPreferences(false);
         return;
       }
 
@@ -138,7 +153,7 @@ export const AuthProvider = ({ children }) => {
     });
 
     return () => unsubscribe();
-  }, [refreshUserPreferences, resetUserSettings]);
+  }, [currentUser, refreshUserPreferences, resetUserSettings]);
 
   const login = useCallback(
     (email, password) => signInWithEmailAndPassword(auth, email, password),
@@ -157,6 +172,7 @@ export const AuthProvider = ({ children }) => {
 
   const logout = useCallback(async () => {
     requestIdRef.current += 1;
+    lastLoadedSettingsUidRef.current = null;
     setLoadingPreferences(false);
     await signOut(auth);
   }, []);
