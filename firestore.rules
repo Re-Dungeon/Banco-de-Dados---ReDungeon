@@ -83,12 +83,13 @@ service cloud.firestore {
     // A rota real usada pela aplicação é users/{userId}/settings/preferences,
     // mas o padrão com {document} também cobre esse e outros docs futuros.
     match /users/{userId}/settings/{document} {
-      allow read, write: if isAuth() && request.auth.uid == userId;
+      allow read: if isAuth() && request.auth.uid == userId;
+      allow write: if isAuth() && request.auth.uid == userId;
     }
 
     // ── supportTickets ───────────────────────────────────────────────────────
-    // Usuários autenticados só podem criar e ler seus próprios tickets; admins
-    // mantêm controle para atender, responder e gerenciar status.
+    // Usuários autenticados podem criar e consultar os próprios tickets;
+    // admins mantêm controle para atender, responder e gerenciar status.
     match /supportTickets/{ticketId} {
       allow read: if isAuth() && (
         request.auth.uid == resource.data.userId ||
@@ -101,8 +102,14 @@ service cloud.firestore {
         request.resource.data.description is string &&
         request.resource.data.sourceApp is string &&
         request.resource.data.sourceAppName is string;
-      allow update: if isAdmin();
-      allow delete: if isAdmin();
+      allow update: if isAuth() && (
+        isAdmin() ||
+        request.auth.uid == resource.data.userId
+      );
+      allow delete: if isAuth() && (
+        isAdmin() ||
+        request.auth.uid == resource.data.userId
+      );
     }
 
     // ── Universo ───────────────────────────────────────────────────────────────
