@@ -77,41 +77,6 @@ service cloud.firestore {
       allow write: if isAdmin();
     }
 
-    // ── user settings (preferências pessoais por UID) ────────────────────────
-    // Bloqueia acesso a dados de outros usuários, preservando a regra atual de
-    // permissões administrativas e sem misturar preferências com userPermissions.
-    // A rota real usada pela aplicação é users/{userId}/settings/preferences,
-    // mas o padrão com {document} também cobre esse e outros docs futuros.
-    match /users/{userId}/settings/{document} {
-      allow read: if isAuth() && request.auth.uid == userId;
-      allow write: if isAuth() && request.auth.uid == userId;
-    }
-
-    // ── supportTickets ───────────────────────────────────────────────────────
-    // Usuários autenticados podem criar e consultar os próprios tickets;
-    // admins mantêm controle para atender, responder e gerenciar status.
-    match /supportTickets/{ticketId} {
-      allow read: if isAuth() && (
-        request.auth.uid == resource.data.userId ||
-        isAdmin()
-      );
-      allow create: if isAuth() &&
-        request.resource.data.userId == request.auth.uid &&
-        request.resource.data.status == 'open' &&
-        request.resource.data.title is string &&
-        request.resource.data.description is string &&
-        request.resource.data.sourceApp is string &&
-        request.resource.data.sourceAppName is string;
-      allow update: if isAuth() && (
-        isAdmin() ||
-        request.auth.uid == resource.data.userId
-      );
-      allow delete: if isAuth() && (
-        isAdmin() ||
-        request.auth.uid == resource.data.userId
-      );
-    }
-
     // ── Universo ───────────────────────────────────────────────────────────────
     // Leitura para qualquer usuário autenticado; escrita apenas para admins.
     match /Universo/{universoId} {
@@ -667,7 +632,9 @@ service cloud.firestore {
         request.resource.data.keys().hasOnly(['uid', 'personagemId', 'updatedAt']) &&
         request.resource.data.uid == request.auth.uid &&
         personagemDoUsuarioNaCampanha(campanhaId, request.resource.data.personagemId);
-      allow delete: if isAuth() && membroUid == request.auth.uid;
+      // O mestre também apaga (exclusão da campanha — removeRmCampanhaCompleta).
+      allow delete: if isAuth() &&
+        (membroUid == request.auth.uid || isMestreDaCampanha(campanhaId));
     }
 
     // Sem update: mensagens não são editáveis (v1). Apagar: autor ou mestre.
@@ -688,6 +655,81 @@ service cloud.firestore {
         chatMensagemValida(campanhaId, request.resource.data, true);
       allow delete: if isAuth() &&
         (donoUid == request.auth.uid || isMestreDaCampanha(campanhaId));
+    }
+
+    // ── supportTickets ───────────────────────────────────────────────────────
+    // Cada usuário só lê e cria os próprios tickets. O status/finalização é
+    // controlado pela equipe administrativa (admin), que também pode responder
+    // o ticket em nome do suporte.
+    match /supportTickets/{ticketId} {
+      allow read: if isAuth() && (
+        resource.data.userId == request.auth.uid ||
+        isAdmin()
+      );
+      allow create: if isAuth() &&
+        request.resource.data.userId == request.auth.uid &&
+        request.resource.data.userEmail is string &&
+        request.resource.data.userDisplayName is string &&
+        request.resource.data.sourceApp is string &&
+        request.resource.data.sourceAppName is string &&
+        request.resource.data.sourceUrl is string &&
+        request.resource.data.category in ['Bug', 'Sugestão', 'Dúvida', 'Problema', 'Outro'] &&
+        request.resource.data.title is string &&
+        request.resource.data.title.size() > 0 &&
+        request.resource.data.title.size() <= 120 &&
+        request.resource.data.description is string &&
+        request.resource.data.description.size() > 0 &&
+        request.resource.data.description.size() <= 5000 &&
+        request.resource.data.attachments is list &&
+        request.resource.data.attachments.size() <= 10 &&
+        request.resource.data.status == 'open' &&
+        request.resource.data.adminResponse == '' &&
+        request.resource.data.respondedAt == null &&
+        request.resource.data.createdAt == request.time &&
+        request.resource.data.updatedAt == request.time;
+      allow update: if isAdmin() &&
+        request.resource.data.userId == resource.data.userId &&
+        request.resource.data.status in ['open', 'in_progress', 'in-progress', 'answered', 'resolved'] &&
+        request.resource.data.updatedAt == request.time;
+      allow delete: if isAdmin();
+    }
+
+    // Sussurros (/w): mensagem privada entre o mestre e UM jogador, na pasta
+    // do jogador (como as rolagens secretas). Só o dono da pasta e o mestre da
+    // campanha leem; os outros jogadores não ficam sabendo. O jogador escreve
+    // só na PRÓPRIA pasta (e sempre "para o mestre"); o mestre escreve na pasta
+    // de qualquer jogador. Espelha montarMensagemSussurro (common/utils/chat.js):
+    // `tipo: 'texto'` com `sussurro: true` e `paraNome` (só para exibir — o
+    // destinatário real é a pasta). Os campos são exatamente os listados.
+    function chatSussurroValido(campanhaId, data, donoUid) {
+      return data.keys().hasOnly(['uid', 'personagemId', 'autorNome', 'autorAvatar', 'isMestre',
+                                  'persona', 'tipo', 'texto', 'url', 'sussurro', 'paraNome',
+                                  'createdAt']) &&
+        data.keys().hasAll(['uid', 'personagemId', 'autorNome', 'autorAvatar', 'isMestre',
+                            'persona', 'tipo', 'texto', 'url', 'sussurro', 'paraNome',
+                            'createdAt']) &&
+        data.uid == request.auth.uid &&
+        data.createdAt == request.time &&
+        data.sussurro == true &&
+        data.tipo == 'texto' &&
+        data.url == null &&
+        data.texto is string && data.texto.size() > 0 && data.texto.size() <= 2000 &&
+        data.autorNome is string && data.autorNome.size() > 0 && data.autorNome.size() <= 200 &&
+        (data.autorAvatar == null || (data.autorAvatar is string && data.autorAvatar.size() <= 2000)) &&
+        data.paraNome is string && data.paraNome.size() > 0 && data.paraNome.size() <= 200 &&
+        ((data.isMestre == true && data.personagemId == null &&
+          data.persona in ['mestre', 'npc', 'criatura'] && isMestreDaCampanha(campanhaId)) ||
+         (data.isMestre == false && data.persona == 'jogador' && donoUid == request.auth.uid &&
+          personagemDoUsuarioNaCampanha(campanhaId, data.personagemId)));
+    }
+
+    match /rmCampanhas/{campanhaId}/chatSecretas/{donoUid}/sussurros/{sussurroId} {
+      allow read: if isAuth() &&
+        (donoUid == request.auth.uid || isMestreDaCampanha(campanhaId));
+      allow create: if isAuth() &&
+        chatSussurroValido(campanhaId, request.resource.data, donoUid);
+      allow delete: if isAuth() &&
+        (resource.data.uid == request.auth.uid || isMestreDaCampanha(campanhaId));
     }
 
     // Macros Lua da campanha (common/lua/ + common/utils/macros.js). Só o
@@ -822,7 +864,7 @@ service cloud.firestore {
       return data.keys().hasOnly(['nome', 'imagemUrl', 'tipo', 'refId', 'col', 'lin', 'tamanho',
                                   'donos', 'oculto', 'rastro', 'movidoEm',
                                   'pv', 'energia', 'fadiga', 'mostrarRecursos', 'condicoes', 'aura',
-                                  'deslocamento',
+                                  'deslocamento', 'condicoesDuracao',
                                   'createdAt', 'updatedAt']) &&
         data.keys().hasAll(['nome', 'tipo', 'col', 'lin', 'tamanho', 'donos', 'oculto']) &&
         data.nome is string && data.nome.size() > 0 && data.nome.size() <= 100 &&
@@ -834,18 +876,24 @@ service cloud.firestore {
         data.tamanho is int && data.tamanho >= 1 && data.tamanho <= 10 &&
         data.donos is list && data.donos.size() <= 20 &&
         data.oculto is bool &&
+        // Duração das condições de NPC: { condicaoId: rodadaFim } (common/utils/grid.js).
+        (!('condicoesDuracao' in data) ||
+         (data.condicoesDuracao is map && data.condicoesDuracao.size() <= 20)) &&
         gridRastroValido(data) &&
         gridCombateValido(data);
     }
 
-    // Ponteiro da cena ativa (null = nenhuma cena visível aos jogadores).
+    // Ponteiro da cena ativa (null = nenhuma cena visível aos jogadores) +
+    // `avisarAcoesChat` (opção do mestre: ações da Central de Ações dos
+    // jogadores vão para o chat).
     match /rmCampanhas/{campanhaId}/grid/{gridId} {
       allow read: if isMestreDaCampanha(campanhaId) || isMembroDoChat(campanhaId);
       allow create, update: if gridId == 'atual' && isMestreDaCampanha(campanhaId) &&
-        request.resource.data.keys().hasOnly(['cenaAtivaId', 'updatedAt']) &&
+        request.resource.data.keys().hasOnly(['cenaAtivaId', 'avisarAcoesChat', 'updatedAt']) &&
         (request.resource.data.get('cenaAtivaId', null) == null ||
          (request.resource.data.cenaAtivaId is string &&
-          request.resource.data.cenaAtivaId.size() <= 200));
+          request.resource.data.cenaAtivaId.size() <= 200)) &&
+        request.resource.data.get('avisarAcoesChat', false) is bool;
       allow delete: if isMestreDaCampanha(campanhaId);
     }
 
@@ -1012,10 +1060,12 @@ service cloud.firestore {
     // Marcadores (common/utils/gridMarcadores.js): `secreto` = só o mestre lê
     // (a consulta do jogador filtra `secreto == false`, como os tokens `oculto`).
     function gridMarcadorValido(data) {
-      return data.keys().hasOnly(['col', 'lin', 'icone', 'cor', 'titulo', 'texto', 'secreto',
+      return data.keys().hasOnly(['col', 'lin', 'tamanho', 'icone', 'cor', 'titulo', 'texto', 'secreto',
                                   'createdAt', 'updatedAt']) &&
         data.keys().hasAll(['col', 'lin', 'icone', 'cor', 'titulo', 'secreto']) &&
         gridPosicaoValida(data) &&
+        data.get('tamanho', 1) is int && data.get('tamanho', 1) >= 1 &&
+        data.get('tamanho', 1) <= 10 &&
         data.icone in ['alfinete', 'perigo', 'tesouro', 'porta', 'interrogacao', 'caveira'] &&
         data.cor is string && data.cor.matches('#[0-9a-fA-F]{6}') &&
         data.titulo is string && data.titulo.size() > 0 && data.titulo.size() <= 60 &&
