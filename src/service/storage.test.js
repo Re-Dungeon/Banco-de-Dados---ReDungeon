@@ -198,6 +198,29 @@ describe('storage.js — support tickets', () => {
     expect(result).toEqual(expect.objectContaining({ id: 'ticket-1' }));
   });
 
+  it('normaliza a categoria do ticket para os valores aceitos pelo Firestore', async () => {
+    addDoc.mockResolvedValue({ id: 'ticket-normalized' });
+
+    const result = await createSupportTicket({
+      userId: 'uid-1',
+      userEmail: 'jogador@email.com',
+      userDisplayName: 'Jogador Teste',
+      category: 'Bug',
+      title: 'Erro ao salvar item',
+      description: 'Descrição do problema',
+      attachments: [],
+    });
+
+    expect(addDoc).toHaveBeenCalledWith(
+      { __collection: 'supportTickets' },
+      expect.objectContaining({
+        category: 'bug',
+        status: 'open',
+      }),
+    );
+    expect(result).toEqual(expect.objectContaining({ id: 'ticket-normalized', category: 'bug' }));
+  });
+
   it('lista apenas os tickets do usuário atual em ordem decrescente de criação', async () => {
     getDocs.mockResolvedValue({
       docs: [{ id: 'ticket-1', data: () => ({ userId: 'uid-1', title: 'Primeiro' }) }],

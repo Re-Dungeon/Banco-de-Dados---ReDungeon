@@ -77,6 +77,14 @@ service cloud.firestore {
       allow write: if isAdmin();
     }
 
+    // ── user settings ───────────────────────────────────────────────────────────
+    // Cada usuário só pode ler e gravar suas próprias preferências. As
+    // configurações de conta não devem ser acessíveis por outros usuários nem
+    // por um caminho genérico sem verificação do UID do dono.
+    match /users/{userId}/settings/{settingId} {
+      allow read, write: if isAuth() && request.auth.uid == userId;
+    }
+
     // ── Universo ───────────────────────────────────────────────────────────────
     // Leitura para qualquer usuário autenticado; escrita apenas para admins.
     match /Universo/{universoId} {
@@ -673,7 +681,7 @@ service cloud.firestore {
         request.resource.data.sourceApp is string &&
         request.resource.data.sourceAppName is string &&
         request.resource.data.sourceUrl is string &&
-        request.resource.data.category in ['Bug', 'Sugestão', 'Dúvida', 'Problema', 'Outro'] &&
+        request.resource.data.category in ['bug', 'suggestion', 'question', 'system-problem', 'other'] &&
         request.resource.data.title is string &&
         request.resource.data.title.size() > 0 &&
         request.resource.data.title.size() <= 120 &&
@@ -683,13 +691,13 @@ service cloud.firestore {
         request.resource.data.attachments is list &&
         request.resource.data.attachments.size() <= 10 &&
         request.resource.data.status == 'open' &&
-        request.resource.data.adminResponse == '' &&
+        request.resource.data.adminResponse == null &&
         request.resource.data.respondedAt == null &&
         request.resource.data.createdAt == request.time &&
         request.resource.data.updatedAt == request.time;
       allow update: if isAdmin() &&
         request.resource.data.userId == resource.data.userId &&
-        request.resource.data.status in ['open', 'in_progress', 'in-progress', 'answered', 'resolved'] &&
+        request.resource.data.status in ['open', 'in-progress', 'in_progress', 'answered', 'resolved'] &&
         request.resource.data.updatedAt == request.time;
       allow delete: if isAdmin();
     }
