@@ -351,6 +351,11 @@ const UserSettingsModal = ({ open, onClose, onPreferencesUpdated }) => {
       return;
     }
 
+    if (!supportForm.category) {
+      setSupportTicketError('Selecione uma categoria para o ticket.');
+      return;
+    }
+
     if (!trimmedDescription) {
       setSupportTicketError('Descreva o problema ou a sua solicitação.');
       return;

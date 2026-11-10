@@ -314,6 +314,28 @@ export const getSupportAppContext = appId => {
 
 const SUPPORT_TICKETS_COLLECTION = 'supportTickets';
 
+const normalizeSupportTicketCategory = value => {
+  const normalized = String(value ?? '').trim().toLowerCase().replace(/\s+/g, '-');
+
+  const supportedCategories = {
+    bug: 'bug',
+    suggestion: 'suggestion',
+    question: 'question',
+    'system-problem': 'system-problem',
+    'system_problem': 'system-problem',
+    problem: 'system-problem',
+    other: 'other',
+    outro: 'other',
+    duvida: 'question',
+    'dúvida': 'question',
+    'problema': 'system-problem',
+    sugestao: 'suggestion',
+    'sugestão': 'suggestion',
+  };
+
+  return supportedCategories[normalized] || 'other';
+};
+
 export const createSupportTicket = async payload => {
   const sourceContext = getSupportAppContext(payload?.sourceApp);
   const normalizedTitle = String(payload?.title ?? '').trim();
@@ -331,7 +353,7 @@ export const createSupportTicket = async payload => {
     sourceApp: payload?.sourceApp || sourceContext.sourceApp,
     sourceAppName: payload?.sourceAppName || sourceContext.sourceAppName,
     sourceUrl: payload?.sourceUrl || sourceContext.sourceUrl,
-    category: String(payload?.category ?? '').trim(),
+    category: normalizeSupportTicketCategory(payload?.category),
     title: normalizedTitle,
     description: normalizedDescription,
     attachments,
