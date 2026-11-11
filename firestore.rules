@@ -668,8 +668,10 @@ service cloud.firestore {
     // ── supportTickets ───────────────────────────────────────────────────────
     // Cada usuário só lê e cria os próprios tickets. O status/finalização é
     // controlado pela equipe administrativa (admin), que também pode responder
-    // o ticket em nome do suporte.
+    // o ticket em nome do suporte. A listagem da coleção exige uma regra
+    // explícita para o painel administrativo, preservando o restante do bloco.
     match /supportTickets/{ticketId} {
+      allow list: if isAdmin();
       allow read: if isAuth() && (
         resource.data.userId == request.auth.uid ||
         isAdmin()
