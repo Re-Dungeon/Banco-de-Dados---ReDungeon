@@ -13,7 +13,7 @@ import {
   orderBy,
 } from 'firebase/firestore';
 import { normalizeSupportTicketCategory } from 'common/utils/supportTickets';
-import { db } from './firebase';
+import { auth, db } from './firebase';
 
 // ── Helpers genéricos de CRUD Firestore ─────────────────────────────────────
 // Toda entidade abaixo (classes, materiais, raças, itens, receitas, condições,
@@ -461,31 +461,6 @@ export const getSupportAppContext = appId => {
 };
 
 const SUPPORT_TICKETS_COLLECTION = 'supportTickets';
-
-const normalizeSupportTicketCategory = value => {
-  const normalized = String(value ?? '')
-    .trim()
-    .toLowerCase()
-    .replace(/\s+/g, '-');
-
-  const supportedCategories = {
-    bug: 'bug',
-    suggestion: 'suggestion',
-    question: 'question',
-    'system-problem': 'system-problem',
-    system_problem: 'system-problem',
-    problem: 'system-problem',
-    other: 'other',
-    outro: 'other',
-    duvida: 'question',
-    dúvida: 'question',
-    problema: 'system-problem',
-    sugestao: 'suggestion',
-    sugestão: 'suggestion',
-  };
-
-  return supportedCategories[normalized] || 'other';
-};
 
 export const createSupportTicket = async payload => {
   const sourceContext = getSupportAppContext(payload?.sourceApp);
