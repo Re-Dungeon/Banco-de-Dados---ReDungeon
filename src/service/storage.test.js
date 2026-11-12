@@ -1,6 +1,9 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 
-vi.mock('./firebase', () => ({ db: {} }));
+vi.mock('./firebase', () => ({
+  db: {},
+  auth: { currentUser: { uid: 'uid-1' } },
+}));
 
 vi.mock('firebase/firestore', () => ({
   collection: vi.fn((_db, name) => ({ __collection: name })),
@@ -34,7 +37,9 @@ import {
   addRaca,
   removeRaca,
   updateRaca,
+  getEligiblePlayersByUniverse,
   getUserPermissions,
+  getUsersDisplayNamesByUid,
   getUserSettings,
   saveUserSettings,
   createSupportTicket,
@@ -145,6 +150,42 @@ describe('storage.js — getUserPermissions', () => {
     const result = await getUserPermissions('uid-sem-universos');
 
     expect(result).toEqual({ isAdmin: false, universos: [] });
+  });
+
+  it('resolve nomes reais de jogadores do universo sem usar o nome do personagem como substituto', async () => {
+    getDocs.mockResolvedValue({
+      docs: [
+        {
+          id: 'uid-jogador-1',
+          data: () => ({
+            isAdmin: false,
+            universos: ['universo-1'],
+            Nome: 'Theo-zin Borraquilha',
+          }),
+        },
+      ],
+    });
+
+    getDoc.mockImplementation(async docRef => {
+      if (docRef?.__doc === 'userPermissions' && docRef?.id === 'uid-jogador-1') {
+        return {
+          exists: () => true,
+          data: () => ({
+            isAdmin: false,
+            universos: ['universo-1'],
+            Nome: 'Theo-zin Borraquilha',
+          }),
+        };
+      }
+
+      return { exists: () => false };
+    });
+
+    const result = await getEligiblePlayersByUniverse('universo-1');
+
+    expect(result).toEqual([
+      { uid: 'uid-jogador-1', nome: 'Theo-zin Borraquilha' },
+    ]);
   });
 });
 
@@ -271,8 +312,69 @@ describe('storage.js — support tickets', () => {
 });
 
 describe('storage.js — user settings', () => {
-  beforeEach(() => {
+  beforeEach(async () => {
     vi.clearAllMocks();
+    const { auth } = await import('./firebase');
+    auth.currentUser = { uid: 'uid-1' };
+  });
+
+  it('prioriza o campo Nome do documento userPermissions e não usa o nome do personagem como substituto', async () => {
+    getDoc.mockImplementation(async docRef => {
+      if (docRef?.__doc === 'userPermissions' && docRef?.id === 'uid-allowed') {
+        return {
+          exists: () => true,
+          data: () => ({
+            isAdmin: false,
+            universos: ['universo-1'],
+            Nome: 'Jogador autorizado',
+          }),
+        };
+      }
+
+      if (docRef?.__doc === 'userPermissions' && docRef?.id === 'uid-blocked') {
+        return {
+          exists: () => true,
+          data: () => ({
+            isAdmin: false,
+            universos: ['universo-1'],
+            Nome: 'Jogador bloqueado',
+          }),
+        };
+      }
+
+      throw { code: 'permission-denied', message: 'Missing or insufficient permissions.' };
+    });
+
+    const result = await getUsersDisplayNamesByUid(['uid-allowed', 'uid-blocked']);
+
+    expect(result).toEqual({
+      'uid-allowed': 'Jogador autorizado',
+      'uid-blocked': 'Jogador bloqueado',
+    });
+  });
+
+  it('deduplica UIDs repetidos para evitar consultas redundantes ao mesmo documento', async () => {
+    const spy = vi.fn(async docRef => {
+      if (docRef?.__doc === 'userPermissions' && docRef?.id === 'uid-repetido') {
+        return {
+          exists: () => true,
+          data: () => ({ Nome: 'Jogador repetido' }),
+        };
+      }
+
+      return { exists: () => false };
+    });
+
+    getDoc.mockImplementation(spy);
+
+    const result = await getUsersDisplayNamesByUid([
+      'uid-repetido',
+      'uid-repetido',
+      'uid-repetido',
+    ]);
+
+    expect(result).toEqual({ 'uid-repetido': 'Jogador repetido' });
+    expect(spy).toHaveBeenCalledTimes(1);
   });
 
   it('retorna valores padrão ao não existir documento de configurações', async () => {
@@ -290,6 +392,9 @@ describe('storage.js — user settings', () => {
   });
 
   it('normaliza preferências antigas com tema light para dark sem remover outras configurações', async () => {
+    const { auth } = await import('./firebase');
+    auth.currentUser = { uid: 'uid-legacy-light' };
+
     getDoc.mockResolvedValue({
       exists: () => true,
       data: () => ({

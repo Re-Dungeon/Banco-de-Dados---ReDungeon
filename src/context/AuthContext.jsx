@@ -64,16 +64,20 @@ export const AuthProvider = ({ children }) => {
   const [loadingPreferences, setLoadingPreferences] = useState(false);
   const requestIdRef = useRef(0);
   const lastLoadedSettingsUidRef = useRef(null);
+  const pendingSettingsUidRef = useRef(null);
 
   const resetUserSettings = useCallback(() => {
     lastLoadedSettingsUidRef.current = null;
+    pendingSettingsUidRef.current = null;
     setUserSettings(DEFAULT_USER_SETTINGS);
     applySavedTheme(DEFAULT_USER_SETTINGS);
   }, []);
 
   const refreshUserPreferences = useCallback(
     async (uid = currentUser?.uid, overrideSettings) => {
-      if (!uid) {
+      const authenticatedUid = auth?.currentUser?.uid;
+
+      if (!uid || !authenticatedUid || authenticatedUid !== uid) {
         resetUserSettings();
         return DEFAULT_USER_SETTINGS;
       }
@@ -89,6 +93,11 @@ export const AuthProvider = ({ children }) => {
         return userSettings || DEFAULT_USER_SETTINGS;
       }
 
+      if (pendingSettingsUidRef.current === uid) {
+        return userSettings || DEFAULT_USER_SETTINGS;
+      }
+
+      pendingSettingsUidRef.current = uid;
       const requestId = ++requestIdRef.current;
       setLoadingPreferences(true);
 
@@ -120,6 +129,10 @@ export const AuthProvider = ({ children }) => {
         resetUserSettings();
         return DEFAULT_USER_SETTINGS;
       } finally {
+        if (pendingSettingsUidRef.current === uid) {
+          pendingSettingsUidRef.current = null;
+        }
+
         if (requestId === requestIdRef.current) {
           setLoadingPreferences(false);
         }
@@ -135,25 +148,32 @@ export const AuthProvider = ({ children }) => {
       if (!user?.uid) {
         requestIdRef.current += 1;
         lastLoadedSettingsUidRef.current = null;
+        pendingSettingsUidRef.current = null;
         setCurrentUser(null);
         setLoadingPreferences(false);
         resetUserSettings();
         return;
       }
 
-      if (lastLoadedSettingsUidRef.current === user.uid && currentUser?.uid === user.uid) {
-        setCurrentUser(user);
+      setCurrentUser(previousUser => {
+        if (previousUser?.uid === user.uid) {
+          return previousUser;
+        }
+
+        return user;
+      });
+
+      if (lastLoadedSettingsUidRef.current === user.uid || pendingSettingsUidRef.current === user.uid) {
         setLoadingPreferences(false);
         return;
       }
 
-      setCurrentUser(user);
       setLoadingPreferences(true);
       void refreshUserPreferences(user.uid);
     });
 
     return () => unsubscribe();
-  }, [currentUser, refreshUserPreferences, resetUserSettings]);
+  }, [refreshUserPreferences, resetUserSettings]);
 
   const login = useCallback(
     (email, password) => signInWithEmailAndPassword(auth, email, password),

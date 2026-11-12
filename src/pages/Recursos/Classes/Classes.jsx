@@ -23,6 +23,7 @@ import useUniversos from 'hooks/useUniversos';
 import { ordenarPorNome, ORDEM_ASC } from 'common/utils/ordenacao';
 import EntityFilters from 'components/EntityFilters/EntityFilters';
 import EntityViewDialog from 'components/EntityViewDialog/EntityViewDialog';
+import EntityImage from 'components/EntityImage/EntityImage';
 import PageHeader from 'components/PageHeader/PageHeader';
 import {
   RacaCard,
@@ -187,15 +188,16 @@ const Classes = () => {
               {classesFiltradas.map(classe => (
                 <RacaCard key={classe.id} elevation={0}>
                   <RacaImageFrame>
-                    {classe.linkImagem && !/discordapp\.net\/attachments/.test(classe.linkImagem) && (
-                      <Box
-                        component="img"
-                        className="raca-card-image"
+                    {classe.linkImagem && (
+                      <EntityImage
                         src={classe.linkImagem}
                         alt={classe.nome}
-                        onError={e => {
-                          e.currentTarget.style.display = 'none';
-                        }}
+                        height={220}
+                        width="100%"
+                        objectFit="cover"
+                        placeholderText="Sem imagem"
+                        fallbackText="Imagem indisponível"
+                        sx={{ borderRadius: 0, border: 'none', minHeight: 220 }}
                       />
                     )}
 
@@ -296,18 +298,20 @@ const Classes = () => {
             {classeVisualizando?.nome}
           </Typography>
 
-          {classeVisualizando?.linkImagem &&
-            !/discordapp\.net\/attachments/.test(classeVisualizando.linkImagem) && (
-              <RacaModalImage>
-                <img
-                  src={classeVisualizando.linkImagem}
-                  alt={classeVisualizando.nome}
-                  onError={e => {
-                    e.currentTarget.style.display = 'none';
-                  }}
-                />
-              </RacaModalImage>
-            )}
+          {classeVisualizando?.linkImagem && (
+            <RacaModalImage>
+              <EntityImage
+                src={classeVisualizando.linkImagem}
+                alt={classeVisualizando.nome}
+                height={220}
+                width="100%"
+                objectFit="cover"
+                placeholderText="Sem imagem"
+                fallbackText="Imagem indisponível"
+                sx={{ borderRadius: 0, border: 'none', minHeight: 220 }}
+              />
+            </RacaModalImage>
+          )}
 
           <RacaModalHeroBadges>
             {classeVisualizando?.raridade && (

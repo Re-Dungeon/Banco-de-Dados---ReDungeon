@@ -7,6 +7,7 @@ import Dialog from '@mui/material/Dialog';
 import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
 import DialogTitle from '@mui/material/DialogTitle';
+import EntityImage from 'components/EntityImage/EntityImage';
 
 /**
  * Dialog de visualização repetido em toda página de listagem de entidade.
@@ -169,20 +170,20 @@ const EntityViewDialog = ({
           }}
         >
           {imagem && (
-            <Box
-              component="img"
+            <EntityImage
+              key={imagem || 'empty-entity-view'}
               src={imagem}
               alt={titulo || 'Imagem do conteúdo'}
+              height={280}
+              width="100%"
+              objectFit="cover"
+              placeholderText="Sem imagem"
+              fallbackText="Imagem indisponível"
               sx={{
-                width: '100%',
-                height: '100%',
                 minHeight: { xs: 220, md: 280 },
-                objectFit: 'cover',
-                display: 'block',
+                borderRadius: 0,
+                border: 'none',
                 ...imagemSx,
-              }}
-              onError={e => {
-                e.currentTarget.style.display = 'none';
               }}
             />
           )}

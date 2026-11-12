@@ -12,7 +12,7 @@ import {
   where,
   orderBy,
 } from 'firebase/firestore';
-import { db } from './firebase';
+import { auth, db } from './firebase';
 
 // ── Helpers genéricos de CRUD Firestore ─────────────────────────────────────
 // Toda entidade abaixo (classes, materiais, raças, itens, receitas, condições,
@@ -240,6 +240,22 @@ export const removeTricksterCoinBeneficio = id =>
 export const updateTricksterCoinBeneficio = (id, updates) =>
   updateFirestoreItem(TRICKSTER_COIN_COLLECTION, id, updates);
 
+// ── Personagens / Fichas (Firestore) ───────────────────────────────────────
+const PERSONAGENS_COLLECTION = 'personagens';
+
+export const getPersonagens = () => getFirestoreItems(PERSONAGENS_COLLECTION);
+export const addPersonagem = personagem =>
+  addFirestoreItem(PERSONAGENS_COLLECTION, personagem);
+export const removePersonagem = id =>
+  removeFirestoreItem(PERSONAGENS_COLLECTION, id);
+export const updatePersonagem = (id, updates) =>
+  updateFirestoreItem(PERSONAGENS_COLLECTION, id, updates);
+
+// ── Campanhas (Firestore) ─────────────────────────────────────────────────────
+const CAMPANHAS_COLLECTION = 'rmCampanhas';
+
+export const getCampanhas = () => getFirestoreItems(CAMPANHAS_COLLECTION);
+
 // ── Universo (Firestore) ────────────────────────────────────────────────────────
 
 const UNIVERSO_COLLECTION = 'Universo';
@@ -260,6 +276,127 @@ export const getUserPermissions = async uid => {
   };
 };
 
+const normalizeDisplayName = value => {
+  const normalized = String(value ?? '').trim();
+  return normalized.length > 0 ? normalized : 'Usuário sem nome';
+};
+
+const getUserPermissionName = data => {
+  const sourceValue = data?.Nome ?? data?.nome ?? '';
+  return normalizeDisplayName(sourceValue);
+};
+
+export const getUsersDisplayNamesByUid = async uids => {
+  const uniqueIds = [
+    ...new Set((Array.isArray(uids) ? uids : []).map(String).filter(Boolean)),
+  ];
+
+  if (uniqueIds.length === 0) {
+    return {};
+  }
+
+  const results = await Promise.allSettled(
+    uniqueIds.map(async uid => {
+      try {
+        const permissionsSnapshot = await getDoc(
+          doc(db, USER_PERMISSIONS_COLLECTION, uid),
+        );
+
+        if (!permissionsSnapshot.exists()) {
+          return [uid, 'Usuário sem nome'];
+        }
+
+        const userData = permissionsSnapshot.data() ?? {};
+        const playerName = getUserPermissionName(userData);
+
+        return [uid, playerName];
+      } catch (error) {
+        // eslint-disable-next-line no-console
+        console.error('[storage] getUsersDisplayNamesByUid failed', {
+          code: error?.code ?? null,
+          message: error?.message ?? String(error),
+          uid,
+          operation: 'getDoc(doc(db, "userPermissions", uid))',
+        });
+
+        return [uid, 'Usuário sem nome'];
+      }
+    }),
+  );
+
+  return Object.fromEntries(
+    results
+      .filter(result => result.status === 'fulfilled')
+      .map(result => result.value),
+  );
+};
+
+export const getAllRegisteredUsers = async () => {
+  try {
+    const permissionsSnapshot = await getDocs(
+      collection(db, USER_PERMISSIONS_COLLECTION),
+    );
+
+    return permissionsSnapshot.docs
+      .map(docItem => {
+        const data = docItem.data() ?? {};
+        const nome = getUserPermissionName(data);
+
+        return {
+          uid: String(docItem.id ?? '').trim(),
+          nome,
+        };
+      })
+      .filter(user => Boolean(user.uid))
+      .sort((left, right) => left.nome.localeCompare(right.nome));
+  } catch (error) {
+    // eslint-disable-next-line no-console
+    console.error('[storage] getAllRegisteredUsers failed', error);
+    throw error;
+  }
+};
+
+export const getEligiblePlayersByUniverse = async universoId => {
+  const normalizedUniversoId = String(universoId ?? '').trim();
+
+  if (!normalizedUniversoId) {
+    return [];
+  }
+
+  try {
+    const permissionsSnapshot = await getDocs(
+      collection(db, USER_PERMISSIONS_COLLECTION),
+    );
+
+    const eligibleUids = permissionsSnapshot.docs
+      .filter(docItem => {
+        const data = docItem.data() ?? {};
+        const universos = Array.isArray(data.universos) ? data.universos : [];
+        return (
+          data.isAdmin === true || universos.includes(normalizedUniversoId)
+        );
+      })
+      .map(docItem => docItem.id);
+
+    if (eligibleUids.length === 0) {
+      return [];
+    }
+
+    const namesByUid = await getUsersDisplayNamesByUid(eligibleUids);
+
+    return eligibleUids
+      .map(uid => ({
+        uid,
+        nome: namesByUid[uid] || 'Usuário sem nome',
+      }))
+      .sort((left, right) => left.nome.localeCompare(right.nome));
+  } catch (error) {
+    // eslint-disable-next-line no-console
+    console.error('[storage] getEligiblePlayersByUniverse failed', error);
+    throw error;
+  }
+};
+
 export const DEFAULT_USER_SETTINGS = Object.freeze({
   nomeExibicao: '',
   fotoPerfilUrl: '',
@@ -275,7 +412,9 @@ const SUPPORT_APP_CONFIG = Object.freeze({
     sourceUrl:
       import.meta.env.VITE_SUPPORT_DATABASE_URL ||
       import.meta.env.VITE_RE_DATABASE_URL ||
-      (typeof window !== 'undefined' ? window.location.origin : 'https://re-dungeon.app'),
+      (typeof window !== 'undefined'
+        ? window.location.origin
+        : 'https://re-dungeon.app'),
   },
   'player-sheet': {
     sourceApp: 'player-sheet',
@@ -283,7 +422,9 @@ const SUPPORT_APP_CONFIG = Object.freeze({
     sourceUrl:
       import.meta.env.VITE_SUPPORT_PLAYER_SHEET_URL ||
       import.meta.env.VITE_RE_PLAYER_SHEET_URL ||
-      (typeof window !== 'undefined' ? window.location.origin : 'https://re-player-sheet.app'),
+      (typeof window !== 'undefined'
+        ? window.location.origin
+        : 'https://re-player-sheet.app'),
   },
   'gm-shield': {
     sourceApp: 'gm-shield',
@@ -291,7 +432,9 @@ const SUPPORT_APP_CONFIG = Object.freeze({
     sourceUrl:
       import.meta.env.VITE_SUPPORT_GM_SHIELD_URL ||
       import.meta.env.VITE_RE_GM_SHIELD_URL ||
-      (typeof window !== 'undefined' ? window.location.origin : 'https://re-gm-shield.app'),
+      (typeof window !== 'undefined'
+        ? window.location.origin
+        : 'https://re-gm-shield.app'),
   },
 });
 
@@ -303,34 +446,41 @@ export const getSupportAppContext = appId => {
         import.meta.env.VITE_RE_APP_ID ||
         'database';
 
-  const config = SUPPORT_APP_CONFIG[resolvedAppId] || SUPPORT_APP_CONFIG.database;
+  const config =
+    SUPPORT_APP_CONFIG[resolvedAppId] || SUPPORT_APP_CONFIG.database;
 
   return {
     ...config,
-    sourceUrl: config.sourceUrl ||
-      (typeof window !== 'undefined' ? window.location.origin : 'https://re-dungeon.app'),
+    sourceUrl:
+      config.sourceUrl ||
+      (typeof window !== 'undefined'
+        ? window.location.origin
+        : 'https://re-dungeon.app'),
   };
 };
 
 const SUPPORT_TICKETS_COLLECTION = 'supportTickets';
 
 const normalizeSupportTicketCategory = value => {
-  const normalized = String(value ?? '').trim().toLowerCase().replace(/\s+/g, '-');
+  const normalized = String(value ?? '')
+    .trim()
+    .toLowerCase()
+    .replace(/\s+/g, '-');
 
   const supportedCategories = {
     bug: 'bug',
     suggestion: 'suggestion',
     question: 'question',
     'system-problem': 'system-problem',
-    'system_problem': 'system-problem',
+    system_problem: 'system-problem',
     problem: 'system-problem',
     other: 'other',
     outro: 'other',
     duvida: 'question',
-    'dúvida': 'question',
-    'problema': 'system-problem',
+    dúvida: 'question',
+    problema: 'system-problem',
     sugestao: 'suggestion',
-    'sugestão': 'suggestion',
+    sugestão: 'suggestion',
   };
 
   return supportedCategories[normalized] || 'other';
@@ -365,7 +515,10 @@ export const createSupportTicket = async payload => {
   };
 
   try {
-    const docRef = await addDoc(collection(db, SUPPORT_TICKETS_COLLECTION), ticketData);
+    const docRef = await addDoc(
+      collection(db, SUPPORT_TICKETS_COLLECTION),
+      ticketData,
+    );
     return { id: docRef.id, ...ticketData };
   } catch (error) {
     // eslint-disable-next-line no-console
@@ -390,13 +543,17 @@ export const getSupportTicketsByUser = async userId => {
       orderBy('createdAt', 'desc'),
     );
     const snapshot = await getDocs(ticketQuery);
-    return snapshot.docs.map(docItem => ({ id: docItem.id, ...docItem.data() }));
+    return snapshot.docs.map(docItem => ({
+      id: docItem.id,
+      ...docItem.data(),
+    }));
   } catch (error) {
     // eslint-disable-next-line no-console
     console.error('[storage] getSupportTicketsByUser failed', {
       code: error?.code ?? null,
       message: error?.message ?? String(error),
-      operation: 'query(collection(db, "supportTickets"), where("userId", "==", userId), orderBy("createdAt", "desc"))',
+      operation:
+        'query(collection(db, "supportTickets"), where("userId", "==", userId), orderBy("createdAt", "desc"))',
     });
     throw error;
   }
@@ -409,13 +566,17 @@ export const getSupportTickets = async () => {
       orderBy('createdAt', 'desc'),
     );
     const snapshot = await getDocs(ticketQuery);
-    return snapshot.docs.map(docItem => ({ id: docItem.id, ...docItem.data() }));
+    return snapshot.docs.map(docItem => ({
+      id: docItem.id,
+      ...docItem.data(),
+    }));
   } catch (error) {
     // eslint-disable-next-line no-console
     console.error('[storage] getSupportTickets failed', {
       code: error?.code ?? null,
       message: error?.message ?? String(error),
-      operation: 'query(collection(db, "supportTickets"), orderBy("createdAt", "desc"))',
+      operation:
+        'query(collection(db, "supportTickets"), orderBy("createdAt", "desc"))',
     });
     throw error;
   }
@@ -435,12 +596,14 @@ export const updateSupportTicket = async (ticketId, updates) => {
     Object.prototype.hasOwnProperty.call(normalizedUpdates, 'adminResponse') &&
     typeof normalizedUpdates.adminResponse === 'string'
   ) {
-    normalizedUpdates.respondedAt =
-      normalizedUpdates.respondedAt ?? new Date();
+    normalizedUpdates.respondedAt = normalizedUpdates.respondedAt ?? new Date();
   }
 
   try {
-    await updateDoc(doc(db, SUPPORT_TICKETS_COLLECTION, ticketId), normalizedUpdates);
+    await updateDoc(
+      doc(db, SUPPORT_TICKETS_COLLECTION, ticketId),
+      normalizedUpdates,
+    );
     return normalizedUpdates;
   } catch (error) {
     // eslint-disable-next-line no-console
@@ -503,7 +666,7 @@ const normalizeUserSettings = settings => ({
 });
 
 export const getUserSettings = async uid => {
-  if (!uid) {
+  if (!uid || !auth?.currentUser || auth.currentUser.uid !== uid) {
     return {
       ...DEFAULT_USER_SETTINGS,
       notificacoes: { ...DEFAULT_USER_SETTINGS.notificacoes },
@@ -524,7 +687,8 @@ export const getUserSettings = async uid => {
     fotoPerfilUrl: normalizeProfileImageUrl(data.fotoPerfilUrl),
     tema: 'dark',
     corDestaque:
-      typeof data.corDestaque === 'string' && /^#[0-9A-Fa-f]{3,6}$/.test(data.corDestaque)
+      typeof data.corDestaque === 'string' &&
+      /^#[0-9A-Fa-f]{3,6}$/.test(data.corDestaque)
         ? data.corDestaque
         : '#6F2DA8',
     notificacoes: {
@@ -534,8 +698,8 @@ export const getUserSettings = async uid => {
 };
 
 export const saveUserSettings = async (uid, settings) => {
-  if (!uid) {
-    throw new Error('O UID do usuário é obrigatório para salvar preferências.');
+  if (!uid || !auth?.currentUser || auth.currentUser.uid !== uid) {
+    throw new Error('O UID do usuário autenticado é obrigatório para salvar preferências.');
   }
 
   const payload = normalizeUserSettings(settings);
