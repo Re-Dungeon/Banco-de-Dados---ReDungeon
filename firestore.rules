@@ -18,7 +18,15 @@ service cloud.firestore {
 
     function canWriteUniverso(universoId) {
       return isAdmin() ||
-             (isAuth() && universoId in perms().universos);
+             (isAuth() && universoId is string && universoId in perms().universos);
+    }
+
+    function canWriteDocUniverso(data) {
+      return isAdmin() ||
+        (isAuth() && (
+          (data.universo is string && data.universo in perms().universos) ||
+          (data.universoId is string && data.universoId in perms().universos)
+        ));
     }
 
     // Aptidões, Regras e Condições podem pertencer a mais de um universo
@@ -78,11 +86,12 @@ service cloud.firestore {
     }
 
     // ── user settings ───────────────────────────────────────────────────────────
-    // Cada usuário só pode ler e gravar suas próprias preferências. As
-    // configurações de conta não devem ser acessíveis por outros usuários nem
-    // por um caminho genérico sem verificação do UID do dono.
+    // Cada usuário só pode ler, criar, atualizar e excluir suas próprias
+    // preferências. O UID do proprietário deve coincidir com o usuário
+    // autenticado; nunca é permitido acessar ou alterar dados privados de outro
+    // jogador por esse caminho.
     match /users/{userId}/settings/{settingId} {
-      allow read, write: if isAuth() && request.auth.uid == userId;
+      allow read, create, update, delete: if isAuth() && request.auth.uid == userId;
     }
 
     // ── Universo ───────────────────────────────────────────────────────────────
@@ -263,10 +272,21 @@ service cloud.firestore {
     // de regras do Firestore não suporta.
     match /personagens/{personagemId} {
       allow read: if isAuth();
-      allow create: if isAuth() && request.resource.data.uid == request.auth.uid;
-      allow update: if isAuth() && resource.data.uid == request.auth.uid
-                    && request.resource.data.uid == request.auth.uid;
-      allow delete: if isAuth() && resource.data.uid == request.auth.uid;
+      allow create: if isAuth() && (
+        request.resource.data.uid == request.auth.uid ||
+        canWriteDocUniverso(request.resource.data)
+      );
+      allow update: if isAuth() && (
+        resource.data.uid == request.auth.uid ||
+        canWriteDocUniverso(resource.data)
+      ) && (
+        request.resource.data.uid == request.auth.uid ||
+        canWriteDocUniverso(request.resource.data)
+      );
+      allow delete: if isAuth() && (
+        resource.data.uid == request.auth.uid ||
+        canWriteDocUniverso(resource.data)
+      );
 
       // Subcoleções (aptidoesAdquiridas, arts, historicoSorte — Fases futuras).
       // Escrita: só o dono do documento pai (uid), como antes.

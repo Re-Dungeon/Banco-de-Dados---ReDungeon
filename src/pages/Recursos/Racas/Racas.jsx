@@ -26,6 +26,7 @@ import useUniversos from 'hooks/useUniversos';
 import { ordenarPorNome, ORDEM_ASC } from 'common/utils/ordenacao';
 import EntityFilters from 'components/EntityFilters/EntityFilters';
 import EntityViewDialog from 'components/EntityViewDialog/EntityViewDialog';
+import EntityImage from 'components/EntityImage/EntityImage';
 import PageHeader from 'components/PageHeader/PageHeader';
 import {
   RacaCard,
@@ -205,15 +206,16 @@ const Racas = () => {
                 return (
                   <RacaCard key={raca.id} elevation={0}>
                     <RacaImageFrame>
-                      {raca.linkImagem && !/discordapp\.net\/attachments/.test(raca.linkImagem) && (
-                        <Box
-                          component="img"
-                          className="raca-card-image"
+                      {raca.linkImagem && (
+                        <EntityImage
                           src={raca.linkImagem}
                           alt={raca.nome}
-                          onError={e => {
-                            e.currentTarget.style.display = 'none';
-                          }}
+                          height={220}
+                          width="100%"
+                          objectFit="cover"
+                          placeholderText="Sem imagem"
+                          fallbackText="Imagem indisponível"
+                          sx={{ borderRadius: 0, border: 'none', minHeight: 220 }}
                         />
                       )}
                       <RacaImageOverlay />
@@ -322,14 +324,17 @@ const Racas = () => {
             {racaVisualizando?.nome}
           </Typography>
 
-          {racaVisualizando?.linkImagem && !/discordapp\.net\/attachments/.test(racaVisualizando.linkImagem) && (
+          {racaVisualizando?.linkImagem && (
             <RacaModalImage>
-              <img
+              <EntityImage
                 src={racaVisualizando.linkImagem}
                 alt={racaVisualizando.nome}
-                onError={e => {
-                  e.currentTarget.style.display = 'none';
-                }}
+                height={220}
+                width="100%"
+                objectFit="cover"
+                placeholderText="Sem imagem"
+                fallbackText="Imagem indisponível"
+                sx={{ borderRadius: 0, border: 'none', minHeight: 220 }}
               />
             </RacaModalImage>
           )}

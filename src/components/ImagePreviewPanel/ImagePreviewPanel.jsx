@@ -2,6 +2,7 @@ import React, { useMemo, useState } from 'react';
 import PropTypes from 'prop-types';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
+import { isDiscordImageUrl, normalizeImageSource } from 'common/utils/imageFallback';
 
 /**
  * Painel de preview de imagem repetido em toda página `Nova`/`Novo` de
@@ -14,25 +15,33 @@ import Typography from '@mui/material/Typography';
 const ImagePreviewPanel = ({ src, alt }) => {
   const [failedSrc, setFailedSrc] = useState('');
   const [loadedSrc, setLoadedSrc] = useState('');
-  const imgError = Boolean(src?.trim() && failedSrc === src);
-  const hasPreview = Boolean(src?.trim()) && !imgError;
-  const isLoaded = hasPreview && loadedSrc === src;
+
+  const normalizedSrc = useMemo(() => normalizeImageSource(src), [src]);
+  const isDiscordBlocked = useMemo(() => isDiscordImageUrl(src || ''), [src]);
+
+  const imgError = Boolean(normalizedSrc && failedSrc === normalizedSrc);
+  const hasPreview = Boolean(normalizedSrc) && !imgError;
+  const isLoaded = hasPreview && loadedSrc === normalizedSrc;
   const isLoading = hasPreview && !isLoaded;
 
   const statusText = useMemo(() => {
-    if (!src?.trim()) return 'Aguardando imagem';
+    if (!normalizedSrc) return 'Aguardando imagem';
     if (imgError) return 'Falha ao carregar';
     if (isLoading) return 'Carregando imagem';
     return 'Prévia carregada';
-  }, [imgError, isLoading, src]);
+  }, [imgError, isLoading, normalizedSrc]);
+
+  if (isDiscordBlocked) {
+    return null;
+  }
 
   const handleLoad = () => {
-    setLoadedSrc(src);
+    setLoadedSrc(normalizedSrc);
   };
 
   const handleError = () => {
     setLoadedSrc('');
-    setFailedSrc(src);
+    setFailedSrc(normalizedSrc);
   };
 
   return (
@@ -85,7 +94,7 @@ const ImagePreviewPanel = ({ src, alt }) => {
           {hasPreview ? (
             <>
               <img
-                src={src}
+                src={normalizedSrc}
                 alt={alt}
                 onLoad={handleLoad}
                 onError={handleError}

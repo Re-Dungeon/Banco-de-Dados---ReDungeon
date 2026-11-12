@@ -1,4 +1,5 @@
 import DashboardOutlinedIcon from '@mui/icons-material/DashboardOutlined';
+import BadgeOutlinedIcon from '@mui/icons-material/BadgeOutlined';
 import SportsMartialArtsOutlinedIcon from '@mui/icons-material/SportsMartialArtsOutlined';
 import GroupsOutlinedIcon from '@mui/icons-material/GroupsOutlined';
 import AutoAwesomeOutlinedIcon from '@mui/icons-material/AutoAwesomeOutlined';
@@ -24,7 +25,10 @@ export const NAV_GROUPS = [
   {
     id: 'overview',
     title: 'Visão Geral',
-    items: [{ path: ROUTE_PATHS.RECURSOS, label: 'Dashboard', icon: DashboardOutlinedIcon }],
+    items: [
+      { path: ROUTE_PATHS.RECURSOS, label: 'Dashboard', icon: DashboardOutlinedIcon },
+      { path: ROUTE_PATHS.FICHAS, label: 'Fichas', icon: BadgeOutlinedIcon },
+    ],
   },
   {
     id: 'personagem',

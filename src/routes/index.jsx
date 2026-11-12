@@ -53,6 +53,7 @@ const ReinosCultivo = lazy(
 const NovoReinoCultivo = lazy(
   () => import('pages/Recursos/ReinosCultivo/NovoReinoCultivo'),
 );
+const Fichas = lazy(() => import('pages/Fichas/Fichas'));
 const PatchNotes = lazy(() => import('pages/PatchNotes/PatchNotes'));
 const Tickets = lazy(() => import('pages/Tickets/Tickets'));
 const Sobre = lazy(() => import('pages/Sobre/Sobre'));
@@ -74,6 +75,7 @@ const TicketsRoute = () => {
 export const ROUTES = [
   { index: true, element: <Navigate to={ROUTE_PATHS.RACAS} replace /> },
   { path: ROUTE_PATHS.RECURSOS.slice(1), element: <Recursos /> },
+  { path: ROUTE_PATHS.FICHAS.slice(1), element: <Fichas /> },
   { path: ROUTE_PATHS.RACAS.slice(1), element: <Racas /> },
   { path: ROUTE_PATHS.NOVA_RACA.slice(1), element: <NovaRaca /> },
   { path: ROUTE_PATHS.ITENS.slice(1), element: <Itens /> },
