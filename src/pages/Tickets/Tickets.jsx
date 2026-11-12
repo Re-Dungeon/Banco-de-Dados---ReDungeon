@@ -13,6 +13,7 @@ import TextField from '@mui/material/TextField';
 import Typography from '@mui/material/Typography';
 import { Trash2 } from 'lucide-react';
 import { useAuth } from 'context/AuthContext';
+import { getSupportTicketCategoryLabel } from 'common/utils/supportTickets';
 import {
   deleteSupportTicket,
   getSupportTickets,
@@ -522,7 +523,7 @@ const Tickets = () => {
                 </Box>
 
                 <Stack direction={{ xs: 'column', md: 'row' }} spacing={1.5}>
-                  <Chip label={selectedTicket.category || 'Outro'} size="small" color="primary" />
+                  <Chip label={getSupportTicketCategoryLabel(selectedTicket.category)} size="small" color="primary" />
                   <Chip label={selectedTicket.sourceAppName || selectedTicket.sourceApp || 'Banco de Dados'} size="small" color="secondary" />
                   <Chip label={STATUS_META[normalizeStatus(selectedTicket.status)]?.label ?? 'Aberto'} size="small" color={STATUS_META[normalizeStatus(selectedTicket.status)]?.color ?? 'warning'} />
                 </Stack>

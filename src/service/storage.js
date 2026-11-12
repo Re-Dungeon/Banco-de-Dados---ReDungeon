@@ -12,7 +12,8 @@ import {
   where,
   orderBy,
 } from 'firebase/firestore';
-import { auth, db } from './firebase';
+import { normalizeSupportTicketCategory } from 'common/utils/supportTickets';
+import { db } from './firebase';
 
 // ── Helpers genéricos de CRUD Firestore ─────────────────────────────────────
 // Toda entidade abaixo (classes, materiais, raças, itens, receitas, condições,
@@ -699,7 +700,9 @@ export const getUserSettings = async uid => {
 
 export const saveUserSettings = async (uid, settings) => {
   if (!uid || !auth?.currentUser || auth.currentUser.uid !== uid) {
-    throw new Error('O UID do usuário autenticado é obrigatório para salvar preferências.');
+    throw new Error(
+      'O UID do usuário autenticado é obrigatório para salvar preferências.',
+    );
   }
 
   const payload = normalizeUserSettings(settings);
