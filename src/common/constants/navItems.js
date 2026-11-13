@@ -28,6 +28,11 @@ export const NAV_GROUPS = [
     items: [
       { path: ROUTE_PATHS.RECURSOS, label: 'Dashboard', icon: DashboardOutlinedIcon },
       { path: ROUTE_PATHS.FICHAS, label: 'Fichas', icon: BadgeOutlinedIcon },
+      {
+        path: ROUTE_PATHS.GERENCIADOR_UNIVERSOS,
+        label: 'Gerenciador de Universos',
+        icon: TravelExploreOutlinedIcon,
+      },
     ],
   },
   {

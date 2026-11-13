@@ -5,10 +5,11 @@ import { MemoryRouter } from 'react-router-dom';
 
 const getAptidoes = vi.fn();
 const removeAptidao = vi.fn();
+const getUniversos = vi.fn();
 vi.mock('service/storage', () => ({
   getAptidoes: (...args) => getAptidoes(...args),
   removeAptidao: (...args) => removeAptidao(...args),
-  getUniversos: vi.fn().mockResolvedValue([]),
+  getUniversos: (...args) => getUniversos(...args),
 }));
 
 const canCreate = vi.fn(() => true);
@@ -28,6 +29,7 @@ vi.mock('context/AuthContext', () => ({
   }),
 }));
 
+import { invalidateUniversosCache } from 'hooks/useUniversos';
 import Aptidoes from './Aptidoes';
 
 const APTIDOES_MOCK = [
@@ -45,11 +47,13 @@ const renderAptidoes = () =>
 describe('Aptidoes (padrão useEntityCRUD + useUniversos + EntityFilters + EntityViewDialog)', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    invalidateUniversosCache();
     canCreate.mockReturnValue(true);
     canWrite.mockReturnValue(true);
     isAdmin = true;
     allowedUniversos = [];
     getAptidoes.mockResolvedValue(APTIDOES_MOCK);
+    getUniversos.mockResolvedValue([]);
   });
 
   it('lista as aptidões retornadas por getAptidoes depois do loading', async () => {
@@ -179,6 +183,26 @@ describe('Aptidoes (padrão useEntityCRUD + useUniversos + EntityFilters + Entit
     expect(
       screen.queryByLabelText('Editar aptidão Fúria Ancestral'),
     ).not.toBeInTheDocument();
+  });
+
+  it('mostra um resumo compacto de universos com tooltip completo', async () => {
+    getUniversos.mockResolvedValue([
+      { id: 'u1', Nome: 'Abyss' },
+      { id: 'u2', Nome: 'The Hollow' },
+    ]);
+    getAptidoes.mockResolvedValue([
+      { id: 'a1', nome: 'Fúria Ancestral', universos: ['u1', 'u2'] },
+    ]);
+
+    renderAptidoes();
+
+    await waitFor(() =>
+      expect(screen.getByText('2 universos')).toBeInTheDocument(),
+    );
+
+    expect(
+      screen.getByLabelText('Universos vinculados: 2 universos'),
+    ).toBeInTheDocument();
   });
 
   it('mostra editar mas não remover quando o usuário só administra parte dos universos da aptidão', async () => {

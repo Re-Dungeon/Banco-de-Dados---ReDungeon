@@ -1,6 +1,7 @@
 export const ROUTE_PATHS = {
   RECURSOS: '/recursos',
   FICHAS: '/fichas',
+  GERENCIADOR_UNIVERSOS: '/fichas/gerenciador-universos',
   RACAS: '/recursos/racas',
   NOVA_RACA: '/recursos/racas/nova',
   ITENS: '/recursos/itens',
@@ -40,6 +41,7 @@ export const ROUTE_PATHS = {
 export const PAGE_TITLES = {
   [ROUTE_PATHS.RECURSOS]: 'Recursos',
   [ROUTE_PATHS.FICHAS]: 'Fichas',
+  [ROUTE_PATHS.GERENCIADOR_UNIVERSOS]: 'Gerenciador de Universos',
   [ROUTE_PATHS.RACAS]: 'Raças',
   [ROUTE_PATHS.NOVA_RACA]: 'Nova Raça',
   [ROUTE_PATHS.ITENS]: 'Itens',

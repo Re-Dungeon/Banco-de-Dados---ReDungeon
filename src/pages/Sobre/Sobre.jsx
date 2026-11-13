@@ -4,7 +4,7 @@ import Typography from '@mui/material/Typography';
 import Paper from '@mui/material/Paper';
 import Divider from '@mui/material/Divider';
 import Chip from '@mui/material/Chip';
-import { INFO_ITEMS } from './constants';
+import { APP_VERSION, INFO_ITEMS } from './constants';
 
 const Sobre = () => {
   return (
@@ -17,7 +17,7 @@ const Sobre = () => {
           Sobre
         </Typography>
         <Typography variant="body2" sx={{ color: 'var(--text-secondary)' }}>
-          Re:Dungeon — Gerenciador de RPG de Mesa
+          Re:Dungeon — Banco de dados de campanha para RPG de mesa
         </Typography>
       </Box>
 
@@ -45,7 +45,7 @@ const Sobre = () => {
               Re:Dungeon
             </Typography>
             <Chip
-              label="V3.1.1"
+              label={`V${APP_VERSION}`}
               color="primary"
               size="small"
               sx={{ mt: 0.5 }}
@@ -57,10 +57,9 @@ const Sobre = () => {
           variant="body2"
           sx={{ color: 'var(--text-secondary)', mb: 2 }}
         >
-          Um banco de dados de campanha para RPG de mesa, com Raças, Classes,
-          Materiais, Itens, Receitas, Condições, Artes, Origens, Regras,
-          CardFlux, Veias Astrais e muito mais, sincronizado em tempo real via
-          Firebase.
+          Sistema para organizar Raças, Classes, Itens, Materiais, Regras,
+          Artes, Origens, Receitas, Condições, Veias Astrais, CardFlux e
+          demais recursos da sua campanha em um único painel.
         </Typography>
 
         <Divider sx={{ mb: 2, borderColor: 'var(--border-primary)' }} />

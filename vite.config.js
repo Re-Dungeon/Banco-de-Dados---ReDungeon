@@ -25,4 +25,7 @@ export default defineConfig({
     setupFiles: './src/setupTests.js',
     testTimeout: 10000,
   },
+  build: {
+    chunkSizeWarningLimit: 1500,
+  },
 });
