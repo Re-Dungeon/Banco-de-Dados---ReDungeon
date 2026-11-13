@@ -23,16 +23,11 @@ import EntityViewDialog from 'components/EntityViewDialog/EntityViewDialog';
 import PageHeader from 'components/PageHeader/PageHeader';
 import {
   RacaCard,
-  RacaImageFrame,
-  RacaImageOverlay,
-  RacaActionBar,
-  RacaContent,
-  RacaTitle,
   RacaSubtitle,
   RacaDescription,
-  RacaFooter,
 } from '../Racas/styles';
-import CardTokens from 'components/CardTokens/CardTokens';
+import EntityImage from 'components/EntityImage/EntityImage';
+import { UniverseCountBadge } from 'components/CardTokens/CardTokens';
 import { getCondicaoUniversos } from './utils';
 
 const Condicoes = () => {
@@ -140,91 +135,182 @@ const Condicoes = () => {
                 gap: 2,
               }}
             >
-              {condicoesFiltradas.map(condicao => (
-                <RacaCard key={condicao.id} elevation={0}>
-                  <RacaImageFrame>
-                    <RacaImageOverlay />
-                    <RacaActionBar>
-                      <Tooltip title="Visualizar detalhes">
-                        <IconButton
-                          size="small"
-                          onClick={() => setCondicaoVisualizando(condicao)}
-                          sx={{
-                            color: 'var(--text-secondary)',
-                            padding: '14px',
-                            minWidth: '16px',
-                            width: '16px',
-                            height: '16px',
-                            '&:hover': { color: 'var(--color-accent)' },
-                          }}
-                          aria-label={`Visualizar condição ${condicao.nome}`}
-                        >
-                          <VisibilityOutlinedIcon fontSize="small" />
-                        </IconButton>
-                      </Tooltip>
+              {condicoesFiltradas.map(condicao => {
+                const condicaoUniversos = getCondicaoUniversos(condicao);
 
-                      {canWrite(getCondicaoUniversos(condicao)) && (
-                        <>
-                          <IconButton
-                            size="small"
-                            onClick={() =>
-                              navigate(ROUTE_PATHS.NOVA_CONDICAO, { state: { condicao } })
-                            }
-                            sx={{
-                              color: 'var(--color-accent)',
-                              padding: '4px',
-                              minWidth: '32px',
-                              width: '32px',
-                              height: '32px',
-                              '&:hover': { color: 'var(--color-accent)', opacity: 0.8 },
-                            }}
-                            aria-label={`Editar condição ${condicao.nome}`}
-                          >
-                            <EditOutlinedIcon fontSize="small" />
-                          </IconButton>
-                          <IconButton
-                            size="small"
-                            onClick={() => confirmDelete(condicao.nome, () => handleRemove(condicao.id))}
-                            sx={{ color: '#ef4444', padding: '4px', minWidth: '32px', width: '32px', height: '32px', '&:hover': { color: '#ef4444' } }}
-                            aria-label={`Remover condição ${condicao.nome}`}
-                          >
-                            <DeleteOutlineIcon fontSize="small" />
-                          </IconButton>
-                        </>
-                      )}
-                    </RacaActionBar>
-
-                    {condicao.linkImagem && (
-                      <Box component="img" className="raca-card-image" src={condicao.linkImagem} alt={condicao.nome} onError={e => { e.currentTarget.style.display = 'none'; }} />
-                    )}
-                  </RacaImageFrame>
-
-                  <RacaContent>
-                    <RacaTitle variant="h6">{condicao.nome}</RacaTitle>
-
-                    {(condicao.raridade || condicao.duracao) && (
-                      <RacaSubtitle variant="caption">{[condicao.raridade, condicao.duracao].filter(Boolean).join(' · ')}</RacaSubtitle>
-                    )}
-
-                    {condicao.descricao && <RacaDescription variant="body2">{condicao.descricao}</RacaDescription>}
-
-                    {(condicao.efeitos?.filter(Boolean).length > 0 || condicao.interacoes?.filter(Boolean).length > 0) && (
-                      <RacaFooter>
-                        <CardTokens
-                          items={[
-                            ...(condicao.efeitos?.filter(Boolean).length > 0
-                              ? [`${condicao.efeitos.filter(Boolean).length} ${condicao.efeitos.filter(Boolean).length === 1 ? 'Efeito' : 'Efeitos'}`]
-                              : []),
-                            ...(condicao.interacoes?.filter(Boolean).length > 0
-                              ? [`${condicao.interacoes.filter(Boolean).length} ${condicao.interacoes.filter(Boolean).length === 1 ? 'Interação' : 'Interações'}`]
-                              : []),
-                          ]}
+                return (
+                  <RacaCard
+                    key={condicao.id}
+                    elevation={0}
+                    sx={{
+                      minHeight: 0,
+                      p: 1.5,
+                      display: 'flex',
+                      flexDirection: 'column',
+                      gap: 1.5,
+                    }}
+                  >
+                    <Box sx={{ display: 'flex', gap: 1.5, alignItems: 'stretch' }}>
+                      <Box
+                        sx={{
+                          position: 'relative',
+                          width: 112,
+                          minWidth: 112,
+                          height: 112,
+                          borderRadius: 3,
+                          overflow: 'hidden',
+                          border: '1px solid var(--border-primary)',
+                          background:
+                            'linear-gradient(145deg, rgba(15,23,42,0.96), rgba(10,14,24,0.9))',
+                        }}
+                      >
+                        <EntityImage
+                          src={condicao.linkImagem}
+                          alt={condicao.nome}
+                          width={112}
+                          height={112}
+                          objectFit="cover"
+                          placeholderText="Sem imagem"
+                          fallbackText="Imagem indisponível"
+                          sx={{ borderRadius: 0, border: 'none' }}
                         />
-                      </RacaFooter>
-                    )}
-                  </RacaContent>
-                </RacaCard>
-              ))}
+
+                        <Box
+                          sx={{
+                            position: 'absolute',
+                            top: 8,
+                            right: 8,
+                            display: 'flex',
+                            gap: 0.5,
+                            zIndex: 2,
+                            background: 'rgba(12, 18, 30, 0.72)',
+                            border: '1px solid rgba(148, 163, 184, 0.2)',
+                            backdropFilter: 'blur(8px)',
+                            borderRadius: 2,
+                            p: 0.35,
+                          }}
+                        >
+                          <Tooltip title="Visualizar detalhes">
+                            <IconButton
+                              size="small"
+                              onClick={() => setCondicaoVisualizando(condicao)}
+                              sx={{
+                                color: 'var(--text-secondary)',
+                                padding: '8px',
+                                minWidth: '16px',
+                                width: '16px',
+                                height: '16px',
+                                '&:hover': { color: 'var(--color-accent)' },
+                              }}
+                              aria-label={`Visualizar condição ${condicao.nome}`}
+                            >
+                              <VisibilityOutlinedIcon fontSize="small" />
+                            </IconButton>
+                          </Tooltip>
+
+                          {canWrite(condicaoUniversos) && (
+                            <>
+                              <IconButton
+                                size="small"
+                                onClick={() =>
+                                  navigate(ROUTE_PATHS.NOVA_CONDICAO, {
+                                    state: { condicao },
+                                  })
+                                }
+                                sx={{
+                                  color: 'var(--color-accent)',
+                                  padding: '4px',
+                                  minWidth: '24px',
+                                  width: '24px',
+                                  height: '24px',
+                                  '&:hover': {
+                                    color: 'var(--color-accent)',
+                                    opacity: 0.8,
+                                  },
+                                }}
+                                aria-label={`Editar condição ${condicao.nome}`}
+                              >
+                                <EditOutlinedIcon fontSize="small" />
+                              </IconButton>
+                              <IconButton
+                                size="small"
+                                onClick={() =>
+                                  confirmDelete(condicao.nome, () =>
+                                    handleRemove(condicao.id),
+                                  )
+                                }
+                                sx={{
+                                  color: '#ef4444',
+                                  padding: '4px',
+                                  minWidth: '24px',
+                                  width: '24px',
+                                  height: '24px',
+                                  '&:hover': { color: '#ef4444' },
+                                }}
+                                aria-label={`Remover condição ${condicao.nome}`}
+                              >
+                                <DeleteOutlineIcon fontSize="small" />
+                              </IconButton>
+                            </>
+                          )}
+                        </Box>
+                      </Box>
+
+                      <Box
+                        sx={{
+                          flex: 1,
+                          minWidth: 0,
+                          display: 'flex',
+                          flexDirection: 'column',
+                          gap: 0.9,
+                          justifyContent: 'space-between',
+                        }}
+                      >
+                        <Box
+                          sx={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'space-between',
+                            gap: 1,
+                            minWidth: 0,
+                          }}
+                        >
+                          <Typography
+                            variant="h6"
+                            sx={{
+                              color: 'var(--text-primary)',
+                              fontWeight: 700,
+                              lineHeight: 1.2,
+                              wordBreak: 'break-word',
+                            }}
+                          >
+                            {condicao.nome}
+                          </Typography>
+
+                          <UniverseCountBadge
+                            universoIds={condicaoUniversos}
+                            universos={universos}
+                          />
+                        </Box>
+
+                        {(condicao.raridade || condicao.duracao) && (
+                          <RacaSubtitle variant="caption">
+                            {[condicao.raridade, condicao.duracao]
+                              .filter(Boolean)
+                              .join(' · ')}
+                          </RacaSubtitle>
+                        )}
+
+                        {condicao.descricao && (
+                          <RacaDescription variant="body2">
+                            {condicao.descricao}
+                          </RacaDescription>
+                        )}
+                      </Box>
+                    </Box>
+                  </RacaCard>
+                );
+              })}
             </Box>
           )}
         </>

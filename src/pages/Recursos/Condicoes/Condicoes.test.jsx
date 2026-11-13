@@ -5,10 +5,11 @@ import { MemoryRouter } from 'react-router-dom';
 
 const getCondicoes = vi.fn();
 const removeCondicao = vi.fn();
+const getUniversos = vi.fn();
 vi.mock('service/storage', () => ({
   getCondicoes: (...args) => getCondicoes(...args),
   removeCondicao: (...args) => removeCondicao(...args),
-  getUniversos: vi.fn().mockResolvedValue([]),
+  getUniversos: (...args) => getUniversos(...args),
 }));
 
 const canCreate = vi.fn(() => true);
@@ -17,6 +18,7 @@ vi.mock('context/AuthContext', () => ({
   useAuth: () => ({ canCreate, canWrite }),
 }));
 
+import { invalidateUniversosCache } from 'hooks/useUniversos';
 import Condicoes from './Condicoes';
 
 const CONDICOES_MOCK = [
@@ -34,9 +36,11 @@ const renderCondicoes = () =>
 describe('Condicoes (padrão useEntityCRUD + useUniversos + EntityFilters + EntityViewDialog)', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    invalidateUniversosCache();
     canCreate.mockReturnValue(true);
     canWrite.mockReturnValue(true);
     getCondicoes.mockResolvedValue(CONDICOES_MOCK);
+    getUniversos.mockResolvedValue([]);
   });
 
   it('lista as condições retornadas por getCondicoes depois do loading', async () => {
@@ -110,6 +114,26 @@ describe('Condicoes (padrão useEntityCRUD + useUniversos + EntityFilters + Enti
     ).toBeInTheDocument();
     expect(
       within(dialog).getByText('-2 em testes de Força', { exact: false }),
+    ).toBeInTheDocument();
+  });
+
+  it('mostra um resumo compacto de universos com tooltip completo', async () => {
+    getUniversos.mockResolvedValue([
+      { id: 'u1', Nome: 'Abyss' },
+      { id: 'u2', Nome: 'The Hollow' },
+    ]);
+    getCondicoes.mockResolvedValue([
+      { id: 'c1', nome: 'Envenenado', universos: ['u1', 'u2'] },
+    ]);
+
+    renderCondicoes();
+
+    await waitFor(() =>
+      expect(screen.getByText('2 universos')).toBeInTheDocument(),
+    );
+
+    expect(
+      screen.getByLabelText('Universos vinculados: 2 universos'),
     ).toBeInTheDocument();
   });
 

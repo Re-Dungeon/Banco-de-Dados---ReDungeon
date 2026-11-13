@@ -1,6 +1,6 @@
 {
   "name": "re-dungeon-banco-de-dados",
-  "version": "3.1.1",
+  "version": "3.3.0",
   "private": true,
   "type": "module",
   "scripts": {
@@ -48,5 +48,21 @@
     "prettier": "^3.9.1",
     "vite": "^8.1.0",
     "vitest": "^4.1.10"
-  }
+  },
+  "description": "> v3.0.0",
+  "main": "eslint.config.js",
+  "directories": {
+    "doc": "docs"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Re-Dungeon/Banco-de-Dados---ReDungeon.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Re-Dungeon/Banco-de-Dados---ReDungeon/issues"
+  },
+  "homepage": "https://github.com/Re-Dungeon/Banco-de-Dados---ReDungeon#readme"
 }

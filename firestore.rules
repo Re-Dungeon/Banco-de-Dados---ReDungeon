@@ -158,8 +158,9 @@ service cloud.firestore {
     match /condicoes/{condicaoId} {
       allow read: if isAuth();
       allow create: if canWriteUniversos(request.resource.data.universos);
-      allow update: if canWriteMultiUniversoData(resource.data)
-                    && canWriteUniversos(request.resource.data.universos);
+      allow update: if (canWriteMultiUniversoData(resource.data)
+                    && canWriteUniversos(request.resource.data.universos))
+                    || canTogglePartialUniverso(resource.data, request.resource.data);
       allow delete: if canWriteMultiUniversoData(resource.data);
     }
 

@@ -41,6 +41,147 @@ const tokenPillSx = {
   },
 };
 
+export const UniverseCountBadge = ({
+  universoIds = [],
+  universos = [],
+  emptyLabel = 'Sem universo vinculado',
+}) => {
+  const linkedUniversos = useMemo(() => {
+    const normalizedIds = Array.isArray(universoIds) ? universoIds : [];
+
+    if (!normalizedIds.length) {
+      return [];
+    }
+
+    return universos
+      .filter(universo => normalizedIds.includes(universo.id))
+      .map(universo => universo.Nome || universo.nome || universo.id);
+  }, [universoIds, universos]);
+
+  const count = linkedUniversos.length;
+  const summaryLabel =
+    count === 0 ? emptyLabel : `${count} ${count === 1 ? 'universo' : 'universos'}`;
+
+  const tooltipContent = (
+    <Box
+      sx={{
+        display: 'flex',
+        flexDirection: 'column',
+        gap: 0.75,
+        minWidth: 180,
+        maxWidth: 260,
+        p: 0.25,
+      }}
+    >
+      <Typography
+        variant="caption"
+        sx={{
+          color: 'var(--color-accent)',
+          fontWeight: 700,
+          letterSpacing: '0.08em',
+          textTransform: 'uppercase',
+        }}
+      >
+        Universos vinculados
+      </Typography>
+
+      {count === 0 ? (
+        <Typography variant="body2" sx={{ color: 'var(--text-secondary)' }}>
+          Nenhum universo vinculado.
+        </Typography>
+      ) : (
+        linkedUniversos.map((nome, index) => (
+          <Typography
+            key={`${nome}-${index}`}
+            variant="body2"
+            sx={{
+              color: 'var(--text-primary)',
+              whiteSpace: 'normal',
+              overflowWrap: 'anywhere',
+              wordBreak: 'break-word',
+              lineHeight: 1.4,
+            }}
+          >
+            {nome}
+          </Typography>
+        ))
+      )}
+    </Box>
+  );
+
+  return (
+    <Tooltip title={tooltipContent} placement="top" arrow disableInteractive>
+      <Box
+        component="button"
+        type="button"
+        tabIndex={0}
+        aria-label={
+          count === 0
+            ? 'Sem universos vinculados'
+            : `Universos vinculados: ${summaryLabel}`
+        }
+        sx={{
+          display: 'inline-flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          gap: 0.6,
+          px: 1.1,
+          py: 0.55,
+          borderRadius: 999,
+          border: '1px solid rgba(234, 179, 8, 0.42)',
+          background:
+            'linear-gradient(135deg, rgba(18, 25, 38, 0.95), rgba(25, 32, 49, 0.9))',
+          color: 'var(--text-primary)',
+          boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.04)',
+          cursor: 'pointer',
+          transition: 'transform 180ms ease, border-color 180ms ease',
+          '&:hover': {
+            transform: 'translateY(-1px)',
+            borderColor: 'rgba(234, 179, 8, 0.7)',
+          },
+          '&:focus-visible': {
+            outline: '2px solid rgba(234, 179, 8, 0.7)',
+            outlineOffset: '2px',
+          },
+        }}
+      >
+        <Box component="span" sx={{ fontSize: '0.72rem', lineHeight: 1 }}>
+          ◎
+        </Box>
+        <Box
+          component="span"
+          sx={{
+            fontSize: '0.7rem',
+            fontWeight: 700,
+            letterSpacing: '0.04em',
+            whiteSpace: 'nowrap',
+          }}
+        >
+          {summaryLabel}
+        </Box>
+      </Box>
+    </Tooltip>
+  );
+};
+
+UniverseCountBadge.propTypes = {
+  universoIds: PropTypes.arrayOf(PropTypes.string),
+  universos: PropTypes.arrayOf(
+    PropTypes.shape({
+      id: PropTypes.string,
+      Nome: PropTypes.string,
+      nome: PropTypes.string,
+    }),
+  ),
+  emptyLabel: PropTypes.string,
+};
+
+UniverseCountBadge.defaultProps = {
+  universoIds: [],
+  universos: [],
+  emptyLabel: 'Sem universo vinculado',
+};
+
 const CardTokens = ({ items = [], maxVisible = 2 }) => {
   const normalizedItems = useMemo(() => normalizeItems(items), [items]);
   const [isExpanded, setIsExpanded] = useState(false);
