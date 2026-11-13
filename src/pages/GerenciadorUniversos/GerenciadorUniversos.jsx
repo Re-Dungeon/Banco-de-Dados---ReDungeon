@@ -53,6 +53,41 @@ const buildUpdatedPayload = nextUniversos => ({
   universos: nextUniversos,
 });
 
+const EMPTY_FILTER_STATE = {
+  search: '',
+  sort: 'asc',
+};
+
+const applyListFilters = ({ items, activeUniverseId, filterState, scope }) => {
+  const searchTerm = filterState.search.trim().toLowerCase();
+
+  const filtered = items.filter(item => {
+    const itemUniversos = normalizeUniverseIds(item);
+    const matchesScope =
+      scope === 'linked'
+        ? itemUniversos.includes(activeUniverseId)
+        : !itemUniversos.includes(activeUniverseId);
+
+    if (!matchesScope) {
+      return false;
+    }
+
+    return (
+      !searchTerm || String(item?.nome ?? '').toLowerCase().includes(searchTerm)
+    );
+  });
+
+  return [...filtered].sort((left, right) => {
+    const result = String(left?.nome ?? '').localeCompare(
+      String(right?.nome ?? ''),
+      'pt-BR',
+      { sensitivity: 'base' },
+    );
+
+    return filterState.sort === 'desc' ? -result : result;
+  });
+};
+
 const persistUniverseMutation = async ({ collectionName, itemId, action, universeId }) => {
   const itemRef = doc(db, collectionName, itemId);
 
@@ -94,7 +129,8 @@ const GerenciadorUniversos = () => {
 
   const [selectedCategory, setSelectedCategory] = useState('aptidoes');
   const [selectedUniverseId, setSelectedUniverseId] = useState('');
-  const [searchTerm, setSearchTerm] = useState('');
+  const [linkedFilters, setLinkedFilters] = useState(EMPTY_FILTER_STATE);
+  const [availableFilters, setAvailableFilters] = useState(EMPTY_FILTER_STATE);
   const [selectedIds, setSelectedIds] = useState([]);
   const [data, setData] = useState({ aptidoes: [], condicoes: [] });
   const [loadingItems, setLoadingItems] = useState(true);
@@ -159,30 +195,26 @@ const GerenciadorUniversos = () => {
     [data, selectedCategory],
   );
 
-  const filteredItems = useMemo(() => {
-    const termo = searchTerm.trim().toLowerCase();
-
-    return currentItems.filter(item => {
-      const nome = String(item?.nome ?? '').toLowerCase();
-      const matchesSearch = !termo || nome.includes(termo);
-      return matchesSearch;
-    });
-  }, [currentItems, searchTerm]);
-
   const linkedItems = useMemo(
     () =>
-      filteredItems.filter(item =>
-        normalizeUniverseIds(item).includes(activeUniverseId),
-      ),
-    [filteredItems, activeUniverseId],
+      applyListFilters({
+        items: currentItems,
+        activeUniverseId,
+        filterState: linkedFilters,
+        scope: 'linked',
+      }),
+    [activeUniverseId, currentItems, linkedFilters],
   );
 
   const availableItems = useMemo(
     () =>
-      filteredItems.filter(
-        item => !normalizeUniverseIds(item).includes(activeUniverseId),
-      ),
-    [filteredItems, activeUniverseId],
+      applyListFilters({
+        items: currentItems,
+        activeUniverseId,
+        filterState: availableFilters,
+        scope: 'available',
+      }),
+    [activeUniverseId, availableFilters, currentItems],
   );
 
   const canManageSelectedUniverse =
@@ -200,6 +232,95 @@ const GerenciadorUniversos = () => {
         : [...previous, itemId],
     );
   };
+
+  const updateFilterState = (area, nextState) => {
+    if (area === 'linked') {
+      setLinkedFilters(nextState);
+      return;
+    }
+
+    setAvailableFilters(nextState);
+  };
+
+  const renderFilterBar = ({ area, state, onChange, sortLabel }) => (
+    <Box
+      sx={{
+        display: 'grid',
+        gridTemplateColumns: { xs: '1fr', md: 'minmax(0, 1.5fr) auto' },
+        gap: 1.25,
+        alignItems: 'center',
+        mb: 1.5,
+      }}
+    >
+      <TextField
+        label={`Pesquisar ${area === 'linked' ? 'vinculados' : 'disponíveis'}`}
+        size="small"
+        value={state.search}
+        onChange={event => onChange({ ...state, search: event.target.value })}
+        sx={{
+          '& .MuiOutlinedInput-root': {
+            color: 'var(--text-primary)',
+            '& fieldset': { borderColor: 'var(--border-primary)' },
+            '&:hover fieldset': { borderColor: 'var(--border-hover)' },
+            '&.Mui-focused fieldset': { borderColor: 'var(--color-accent)' },
+          },
+          '& .MuiInputLabel-root': { color: 'var(--text-secondary)' },
+        }}
+      />
+
+      <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 1, alignItems: 'center', flexWrap: 'wrap' }}>
+        <Button
+          size="small"
+          variant="text"
+          onClick={() => onChange(EMPTY_FILTER_STATE)}
+          sx={{
+            color: 'var(--text-secondary)',
+            minWidth: 0,
+            px: 1,
+          }}
+        >
+          Limpar
+        </Button>
+
+        <Box component="div" aria-label={sortLabel} sx={{ display: 'flex', gap: 1 }}>
+          <Button
+            size="small"
+            variant={state.sort === 'asc' ? 'contained' : 'outlined'}
+            onClick={() => onChange({ ...state, sort: 'asc' })}
+            aria-label={`${sortLabel}: A–Z`}
+            sx={{
+              minWidth: 62,
+              borderColor: 'var(--border-primary)',
+              color: state.sort === 'asc' ? 'rgba(4, 7, 16, 1)' : 'var(--text-primary)',
+              background: state.sort === 'asc' ? 'linear-gradient(135deg, rgba(234, 179, 8, 0.96), rgba(251, 191, 36, 0.85))' : 'transparent',
+              '&:hover': {
+                background: state.sort === 'asc' ? 'linear-gradient(135deg, rgba(250, 204, 21, 0.98), rgba(251, 191, 36, 0.88))' : 'rgba(15, 23, 42, 0.72)',
+              },
+            }}
+          >
+            A–Z
+          </Button>
+          <Button
+            size="small"
+            variant={state.sort === 'desc' ? 'contained' : 'outlined'}
+            onClick={() => onChange({ ...state, sort: 'desc' })}
+            aria-label={`${sortLabel}: Z–A`}
+            sx={{
+              minWidth: 62,
+              borderColor: 'var(--border-primary)',
+              color: state.sort === 'desc' ? 'rgba(4, 7, 16, 1)' : 'var(--text-primary)',
+              background: state.sort === 'desc' ? 'linear-gradient(135deg, rgba(234, 179, 8, 0.96), rgba(251, 191, 36, 0.85))' : 'transparent',
+              '&:hover': {
+                background: state.sort === 'desc' ? 'linear-gradient(135deg, rgba(250, 204, 21, 0.98), rgba(251, 191, 36, 0.88))' : 'rgba(15, 23, 42, 0.72)',
+              },
+            }}
+          >
+            Z–A
+          </Button>
+        </Box>
+      </Box>
+    </Box>
+  );
 
   const handleBulkUpdate = async action => {
     if (!activeUniverseId || !canManageSelectedUniverse) {
@@ -505,6 +626,39 @@ const GerenciadorUniversos = () => {
       <PageHeader
         title="Gerenciador de Universos"
         description="Gerencie vínculos entre universos e registros de Aptidões e Condições."
+        sx={{
+          justifyContent: 'center',
+          textAlign: 'center',
+          px: 2.5,
+          py: 2.75,
+          background: 'linear-gradient(180deg, rgba(9, 14, 26, 0.98), rgba(12, 18, 31, 0.86))',
+          border: '1px solid rgba(234, 179, 8, 0.28)',
+          boxShadow: '0 18px 38px rgba(15, 23, 42, 0.26), inset 0 1px 0 rgba(255, 255, 255, 0.02)',
+          '& .MuiBox-root': {
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            justifyContent: 'center',
+            width: '100%',
+          },
+          '& .MuiTypography-h5': {
+            color: 'var(--text-primary)',
+            fontWeight: 800,
+            letterSpacing: '0.12em',
+            textTransform: 'uppercase',
+            textShadow: '0 0 26px rgba(234, 179, 8, 0.22)',
+            fontSize: { xs: '1.65rem', md: '2.15rem' },
+            lineHeight: 1.1,
+            mb: 0.5,
+          },
+          '& .MuiTypography-body2': {
+            color: 'var(--text-secondary)',
+            letterSpacing: '0.06em',
+            textTransform: 'uppercase',
+            fontSize: '0.72rem',
+            opacity: 0.9,
+          },
+        }}
       />
 
       <Paper
@@ -517,86 +671,214 @@ const GerenciadorUniversos = () => {
         }}
       >
         <Stack spacing={2}>
-          <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '320px 1fr' }, gap: 2, alignItems: 'end' }}>
-            <SearchableSelect
-              label="Universo"
-              options={allowedUniverseOptions.map(universo => ({
-                value: universo.id,
-                label: universo.Nome,
-              }))}
-              value={selectedUniverseOption ? { value: selectedUniverseOption.id, label: selectedUniverseOption.Nome } : null}
-              onChange={(_, newValue) => {
-                setSelectedUniverseId(newValue?.value ?? '');
-                setSelectedIds([]);
-              }}
-              placeholder="Selecione um universo"
-              size="small"
-              disableClearable={false}
-            />
+          <Box
+            sx={{
+              display: 'flex',
+              flexDirection: { xs: 'column', md: 'row' },
+              alignItems: { xs: 'stretch', md: 'center' },
+              justifyContent: 'space-between',
+              gap: 2,
+              width: '100%',
+            }}
+          >
+            <Box sx={{ flex: { xs: '1 1 100%', md: '0 0 340px' }, minWidth: { md: 280 } }}>
+              <SearchableSelect
+                label="Universo"
+                options={allowedUniverseOptions.map(universo => ({
+                  value: universo.id,
+                  label: universo.Nome,
+                }))}
+                value={selectedUniverseOption ? { value: selectedUniverseOption.id, label: selectedUniverseOption.Nome } : null}
+                onChange={(_, newValue) => {
+                  setSelectedUniverseId(newValue?.value ?? '');
+                  setSelectedIds([]);
+                }}
+                placeholder="Selecione um universo"
+                size="small"
+                disableClearable={false}
+                sx={{
+                  '& .MuiOutlinedInput-root': {
+                    minHeight: 52,
+                    borderRadius: 2,
+                    background: 'linear-gradient(180deg, rgba(8, 12, 22, 0.98), rgba(15, 23, 42, 0.9))',
+                    boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.04), 0 18px 28px rgba(2, 6, 23, 0.26)',
+                    transition: 'all 180ms ease',
+                    '& fieldset': {
+                      borderColor: 'rgba(234, 179, 8, 0.4)',
+                      borderWidth: '1px',
+                    },
+                    '&:hover fieldset': {
+                      borderColor: 'rgba(234, 179, 8, 0.75)',
+                      boxShadow: '0 0 0 1px rgba(234, 179, 8, 0.14)',
+                    },
+                    '&.Mui-focused fieldset': {
+                      borderColor: 'rgba(96, 165, 250, 0.86)',
+                      boxShadow: '0 0 0 3px rgba(59, 130, 246, 0.18)',
+                    },
+                  },
+                  '& .MuiInputLabel-root': {
+                    color: 'var(--text-secondary)',
+                    fontSize: '0.72rem',
+                    letterSpacing: '0.08em',
+                    textTransform: 'uppercase',
+                    fontWeight: 700,
+                  },
+                  '& .MuiInputLabel-root.Mui-focused': {
+                    color: 'var(--color-accent)',
+                  },
+                  '& .MuiOutlinedInput-input': {
+                    color: 'var(--text-primary)',
+                    fontWeight: 700,
+                    paddingTop: '14px',
+                    paddingBottom: '14px',
+                  },
+                  '& .MuiAutocomplete-endAdornment': {
+                    color: 'var(--text-secondary)',
+                  },
+                  '& .MuiSvgIcon-root': {
+                    color: 'var(--text-secondary)',
+                  },
+                }}
+              />
+            </Box>
 
-            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 2, flexWrap: 'wrap' }}>
-              <Typography variant="body2" sx={{ color: 'var(--text-secondary)' }}>
-                {activeUniverseId
-                  ? `${selectedUniverseLabel} · ${linkedItems.length} vinculados · ${selectedIds.length} selecionados`
-                  : 'Selecione um universo para visualizar e administrar os vínculos.'}
-              </Typography>
+            <Box
+              sx={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: { xs: 'stretch', md: 'flex-end' },
+                flexWrap: 'wrap',
+                gap: 1.5,
+                flex: 1,
+                minWidth: 0,
+              }}
+            >
+              <Button
+                variant="contained"
+                onClick={() => handleBulkUpdate('link')}
+                disabled={!canManageSelectedUniverse || saving || selectedIds.length === 0}
+                sx={{
+                  minWidth: { xs: '100%', sm: 190 },
+                  borderRadius: 1.5,
+                  px: 2.25,
+                  py: 1,
+                  fontWeight: 800,
+                  letterSpacing: '0.08em',
+                  textTransform: 'uppercase',
+                  background: 'linear-gradient(135deg, rgba(234, 179, 8, 0.22), rgba(250, 204, 21, 0.12))',
+                  color: 'var(--text-primary)',
+                  border: '1px solid rgba(234, 179, 8, 0.46)',
+                  boxShadow: '0 10px 22px rgba(234, 179, 8, 0.12)',
+                  '&:hover': {
+                    background: 'linear-gradient(135deg, rgba(234, 179, 8, 0.28), rgba(250, 204, 21, 0.18))',
+                    borderColor: 'rgba(234, 179, 8, 0.7)',
+                  },
+                  '&:disabled': {
+                    background: 'rgba(15, 23, 42, 0.7)',
+                    color: 'rgba(148, 163, 184, 0.6)',
+                    borderColor: 'rgba(148, 163, 184, 0.2)',
+                    boxShadow: 'none',
+                  },
+                }}
+              >
+                Vincular selecionados
+              </Button>
+              <Button
+                variant="outlined"
+                color="warning"
+                onClick={() => handleBulkUpdate('unlink')}
+                disabled={!canManageSelectedUniverse || saving || selectedIds.length === 0}
+                sx={{
+                  minWidth: { xs: '100%', sm: 210 },
+                  borderRadius: 1.5,
+                  px: 2.25,
+                  py: 1,
+                  fontWeight: 800,
+                  letterSpacing: '0.08em',
+                  textTransform: 'uppercase',
+                  borderColor: 'rgba(248, 113, 113, 0.36)',
+                  color: 'var(--text-primary)',
+                  background: 'rgba(127, 29, 29, 0.12)',
+                  '&:hover': {
+                    borderColor: 'rgba(248, 113, 113, 0.54)',
+                    background: 'rgba(127, 29, 29, 0.18)',
+                  },
+                  '&:disabled': {
+                    borderColor: 'rgba(148, 163, 184, 0.2)',
+                    color: 'rgba(148, 163, 184, 0.6)',
+                    background: 'rgba(15, 23, 42, 0.4)',
+                  },
+                }}
+              >
+                Desvincular selecionados
+              </Button>
             </Box>
           </Box>
 
-          <Tabs
-            value={selectedCategory}
-            onChange={(_, nextValue) => {
-              setSelectedCategory(nextValue);
-              setSelectedIds([]);
-            }}
-            sx={{
-              '& .MuiTab-root': { color: 'var(--text-secondary)' },
-              '& .Mui-selected': { color: 'var(--color-accent) !important' },
-              '& .MuiTabs-indicator': { backgroundColor: 'var(--color-accent)' },
-            }}
-          >
-            {TAB_OPTIONS.map(tab => (
-              <Tab key={tab.value} value={tab.value} label={tab.label} />
-            ))}
-          </Tabs>
+          <Box sx={{ display: 'flex', justifyContent: 'flex-start', alignItems: 'center', gap: 1.5, flexWrap: 'wrap', px: 0.5 }}>
+            <Typography variant="body2" sx={{ color: 'var(--text-secondary)', letterSpacing: '0.04em' }}>
+              {activeUniverseId
+                ? `${selectedUniverseLabel} · ${linkedItems.length} vinculados · ${selectedIds.length} selecionados`
+                : 'Selecione um universo para visualizar e administrar os vínculos.'}
+            </Typography>
+          </Box>
+
+          <Box sx={{ display: 'flex', justifyContent: 'center', width: '100%' }}>
+            <Tabs
+              value={selectedCategory}
+              onChange={(_, nextValue) => {
+                setSelectedCategory(nextValue);
+                setSelectedIds([]);
+              }}
+              centered
+              sx={{
+                minHeight: 56,
+                '& .MuiTabs-flexContainer': {
+                  gap: 1.25,
+                  justifyContent: 'center',
+                  flexWrap: 'wrap',
+                },
+                '& .MuiTab-root': {
+                  minWidth: { xs: 140, sm: 170 },
+                  px: 2.5,
+                  py: 1.2,
+                  borderRadius: 2,
+                  border: '1px solid transparent',
+                  color: 'var(--text-secondary)',
+                  fontWeight: 700,
+                  letterSpacing: '0.08em',
+                  textTransform: 'uppercase',
+                  background: 'rgba(15, 23, 42, 0.52)',
+                  transition: 'all 180ms ease',
+                  '&:hover': {
+                    color: 'var(--text-primary)',
+                    borderColor: 'rgba(148, 163, 184, 0.22)',
+                    background: 'rgba(17, 24, 39, 0.72)',
+                  },
+                  '&:focus-visible': {
+                    outline: '2px solid rgba(96, 165, 250, 0.7)',
+                    outlineOffset: '2px',
+                  },
+                },
+                '& .MuiTab-root.Mui-selected': {
+                  color: 'var(--text-primary)',
+                  background: 'linear-gradient(135deg, rgba(234, 179, 8, 0.16), rgba(59, 130, 246, 0.12))',
+                  borderColor: 'rgba(234, 179, 8, 0.5)',
+                  boxShadow: '0 12px 28px rgba(234, 179, 8, 0.12), inset 0 1px 0 rgba(255, 255, 255, 0.04)',
+                },
+                '& .MuiTabs-indicator': {
+                  display: 'none',
+                },
+              }}
+            >
+              {TAB_OPTIONS.map(tab => (
+                <Tab key={tab.value} value={tab.value} label={tab.label} />
+              ))}
+            </Tabs>
+          </Box>
 
           {activeUniverseId ? (
             <>
-              <TextField
-                label="Pesquisar registros"
-                size="small"
-                value={searchTerm}
-                onChange={event => setSearchTerm(event.target.value)}
-                sx={{
-                  '& .MuiOutlinedInput-root': {
-                    color: 'var(--text-primary)',
-                    '& fieldset': { borderColor: 'var(--border-primary)' },
-                    '&:hover fieldset': { borderColor: 'var(--border-hover)' },
-                    '&.Mui-focused fieldset': { borderColor: 'var(--color-accent)' },
-                  },
-                  '& .MuiInputLabel-root': { color: 'var(--text-secondary)' },
-                }}
-              />
-
-              <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 1.5, flexWrap: 'wrap' }}>
-                <Button
-                  variant="outlined"
-                  onClick={() => handleBulkUpdate('link')}
-                  disabled={!canManageSelectedUniverse || saving || selectedIds.length === 0}
-                  sx={{ borderColor: 'var(--border-primary)', color: 'var(--text-primary)' }}
-                >
-                  Vincular selecionados
-                </Button>
-                <Button
-                  variant="outlined"
-                  color="warning"
-                  onClick={() => handleBulkUpdate('unlink')}
-                  disabled={!canManageSelectedUniverse || saving || selectedIds.length === 0}
-                >
-                  Desvincular selecionados
-                </Button>
-              </Box>
-
               {notice.text && (
                 <Box
                   sx={{
@@ -646,6 +928,12 @@ const GerenciadorUniversos = () => {
                     <Typography variant="h6" sx={{ mb: 1.5, color: 'var(--text-primary)' }}>
                       Vinculados ao universo
                     </Typography>
+                    {renderFilterBar({
+                      area: 'linked',
+                      state: linkedFilters,
+                      onChange: nextState => updateFilterState('linked', nextState),
+                      sortLabel: 'Ordenação vinculados',
+                    })}
                     {renderItemList(linkedItems)}
                   </Box>
 
@@ -653,6 +941,12 @@ const GerenciadorUniversos = () => {
                     <Typography variant="h6" sx={{ mb: 1.5, color: 'var(--text-primary)' }}>
                       Disponíveis para vincular
                     </Typography>
+                    {renderFilterBar({
+                      area: 'available',
+                      state: availableFilters,
+                      onChange: nextState => updateFilterState('available', nextState),
+                      sortLabel: 'Ordenação disponíveis',
+                    })}
                     {renderItemList(availableItems)}
                   </Box>
                 </Box>
