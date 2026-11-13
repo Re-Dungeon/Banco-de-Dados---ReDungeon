@@ -239,6 +239,52 @@ describe('GerenciadorUniversos', () => {
     expect(screen.getByText(/1 registro falhou/i)).toBeInTheDocument();
   });
 
+  it('mantém filtros independentes e combinados em cada área do gerenciador', async () => {
+    getAptidoes.mockResolvedValue([
+      { id: 'a1', nome: 'Espada Longa', universos: ['u1', 'u2'] },
+      { id: 'a2', nome: 'Escudo', universos: ['u1'] },
+      { id: 'a3', nome: 'Arco', universos: ['u2'] },
+      { id: 'a4', nome: 'Flecha', universos: ['u3'] },
+    ]);
+    getCondicoes.mockResolvedValue([]);
+
+    const user = userEvent.setup();
+
+    render(
+      <MemoryRouter>
+        <GerenciadorUniversos />
+      </MemoryRouter>,
+    );
+
+    await waitFor(() => expect(screen.getByText('Espada Longa')).toBeInTheDocument());
+
+    const linkedSearch = screen.getByLabelText('Pesquisar vinculados');
+    const availableSearch = screen.getByLabelText('Pesquisar disponíveis');
+
+    await user.type(linkedSearch, 'Espada');
+    expect(screen.getByText('Espada Longa')).toBeInTheDocument();
+    expect(screen.queryByText('Escudo')).not.toBeInTheDocument();
+
+    await user.clear(linkedSearch);
+    await user.click(screen.getByRole('button', { name: /Ordenação vinculados: Z–A/i }));
+    expect(screen.getByRole('button', { name: /Ordenação vinculados: Z–A/i })).toBeInTheDocument();
+
+    await user.type(availableSearch, 'Flecha');
+    expect(screen.getByText('Flecha')).toBeInTheDocument();
+    expect(screen.queryByText('Arco')).not.toBeInTheDocument();
+
+    await user.clear(availableSearch);
+    await user.click(screen.getByRole('button', { name: /Ordenação disponíveis: A–Z/i }));
+    expect(screen.getByRole('button', { name: /Ordenação disponíveis: A–Z/i })).toBeInTheDocument();
+
+    const clearButtons = screen.getAllByRole('button', { name: 'Limpar' });
+    await user.click(clearButtons[0]);
+    expect(screen.getByLabelText('Pesquisar vinculados')).toHaveValue('');
+
+    await user.click(clearButtons[1]);
+    expect(screen.getByLabelText('Pesquisar disponíveis')).toHaveValue('');
+  });
+
   it('mostra um resumo compacto de universos com tooltip acessível nos cards do gerenciador', async () => {
     getAptidoes.mockResolvedValue([
       { id: 'a1', nome: 'Aptidão A', universos: ['u1', 'u2'] },
