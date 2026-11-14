@@ -60,6 +60,7 @@ const SearchableSelect = ({
   placeholder,
   sx = {},
   listboxMaxHeight,
+  openOnFocus = false,
   compactSelection = false,
   compactMaxVisible = 2,
   showSelectAll = false,
@@ -143,6 +144,7 @@ const SearchableSelect = ({
           value={value}
           onChange={onChange}
           onBlur={onBlur}
+          openOnFocus={openOnFocus}
           limitTags={shouldCompact ? compactMaxVisible : undefined}
           getOptionLabel={option => option?.label ?? ''}
           isOptionEqualToValue={(option, val) => option.value === val.value}
@@ -159,7 +161,12 @@ const SearchableSelect = ({
               },
             },
             ...(listboxMaxHeight && {
-              listbox: { sx: { maxHeight: listboxMaxHeight } },
+              listbox: {
+                sx: {
+                  maxHeight: listboxMaxHeight,
+                  overflowY: 'auto',
+                },
+              },
             }),
           }}
           renderOption={(liProps, option, { selected }) => {
@@ -310,6 +317,7 @@ SearchableSelect.propTypes = {
   placeholder: PropTypes.string,
   sx: PropTypes.object,
   listboxMaxHeight: PropTypes.number,
+  openOnFocus: PropTypes.bool,
   compactSelection: PropTypes.bool,
   compactMaxVisible: PropTypes.number,
   showSelectAll: PropTypes.bool,

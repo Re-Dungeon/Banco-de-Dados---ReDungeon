@@ -37,6 +37,10 @@ import {
   addRaca,
   removeRaca,
   updateRaca,
+  getUniversos,
+  addUniverso,
+  updateUniverso,
+  removeUniverso,
   getEligiblePlayersByUniverse,
   getUserPermissions,
   getUsersDisplayNamesByUid,
@@ -186,6 +190,114 @@ describe('storage.js — getUserPermissions', () => {
     expect(result).toEqual([
       { uid: 'uid-jogador-1', nome: 'Theo-zin Borraquilha' },
     ]);
+  });
+});
+
+describe('storage.js — universos ativos/inativos', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  it('cria novos universos como ativos por padrão', async () => {
+    addDoc.mockResolvedValue({ id: 'universo-novo' });
+
+    const result = await addUniverso({ Nome: 'Novo Universo' });
+
+    expect(addDoc).toHaveBeenCalledWith(
+      { __collection: 'Universo' },
+      {
+        Nome: 'Novo Universo',
+        ativo: true,
+        createdAt: '__serverTimestamp__',
+      },
+    );
+    expect(result).toEqual({ id: 'universo-novo', Nome: 'Novo Universo', ativo: true });
+  });
+
+  it('interpreta universos antigos sem campo ativo como ativos', async () => {
+    getDocs.mockResolvedValue({
+      docs: [
+        { id: 'u1', data: () => ({ Nome: 'Universo legado' }) },
+        { id: 'u2', data: () => ({ Nome: 'Universo desligado', ativo: false }) },
+      ],
+    });
+
+    const result = await getUniversos();
+
+    expect(result).toEqual([
+      { id: 'u1', Nome: 'Universo legado', ativo: true },
+      { id: 'u2', Nome: 'Universo desligado', ativo: false },
+    ]);
+  });
+
+  it('identifica universos inativos quando o campo ativo é false', async () => {
+    getDocs.mockResolvedValue({
+      docs: [
+        { id: 'u1', data: () => ({ Nome: 'Universo inativo', ativo: false }) },
+      ],
+    });
+
+    const result = await getUniversos();
+
+    expect(result).toEqual([{ id: 'u1', Nome: 'Universo inativo', ativo: false }]);
+  });
+
+  it('preserva o status atual quando o update não inclui o campo ativo', async () => {
+    getDoc.mockResolvedValue({
+      exists: () => true,
+      data: () => ({ Nome: 'Universo antigo', ativo: false }),
+    });
+
+    await updateUniverso('u1', { Nome: 'Universo renomeado' });
+
+    expect(updateDoc).toHaveBeenCalledWith(
+      { __doc: 'Universo', id: 'u1' },
+      { Nome: 'Universo renomeado', ativo: false, updatedAt: '__serverTimestamp__' },
+    );
+  });
+
+  it('impede a atualização quando a leitura do status atual falha', async () => {
+    getDoc.mockRejectedValue(new Error('Firestore indisponível'));
+
+    await expect(updateUniverso('u1', { Nome: 'Universo renomeado' })).rejects.toThrow(
+      'Firestore indisponível',
+    );
+
+    expect(updateDoc).not.toHaveBeenCalled();
+  });
+
+  it('desativa um universo sem alterar o nome do documento', async () => {
+    await updateUniverso('u1', { ativo: false, Nome: 'Universo X' });
+
+    expect(updateDoc).toHaveBeenCalledWith(
+      { __doc: 'Universo', id: 'u1' },
+      { ativo: false, Nome: 'Universo X', updatedAt: '__serverTimestamp__' },
+    );
+  });
+
+  it('reativa um universo sem alterar a imagem do documento', async () => {
+    await updateUniverso('u1', { ativo: true, linkImagem: 'https://example.com/capa.png' });
+
+    expect(updateDoc).toHaveBeenCalledWith(
+      { __doc: 'Universo', id: 'u1' },
+      { ativo: true, linkImagem: 'https://example.com/capa.png', updatedAt: '__serverTimestamp__' },
+    );
+  });
+
+  it('preserva o status ao atualizar outros campos do universo', async () => {
+    await updateUniverso('u1', { Nome: 'Novo Nome', linkImagem: 'https://example.com/capa.png', ativo: false });
+
+    expect(updateDoc).toHaveBeenCalledWith(
+      { __doc: 'Universo', id: 'u1' },
+      { Nome: 'Novo Nome', linkImagem: 'https://example.com/capa.png', ativo: false, updatedAt: '__serverTimestamp__' },
+    );
+  });
+
+  it('mantém a exclusão definitiva do universo sem alterar a API atual', async () => {
+    await removeUniverso('u1');
+
+    expect(doc).toHaveBeenCalledWith({}, 'Universo', 'u1');
+    expect(deleteDoc).toHaveBeenCalledWith({ __doc: 'Universo', id: 'u1' });
   });
 });
 

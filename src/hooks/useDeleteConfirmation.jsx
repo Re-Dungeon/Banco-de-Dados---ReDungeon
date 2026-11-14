@@ -6,21 +6,41 @@ const useDeleteConfirmation = () => {
   const [dialogState, setDialogState] = useState({
     open: false,
     itemName: '',
+    message: '',
     onConfirm: null,
+    title: 'Confirmar exclusão',
+    confirmText: 'Excluir',
   });
 
   const closeDialog = useCallback(() => {
-    setDialogState({ open: false, itemName: '', onConfirm: null });
+    setDialogState({
+      open: false,
+      itemName: '',
+      message: '',
+      onConfirm: null,
+      title: 'Confirmar exclusão',
+      confirmText: 'Excluir',
+    });
   }, []);
 
-  const confirmDelete = useCallback((itemName, onConfirm) => {
-    if (!shouldShowDeleteConfirmation()) {
-      onConfirm();
-      return;
-    }
+  const confirmDelete = useCallback(
+    (itemName, onConfirm, message = '', options = {}) => {
+      if (!shouldShowDeleteConfirmation()) {
+        onConfirm();
+        return;
+      }
 
-    setDialogState({ open: true, itemName, onConfirm });
-  }, []);
+      setDialogState({
+        open: true,
+        itemName,
+        message,
+        onConfirm,
+        title: options.title || 'Confirmar exclusão',
+        confirmText: options.confirmText || 'Excluir',
+      });
+    },
+    [],
+  );
 
   const handleConfirm = useCallback(() => {
     dialogState.onConfirm?.();
@@ -31,8 +51,11 @@ const useDeleteConfirmation = () => {
     <DeleteConfirmationDialog
       open={dialogState.open}
       itemName={dialogState.itemName}
+      message={dialogState.message}
       onClose={closeDialog}
       onConfirm={handleConfirm}
+      title={dialogState.title}
+      confirmText={dialogState.confirmText}
     />
   ) : null;
 

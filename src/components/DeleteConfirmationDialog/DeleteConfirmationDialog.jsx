@@ -15,9 +15,11 @@ import {
 const DeleteConfirmationDialog = ({
   open,
   itemName,
+  message,
   onClose,
   onConfirm,
   title = 'Confirmar exclusão',
+  confirmText = 'Excluir',
 }) => {
   const [skipConfirmation, setSkipConfirmation] = useState(false);
   const cancelButtonRef = useRef(null);
@@ -105,15 +107,22 @@ const DeleteConfirmationDialog = ({
           {title}
         </Typography>
 
-        <Typography
-          variant="body1"
-          sx={{ color: 'var(--text-secondary)', lineHeight: 1.7, mb: 2.5 }}
+        <Box
+          sx={{
+            color: 'var(--text-secondary)',
+            lineHeight: 1.7,
+            mb: 2.5,
+            width: '100%',
+          }}
         >
-          Tem certeza de que deseja excluir este item? Esta ação pode não ser
-          reversível.
-          {itemName ? `
-${itemName}` : ''}
-        </Typography>
+          {message || (
+            <Box component="div" sx={{ whiteSpace: 'pre-line' }}>
+              Tem certeza de que deseja excluir este item? Esta ação pode não ser
+              reversível.
+              {itemName ? `\n${itemName}` : ''}
+            </Box>
+          )}
+        </Box>
 
         <FormControlLabel
           control={
@@ -170,7 +179,7 @@ ${itemName}` : ''}
               },
             }}
           >
-            Excluir
+            {confirmText}
           </Button>
         </Box>
       </Box>
@@ -181,9 +190,11 @@ ${itemName}` : ''}
 DeleteConfirmationDialog.propTypes = {
   open: PropTypes.bool.isRequired,
   itemName: PropTypes.string,
+  message: PropTypes.node,
   onClose: PropTypes.func.isRequired,
   onConfirm: PropTypes.func.isRequired,
   title: PropTypes.string,
+  confirmText: PropTypes.string,
 };
 
 export default DeleteConfirmationDialog;

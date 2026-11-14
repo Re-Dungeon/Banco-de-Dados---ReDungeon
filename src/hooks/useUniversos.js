@@ -24,6 +24,29 @@ const useUniversos = () => {
     universosCache === null,
   );
 
+  const updateUniversos = nextData => {
+    const normalized = Array.isArray(nextData) ? nextData : [];
+    universosCache = normalized;
+    setUniversos(normalized);
+    setLoadingUniversos(false);
+    return normalized;
+  };
+
+  const refreshUniversos = async (forceReload = false) => {
+    if (!forceReload && universosCache !== null) {
+      setUniversos(universosCache);
+      setLoadingUniversos(false);
+      return universosCache;
+    }
+
+    setLoadingUniversos(true);
+    const data = await getUniversos();
+    universosCache = data;
+    setUniversos(data);
+    setLoadingUniversos(false);
+    return data;
+  };
+
   useEffect(() => {
     if (universosCache !== null) {
       return undefined;
@@ -49,7 +72,7 @@ const useUniversos = () => {
     };
   }, []);
 
-  return { universos, loadingUniversos };
+  return { universos, loadingUniversos, refreshUniversos, updateUniversos };
 };
 
 export default useUniversos;
