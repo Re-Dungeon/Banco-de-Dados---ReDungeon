@@ -32,6 +32,24 @@ const getFirestoreItems = async collectionName => {
   }
 };
 
+const normalizeUniverseStatus = value => value === false ? false : true;
+
+const normalizeUniverseDocument = universe => ({
+  ...(universe ?? {}),
+  ativo: normalizeUniverseStatus(universe?.ativo),
+});
+
+const resolveUniverseStatus = async (id, candidate = {}) => {
+  if (Object.prototype.hasOwnProperty.call(candidate, 'ativo')) {
+    return normalizeUniverseStatus(candidate.ativo);
+  }
+
+  const snapshot = await getDoc(doc(db, UNIVERSO_COLLECTION, id));
+  const currentData = snapshot?.exists?.() ? snapshot.data() : {};
+
+  return normalizeUniverseStatus(currentData?.ativo);
+};
+
 const addFirestoreItem = async (collectionName, item) => {
   try {
     const docRef = await addDoc(collection(db, collectionName), {
@@ -261,7 +279,34 @@ export const getCampanhas = () => getFirestoreItems(CAMPANHAS_COLLECTION);
 
 const UNIVERSO_COLLECTION = 'Universo';
 
-export const getUniversos = () => getFirestoreItems(UNIVERSO_COLLECTION);
+export const getUniversos = async () => {
+  const universos = await getFirestoreItems(UNIVERSO_COLLECTION);
+  return universos.map(normalizeUniverseDocument);
+};
+
+export const addUniverso = universo => {
+  const payload = {
+    ...(universo ?? {}),
+    ativo: normalizeUniverseStatus(universo?.ativo ?? true),
+  };
+
+  return addFirestoreItem(UNIVERSO_COLLECTION, payload);
+};
+
+export const removeUniverso = id =>
+  removeFirestoreItem(UNIVERSO_COLLECTION, id);
+
+export const updateUniverso = async (id, updates) => {
+  const normalizedUpdates = { ...(updates ?? {}) };
+
+  if (Object.prototype.hasOwnProperty.call(normalizedUpdates, 'ativo')) {
+    normalizedUpdates.ativo = normalizeUniverseStatus(normalizedUpdates.ativo);
+  } else {
+    normalizedUpdates.ativo = await resolveUniverseStatus(id, normalizedUpdates);
+  }
+
+  return updateFirestoreItem(UNIVERSO_COLLECTION, id, normalizedUpdates);
+};
 
 // ── User Permissions (Firestore) ─────────────────────────────────────────────
 
