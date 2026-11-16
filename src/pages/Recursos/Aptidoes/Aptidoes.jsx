@@ -3,7 +3,6 @@ import { useNavigate } from 'react-router-dom';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import Button from '@mui/material/Button';
-import IconButton from '@mui/material/IconButton';
 import CircularProgress from '@mui/material/CircularProgress';
 import Tooltip from '@mui/material/Tooltip';
 import DeleteOutlineIcon from '@mui/icons-material/DeleteOutlined';
@@ -29,17 +28,23 @@ import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
 import DialogTitle from '@mui/material/DialogTitle';
 import {
+  AptidaoCard,
+  AptidaoCardInner,
+  AptidaoImageFrame,
+  AptidaoContent,
+  AptidaoHeaderRow,
+  AptidaoTitle,
+  AptidaoMetaRow,
+  AptidaoMetaPill,
+  AptidaoDescription,
+  AptidaoActions,
+  AptidaoActionButton,
   AptidaoDialogContentWrapper,
   AptidaoSectionGrid,
   AptidaoSectionCard,
   AptidaoSectionHeader,
   AptidaoSectionBody,
 } from './styles';
-import {
-  RacaCard,
-  RacaSubtitle,
-  RacaDescription,
-} from '../Racas/styles';
 import EntityImage from 'components/EntityImage/EntityImage';
 import { UniverseCountBadge } from 'components/CardTokens/CardTokens';
 import { getAptidaoUniversos, formatNomesUniversos } from './utils';
@@ -84,7 +89,7 @@ const Aptidoes = () => {
 
   return (
     <Box
-      className="page-container"
+      className="page-container redungeon-aptidoes-page"
       id="redungeon-aptidoes"
       data-page="aptidoes"
     >
@@ -140,8 +145,8 @@ const Aptidoes = () => {
                 display: 'grid',
                 gridTemplateColumns: {
                   xs: '1fr',
-                  sm: 'repeat(auto-fill, minmax(300px, 1fr))',
-                  md: 'repeat(auto-fill, minmax(340px, 1fr))',
+                  sm: 'repeat(2, minmax(0, 1fr))',
+                  xl: 'repeat(3, minmax(0, 1fr))',
                 },
                 gap: 2,
               }}
@@ -150,175 +155,92 @@ const Aptidoes = () => {
                 const aptidaoUniversos = getAptidaoUniversos(aptidao);
 
                 return (
-                  <RacaCard
+                  <AptidaoCard
                     key={aptidao.id}
                     elevation={0}
-                    sx={{
-                      minHeight: 0,
-                      p: 1.5,
-                      display: 'flex',
-                      flexDirection: 'column',
-                      gap: 1.5,
-                    }}
                   >
-                    <Box sx={{ display: 'flex', gap: 1.5, alignItems: 'stretch' }}>
-                      <Box
-                        sx={{
-                          position: 'relative',
-                          width: 112,
-                          minWidth: 112,
-                          height: 112,
-                          borderRadius: 3,
-                          overflow: 'hidden',
-                          border: '1px solid var(--border-primary)',
-                          background:
-                            'linear-gradient(145deg, rgba(15,23,42,0.96), rgba(10,14,24,0.9))',
-                        }}
-                      >
+                    <AptidaoCardInner>
+                      <AptidaoImageFrame>
                         <EntityImage
                           src={aptidao.linkImagem}
                           alt={aptidao.nome}
-                          width={112}
-                          height={112}
+                          width="100%"
+                          height="100%"
                           objectFit="cover"
                           placeholderText="Sem imagem"
                           fallbackText="Imagem indisponível"
                           sx={{ borderRadius: 0, border: 'none' }}
                         />
+                      </AptidaoImageFrame>
 
-                        <Box
-                          sx={{
-                            position: 'absolute',
-                            top: 8,
-                            right: 8,
-                            display: 'flex',
-                            gap: 0.5,
-                            zIndex: 2,
-                            background: 'rgba(12, 18, 30, 0.72)',
-                            border: '1px solid rgba(148, 163, 184, 0.2)',
-                            backdropFilter: 'blur(8px)',
-                            borderRadius: 2,
-                            p: 0.35,
-                          }}
-                        >
+                      <AptidaoContent>
+                        <AptidaoHeaderRow>
+                          <AptidaoTitle variant="h6">{aptidao.nome}</AptidaoTitle>
+                          <UniverseCountBadge
+                            universoIds={aptidaoUniversos}
+                            universos={universos}
+                          />
+                        </AptidaoHeaderRow>
+
+                        <AptidaoMetaRow>
+                          {aptidao.nivelMaximo && (
+                            <AptidaoMetaPill>
+                              Nível Máx. {aptidao.nivelMaximo}
+                            </AptidaoMetaPill>
+                          )}
+                        </AptidaoMetaRow>
+
+                        {aptidao.descricao && (
+                          <AptidaoDescription variant="body2">
+                            {aptidao.descricao}
+                          </AptidaoDescription>
+                        )}
+
+                        <AptidaoActions>
                           <Tooltip title="Visualizar detalhes">
-                            <IconButton
+                            <AptidaoActionButton
                               size="small"
                               onClick={() => setAptidaoVisualizando(aptidao)}
-                              sx={{
-                                color: 'var(--text-secondary)',
-                                padding: '8px',
-                                minWidth: '16px',
-                                width: '16px',
-                                height: '16px',
-                                '&:hover': { color: 'var(--color-accent)' },
-                              }}
                               aria-label={`Visualizar aptidão ${aptidao.nome}`}
+                              sx={{ color: 'var(--text-secondary)', '&:hover': { color: 'var(--color-accent)' } }}
                             >
                               <VisibilityOutlinedIcon fontSize="small" />
-                            </IconButton>
+                            </AptidaoActionButton>
                           </Tooltip>
 
                           {canCreate() && (
-                            <IconButton
+                            <AptidaoActionButton
                               size="small"
                               onClick={() =>
                                 navigate(ROUTE_PATHS.NOVA_APTIDAO, {
                                   state: { aptidao },
                                 })
                               }
-                              sx={{
-                                color: 'var(--color-accent)',
-                                padding: '4px',
-                                minWidth: '24px',
-                                width: '24px',
-                                height: '24px',
-                                '&:hover': {
-                                  color: 'var(--color-accent)',
-                                  opacity: 0.8,
-                                },
-                              }}
                               aria-label={`Editar aptidão ${aptidao.nome}`}
+                              sx={{ color: 'var(--color-accent)', '&:hover': { color: 'var(--color-accent)' } }}
                             >
                               <EditOutlinedIcon fontSize="small" />
-                            </IconButton>
+                            </AptidaoActionButton>
                           )}
 
                           {podeExcluir(aptidaoUniversos) && (
-                            <IconButton
+                            <AptidaoActionButton
                               size="small"
                               onClick={() =>
                                 confirmDelete(aptidao.nome, () =>
                                   handleRemove(aptidao.id),
                                 )
                               }
-                              sx={{
-                                color: '#ef4444',
-                                padding: '4px',
-                                minWidth: '24px',
-                                width: '24px',
-                                height: '24px',
-                                '&:hover': { color: '#ef4444' },
-                              }}
                               aria-label={`Remover aptidão ${aptidao.nome}`}
+                              sx={{ color: '#fca5a5', '&:hover': { color: '#f87171', borderColor: 'rgba(248, 113, 113, 0.34) !important' } }}
                             >
                               <DeleteOutlineIcon fontSize="small" />
-                            </IconButton>
+                            </AptidaoActionButton>
                           )}
-                        </Box>
-                      </Box>
-
-                      <Box
-                        sx={{
-                          flex: 1,
-                          minWidth: 0,
-                          display: 'flex',
-                          flexDirection: 'column',
-                          gap: 0.9,
-                          justifyContent: 'space-between',
-                        }}
-                      >
-                        <Box
-                          sx={{
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'space-between',
-                            gap: 1,
-                            minWidth: 0,
-                          }}
-                        >
-                          <Typography
-                            variant="h6"
-                            sx={{
-                              color: 'var(--text-primary)',
-                              fontWeight: 700,
-                              lineHeight: 1.2,
-                              wordBreak: 'break-word',
-                            }}
-                          >
-                            {aptidao.nome}
-                          </Typography>
-
-                          <UniverseCountBadge
-                            universoIds={aptidaoUniversos}
-                            universos={universos}
-                          />
-                        </Box>
-
-                        {aptidao.nivelMaximo && (
-                          <RacaSubtitle variant="caption">
-                            Nível Máx. {aptidao.nivelMaximo}
-                          </RacaSubtitle>
-                        )}
-
-                        {aptidao.descricao && (
-                          <RacaDescription variant="body2">
-                            {aptidao.descricao}
-                          </RacaDescription>
-                        )}
-                      </Box>
-                    </Box>
-                  </RacaCard>
+                        </AptidaoActions>
+                      </AptidaoContent>
+                    </AptidaoCardInner>
+                  </AptidaoCard>
                 );
               })}
             </Box>
