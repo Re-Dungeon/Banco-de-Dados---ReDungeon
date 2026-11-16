@@ -328,6 +328,7 @@ Utilitários e hooks compartilhados (`src/common/utils/`, `src/hooks/`) devem te
 - A autorização de escrita é reforçada em duas camadas: no frontend, via `canCreate()`/`canWrite(universoId)` (`useAuth()`), usados para esconder ações não permitidas na UI; e no backend, via **regras de segurança do Firestore** (`firestore.rules`), que é a camada que efetivamente impede escrita não autorizada — nunca confie somente na checagem de UI.
 - Valide dados no frontend com Yup antes de persistir.
 - Siga as diretrizes OWASP para segurança no cliente.
+- **Publicação das regras**: o `firestore.rules` deste repositório é a origem do deploy (`firebase deploy --only firestore:rules`, sempre com confirmação do usuário) para o projeto Firebase compartilhado com a Ficha de Jogador (`Ficha-RPG---Re-Dungeon-`) e o Re:Master (`Re-Dungeon_Re-Master`). Os dois guardam **cópias idênticas** do arquivo, inclusive das regras de chat/grid (`rmCampanhas/...`) que só eles usam: mudou uma cópia, copie para as três e confira com `diff` antes de publicar — publicar uma versão sem as regras do outro app as apaga do projeto.
 
 ---
 
