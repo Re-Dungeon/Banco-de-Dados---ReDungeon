@@ -37,3 +37,7 @@ yarn-error.log*
 /public/about.json
 
 /dist
+
+# Conta de serviço do Firebase (script de limpeza dos desenhos)
+*firebase-adminsdk*.json
+service-account*.json

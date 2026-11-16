@@ -332,6 +332,15 @@ Utilitários e hooks compartilhados (`src/common/utils/`, `src/hooks/`) devem te
 
 ---
 
+## Limpeza dos desenhos do grid
+
+Os desenhos do mapa (`rmCampanhas/{id}/gridCenas/{cenaId}/desenhos`, gravados pela Ficha e pelo Re:Master) só aparecem nos apps por ~2 h, mas continuam no Firestore. Como a política de TTL não existe no plano gratuito, quem apaga é `scripts/limpar-desenhos-expirados.mjs` (lógica em `scripts/limparDesenhos.mjs`, testada com Firestore falso em `limparDesenhos.test.mjs`; usa `firebase-admin`, devDependency):
+- `node scripts/limpar-desenhos-expirados.mjs` só conta; `--apagar` apaga; `--horas=N` muda a validade (padrão 2, mínimo 1).
+- Percorre campanha → cena → `desenhos` com `where('createdAt', '<', corte)` (índice automático, sem índice de grupo de coleções), em páginas de 400 e lotes de exclusão.
+- Credencial: `FIREBASE_SERVICE_ACCOUNT` (conteúdo do JSON da conta de serviço) ou `GOOGLE_APPLICATION_CREDENTIALS` (caminho do arquivo). Nunca commite o JSON.
+- `.github/workflows/limpar-desenhos.yml` roda todo dia às 04:00 (Brasília) com `--apagar`, e manualmente pela aba Actions (com a opção de só contar). Precisa do secret `FIREBASE_SERVICE_ACCOUNT` no repositório. O GitHub desliga agendamentos de repositórios sem commits há 60 dias — se parar, reative na aba Actions.
+- Rodar contra o projeto real é ação no Firebase compartilhado: só com confirmação do usuário.
+
 ## Acessibilidade (a11y)
 
 - Use elementos HTML semânticos.

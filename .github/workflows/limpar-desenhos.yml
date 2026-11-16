@@ -1,0 +1,41 @@
+name: Limpar desenhos vencidos do grid
+
+# Apaga os desenhos do mapa com mais de 2 h (substitui a política de TTL, que não existe
+# no plano gratuito). Precisa do secret FIREBASE_SERVICE_ACCOUNT (JSON da conta de serviço).
+on:
+  schedule:
+    - cron: '0 7 * * *' # todo dia às 04:00 (horário de Brasília)
+  workflow_dispatch:
+    inputs:
+      apagar:
+        description: 'Apagar de verdade? (false = só contar)'
+        type: boolean
+        default: true
+
+permissions:
+  contents: read
+
+concurrency:
+  group: limpar-desenhos
+  cancel-in-progress: false
+
+jobs:
+  limpar:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+
+      - name: Instalar dependências
+        run: npm ci --ignore-scripts
+
+      - name: Limpar desenhos
+        run: node scripts/limpar-desenhos-expirados.mjs ${{ (github.event_name == 'schedule' || inputs.apagar) && '--apagar' || '' }}
+        env:
+          FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
