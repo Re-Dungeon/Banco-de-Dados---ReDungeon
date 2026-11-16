@@ -1861,7 +1861,7 @@ const GerenciadorUniversos = () => {
   );
 
   return (
-    <Box className="page-container" sx={{ p: 3, display: 'flex', flexDirection: 'column', gap: 3 }}>
+    <Box className="page-container redungeon-gerenciador-universos" sx={{ p: 3, display: 'flex', flexDirection: 'column', gap: 3 }}>
       <PageHeader
         title="Gerenciador de Universos"
         description="Gerencie vínculos entre universos e registros de Aptidões e Condições."

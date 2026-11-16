@@ -3,7 +3,6 @@ import { useNavigate } from 'react-router-dom';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import Button from '@mui/material/Button';
-import IconButton from '@mui/material/IconButton';
 import CircularProgress from '@mui/material/CircularProgress';
 import Divider from '@mui/material/Divider';
 import Tooltip from '@mui/material/Tooltip';
@@ -22,10 +21,18 @@ import EntityFilters from 'components/EntityFilters/EntityFilters';
 import EntityViewDialog from 'components/EntityViewDialog/EntityViewDialog';
 import PageHeader from 'components/PageHeader/PageHeader';
 import {
-  RacaCard,
-  RacaSubtitle,
-  RacaDescription,
-} from '../Racas/styles';
+  CondicaoCard,
+  CondicaoCardInner,
+  CondicaoImageFrame,
+  CondicaoCardBody,
+  CondicaoHeaderRow,
+  CondicaoTitle,
+  CondicaoMetaRow,
+  CondicaoMetaChip,
+  CondicaoCardDescription,
+  CondicaoActions,
+  CondicaoActionButton,
+} from './styles';
 import EntityImage from 'components/EntityImage/EntityImage';
 import { UniverseCountBadge } from 'components/CardTokens/CardTokens';
 import { getCondicaoUniversos } from './utils';
@@ -64,7 +71,7 @@ const Condicoes = () => {
 
   return (
     <Box
-      className="page-container"
+      className="page-container redungeon-condicoes-page"
       id="redungeon-condicoes"
       data-page="condicoes"
     >
@@ -129,8 +136,8 @@ const Condicoes = () => {
                 display: 'grid',
                 gridTemplateColumns: {
                   xs: '1fr',
-                  sm: 'repeat(auto-fill, minmax(300px, 1fr))',
-                  md: 'repeat(auto-fill, minmax(340px, 1fr))',
+                  sm: 'repeat(2, minmax(0, 1fr))',
+                  xl: 'repeat(3, minmax(0, 1fr))',
                 },
                 gap: 2,
               }}
@@ -139,176 +146,94 @@ const Condicoes = () => {
                 const condicaoUniversos = getCondicaoUniversos(condicao);
 
                 return (
-                  <RacaCard
+                  <CondicaoCard
                     key={condicao.id}
                     elevation={0}
-                    sx={{
-                      minHeight: 0,
-                      p: 1.5,
-                      display: 'flex',
-                      flexDirection: 'column',
-                      gap: 1.5,
-                    }}
                   >
-                    <Box sx={{ display: 'flex', gap: 1.5, alignItems: 'stretch' }}>
-                      <Box
-                        sx={{
-                          position: 'relative',
-                          width: 112,
-                          minWidth: 112,
-                          height: 112,
-                          borderRadius: 3,
-                          overflow: 'hidden',
-                          border: '1px solid var(--border-primary)',
-                          background:
-                            'linear-gradient(145deg, rgba(15,23,42,0.96), rgba(10,14,24,0.9))',
-                        }}
-                      >
+                    <CondicaoCardInner>
+                      <CondicaoImageFrame>
                         <EntityImage
                           src={condicao.linkImagem}
                           alt={condicao.nome}
-                          width={112}
-                          height={112}
+                          width="100%"
+                          height="100%"
                           objectFit="cover"
                           placeholderText="Sem imagem"
                           fallbackText="Imagem indisponível"
                           sx={{ borderRadius: 0, border: 'none' }}
                         />
+                      </CondicaoImageFrame>
 
-                        <Box
-                          sx={{
-                            position: 'absolute',
-                            top: 8,
-                            right: 8,
-                            display: 'flex',
-                            gap: 0.5,
-                            zIndex: 2,
-                            background: 'rgba(12, 18, 30, 0.72)',
-                            border: '1px solid rgba(148, 163, 184, 0.2)',
-                            backdropFilter: 'blur(8px)',
-                            borderRadius: 2,
-                            p: 0.35,
-                          }}
-                        >
+                      <CondicaoCardBody>
+                        <CondicaoHeaderRow>
+                          <CondicaoTitle variant="h6">{condicao.nome}</CondicaoTitle>
+                          <UniverseCountBadge
+                            universoIds={condicaoUniversos}
+                            universos={universos}
+                          />
+                        </CondicaoHeaderRow>
+
+                        {(condicao.raridade || condicao.duracao) && (
+                          <CondicaoMetaRow>
+                            {condicao.raridade && (
+                              <CondicaoMetaChip>{condicao.raridade}</CondicaoMetaChip>
+                            )}
+                            {condicao.duracao && (
+                              <CondicaoMetaChip>{condicao.duracao}</CondicaoMetaChip>
+                            )}
+                          </CondicaoMetaRow>
+                        )}
+
+                        {condicao.descricao && (
+                          <CondicaoCardDescription variant="body2">
+                            {condicao.descricao}
+                          </CondicaoCardDescription>
+                        )}
+
+                        <CondicaoActions>
                           <Tooltip title="Visualizar detalhes">
-                            <IconButton
+                            <CondicaoActionButton
                               size="small"
                               onClick={() => setCondicaoVisualizando(condicao)}
-                              sx={{
-                                color: 'var(--text-secondary)',
-                                padding: '8px',
-                                minWidth: '16px',
-                                width: '16px',
-                                height: '16px',
-                                '&:hover': { color: 'var(--color-accent)' },
-                              }}
                               aria-label={`Visualizar condição ${condicao.nome}`}
+                              sx={{ color: 'var(--text-secondary)', '&:hover': { color: 'var(--color-accent)' } }}
                             >
                               <VisibilityOutlinedIcon fontSize="small" />
-                            </IconButton>
+                            </CondicaoActionButton>
                           </Tooltip>
 
                           {canWrite(condicaoUniversos) && (
                             <>
-                              <IconButton
+                              <CondicaoActionButton
                                 size="small"
                                 onClick={() =>
                                   navigate(ROUTE_PATHS.NOVA_CONDICAO, {
                                     state: { condicao },
                                   })
                                 }
-                                sx={{
-                                  color: 'var(--color-accent)',
-                                  padding: '4px',
-                                  minWidth: '24px',
-                                  width: '24px',
-                                  height: '24px',
-                                  '&:hover': {
-                                    color: 'var(--color-accent)',
-                                    opacity: 0.8,
-                                  },
-                                }}
                                 aria-label={`Editar condição ${condicao.nome}`}
+                                sx={{ color: 'var(--color-accent)', '&:hover': { color: 'var(--color-accent)' } }}
                               >
                                 <EditOutlinedIcon fontSize="small" />
-                              </IconButton>
-                              <IconButton
+                              </CondicaoActionButton>
+                              <CondicaoActionButton
                                 size="small"
                                 onClick={() =>
                                   confirmDelete(condicao.nome, () =>
                                     handleRemove(condicao.id),
                                   )
                                 }
-                                sx={{
-                                  color: '#ef4444',
-                                  padding: '4px',
-                                  minWidth: '24px',
-                                  width: '24px',
-                                  height: '24px',
-                                  '&:hover': { color: '#ef4444' },
-                                }}
                                 aria-label={`Remover condição ${condicao.nome}`}
+                                sx={{ color: '#fca5a5', '&:hover': { color: '#f87171', borderColor: 'rgba(248, 113, 113, 0.34) !important' } }}
                               >
                                 <DeleteOutlineIcon fontSize="small" />
-                              </IconButton>
+                              </CondicaoActionButton>
                             </>
                           )}
-                        </Box>
-                      </Box>
-
-                      <Box
-                        sx={{
-                          flex: 1,
-                          minWidth: 0,
-                          display: 'flex',
-                          flexDirection: 'column',
-                          gap: 0.9,
-                          justifyContent: 'space-between',
-                        }}
-                      >
-                        <Box
-                          sx={{
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'space-between',
-                            gap: 1,
-                            minWidth: 0,
-                          }}
-                        >
-                          <Typography
-                            variant="h6"
-                            sx={{
-                              color: 'var(--text-primary)',
-                              fontWeight: 700,
-                              lineHeight: 1.2,
-                              wordBreak: 'break-word',
-                            }}
-                          >
-                            {condicao.nome}
-                          </Typography>
-
-                          <UniverseCountBadge
-                            universoIds={condicaoUniversos}
-                            universos={universos}
-                          />
-                        </Box>
-
-                        {(condicao.raridade || condicao.duracao) && (
-                          <RacaSubtitle variant="caption">
-                            {[condicao.raridade, condicao.duracao]
-                              .filter(Boolean)
-                              .join(' · ')}
-                          </RacaSubtitle>
-                        )}
-
-                        {condicao.descricao && (
-                          <RacaDescription variant="body2">
-                            {condicao.descricao}
-                          </RacaDescription>
-                        )}
-                      </Box>
-                    </Box>
-                  </RacaCard>
+                        </CondicaoActions>
+                      </CondicaoCardBody>
+                    </CondicaoCardInner>
+                  </CondicaoCard>
                 );
               })}
             </Box>
